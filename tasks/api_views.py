@@ -94,7 +94,7 @@ class DashboardChartsAPIView(APIView):
         officer_data = []
         officer_labels = []
         assignments = TaskAssignment.objects.filter(
-            task__is_archived=False
+            task__in=base_qs
         ).select_related('officer__officer_profile__position') \
          .values('officer__first_name', 'officer__last_name',
                  'officer__officer_profile__position__title') \
