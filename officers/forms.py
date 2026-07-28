@@ -78,6 +78,21 @@ class OfficerForm(forms.ModelForm):
             available_qs = available_qs.filter(organization=self.user_creator.organization)
         self.fields['position'].queryset = available_qs
 
+        # Restrict role choices
+        allowed_roles = []
+        for code, label in User.ROLE_CHOICES:
+            if code in ['super_admin', 'org_admin']:
+                continue
+            allowed_roles.append((code, label))
+            
+        if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+            user = self.instance.user
+            # Ensure their current role is in choices if they are editing themselves or another admin
+            if not any(c == user.role for c, l in allowed_roles):
+                allowed_roles.append((user.role, dict(User.ROLE_CHOICES).get(user.role, user.role)))
+        
+        self.fields['role'].choices = allowed_roles
+
         if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
             user = self.instance.user
             self.fields['first_name'].initial = user.first_name
