@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+{% block title %}Task Board{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
+  <div>
+    <h5 class="mb-1 fw-bold" style="color:var(--primary)">Task Kanban Board</h5>
+    <p class="text-muted mb-0" style="font-size:13px">Drag and drop tasks between stage boards to update status</p>
+  </div>
+  <div class="d-flex gap-2 align-items-center flex-wrap">
+    <!-- View Switcher -->
+    <div class="btn-group" role="group" style="border-radius:8px;overflow:hidden;border:1px solid #cbd5e1">
+      <a href="{% url 'tasks:list' %}" class="btn btn-sm btn-light" style="font-weight:500;font-size:13px"><i class="bi bi-list-task me-1"></i> List</a>
+      <a href="{% url 'tasks:board' %}" class="btn btn-sm btn-primary active" style="font-weight:600;font-size:13px"><i class="bi bi-kanban me-1"></i> Board</a>
+    </div>
+
+    <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> New Task</a>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" style="border-radius:8px">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{% url 'tasks:export_pdf' %}"><i class="bi bi-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+        <li><a class="dropdown-item" href="{% url 'tasks:export_excel' %}"><i class="bi bi-file-excel me-2 text-success"></i>Export Excel</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+  <div class="p-3">
+    <form method="get" class="row g-2 align-items-end">
+      <div class="col-md-5">
+        <div class="input-group" style="border-radius:8px;overflow:hidden">
+          <span class="input-group-text" style="background:#f8fafc;border-color:#e2e8f0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" value="{{ current_filters.q }}" class="form-control" placeholder="Search task title or number..." style="border-color:#e2e8f0">
+        </div>
+      </div>
+      <div class="col-md-3">
+        <select name="priority" class="form-select" style="border-color:#e2e8f0;font-size:13px" onchange="this.form.submit()">
+          <option value="">All Priorities</option>
+          {% for val, label in priority_choices %}
+          <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="border-radius:8px;font-size:13px;background:#fff;border-color:#e2e8f0">
+            <span>Officer</span>
+          </button>
+          <ul class="dropdown-menu p-2 shadow-sm" style="max-height:220px;overflow-y:auto;font-size:13px;width:100%">
+            {% for off in officers_list %}
+            <li>
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" name="officer" value="{{ off.pk }}" id="boff_{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}checked{% endif %} onchange="this.form.submit()">
+                <label class="form-check-label" for="boff_{{ off.pk }}" style="cursor:pointer">
+                  {{ off.get_full_name }}
+                </label>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-md-2 d-flex gap-1">
+        <button type="submit" class="btn btn-primary btn-sm w-100" style="border-radius:8px">Filter</button>
+        <a href="{% url 'tasks:board' %}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px"><i class="bi bi-x"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Kanban Columns Container -->
+<div class="kanban-board-container">
+  {% for col in status_columns %}
+  <div class="kanban-column" data-status="{{ col.code }}">
+    <div class="kanban-column-header">
+      <div class="kanban-column-title">
+        <span class="badge-status badge-{{ col.code }}" style="width:10px;height:10px;padding:0;border-radius:50%"></span>
+        <span>{{ col.label }}</span>
+      </div>
+      <span class="badge bg-secondary rounded-pill col-count-badge" style="font-size:11px">{{ col.count }}</span>
+    </div>
+    <div class="kanban-cards-list" data-status="{{ col.code }}">
+      {% for task in col.tasks %}
+      <div class="kanban-card" draggable="{% if user.can_manage_tasks or user in task.assigned_officers.all %}true{% else %}false{% endif %}" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+        <div class="d-flex justify-content-between align-items-center mb-2">
+          <span class="task-number" style="font-size:11px">{{ task.task_number }}</span>
+          <div class="d-flex align-items-center gap-1">
+            <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{ task.get_priority_display }}</span>
+            <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}" title="View Details" style="width:24px;height:24px;font-size:11px">
+              <i class="bi bi-eye"></i>
+            </button>
+          </div>
+        </div>
+        <h6 class="fw-bold mb-2" style="font-size:13px;line-height:1.4">
+          <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="text-decoration:none;color:var(--primary)">{{ task.title }}</a>
+        </h6>
+        <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
+          {% if task.assigned_officers.exists %}
+          <div class="dropdown d-inline-block">
+            <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer" title="Click to view officer names">
+              {% for officer in task.sorted_assigned_officers|slice:":2" %}
+              <span class="badge bg-light text-primary border" style="font-size:10px;font-weight:600;padding:3px 7px;border-radius:10px">
+                <i class="bi bi-person-badge me-1"></i>{{ officer.position_title }}
+              </span>
+              {% endfor %}
+              {% if task.assigned_officers.count > 2 %}
+              <span class="badge bg-secondary text-white" style="font-size:10px;font-weight:600;padding:3px 7px;border-radius:10px">
+                +{{ task.assigned_officers.count|add:"-2" }}
+              </span>
+              {% endif %}
+              <i class="bi bi-caret-down-fill text-secondary ms-1" style="font-size:8px"></i>
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:11px;min-width:210px;border-radius:10px">
+              <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:9px;font-weight:700">Assigned Officers</li>
+              {% for officer in task.sorted_assigned_officers %}
+              <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:#f8fafc;border-radius:6px">
+                <span class="fw-semibold text-primary" style="font-size:10px"><i class="bi bi-person-badge me-1"></i>{{ officer.position_title }}</span>
+                <span class="fw-bold text-dark ms-2" style="font-size:10px">{{ officer.get_full_name|default:officer.username }}</span>
+              </li>
+              {% endfor %}
+            </ul>
+          </div>
+          {% else %}
+          <small class="text-muted" style="font-size:10px;font-style:italic">Unassigned</small>
+          {% endif %}
+          {% if task.due_date %}
+          <small style="font-size:11px;white-space:nowrap" class="{% if task.is_overdue %}text-danger fw-bold{% else %}text-muted{% endif %}">
+            <i class="bi bi-calendar-event me-1"></i>{{ task.due_date|date:"M d" }}
+          </small>
+          {% endif %}
+        </div>
+        <div class="mt-2 pt-1">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span style="font-size:10px;color:#64748b;font-weight:600">Progress</span>
+            <span style="font-size:10px;font-weight:700" class="text-{{ task.progress_color }}">{{ task.progress }}%</span>
+          </div>
+          <div class="progress-custom" style="height:5px"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="empty-col-placeholder text-center text-muted py-4" style="font-size:12px">
+        <i class="bi bi-inbox d-block mb-1" style="font-size:20px;opacity:0.4"></i> No tasks
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- TASK DETAIL MODAL -->
+<div class="modal fade" id="taskDetailModal" tabindex="-1" aria-labelledby="taskDetailModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:18px;overflow:hidden">
+      <!-- Modal Header -->
+      <div class="modal-header border-0 pb-0 pt-4 px-4 align-items-start">
+        <div>
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="task-number fs-6" id="modalTaskNumber">CSG-2026-0001</span>
+            <span class="badge-status" id="modalTaskStatus">Status</span>
+            <span class="badge-status" id="modalTaskPriority">Priority</span>
+          </div>
+          <h5 class="fw-bold mb-0" id="modalTaskTitle" style="color:var(--primary);line-height:1.3">Task Title</h5>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <!-- Modal Body -->
+      <div class="modal-body px-4 py-3">
+        <!-- Spinner -->
+        <div id="modalLoadingSpinner" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+          <p class="text-muted mt-2 small">Loading task details...</p>
+        </div>
+
+        <div id="modalTaskContent" class="d-none">
+          <!-- Description -->
+          <div class="mb-4 p-3" style="background:#f8fafc;border-radius:12px;border:1px solid #e2e8f0">
+            <h6 class="fw-bold text-muted mb-2" style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase">Description</h6>
+            <div id="modalTaskDescription" style="font-size:14px;color:#334155;white-space:pre-line"></div>
+          </div>
+
+          <div class="row g-3 mb-4">
+            <!-- Progress & Dates -->
+            <div class="col-md-6">
+              <div class="p-3 border rounded-3" style="background:#fff;height:100%">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="fw-semibold text-muted" style="font-size:12px">Progress</span>
+                  <span class="fw-bold text-primary" style="font-size:13px" id="modalTaskProgressText">0%</span>
+                </div>
+                <div class="progress-custom mb-3"><div class="progress-bar bg-primary" id="modalTaskProgressBar" style="width:0%"></div></div>
+
+                <div class="d-flex flex-column gap-2 text-muted" style="font-size:12px">
+                  <div><i class="bi bi-calendar-event me-2 text-primary"></i>Due Date: <strong id="modalTaskDueDate" class="text-dark">—</strong></div>
+                  <div><i class="bi bi-person me-2 text-primary"></i>Created By: <strong id="modalTaskCreatedBy" class="text-dark">—</strong></div>
+                  <div><i class="bi bi-clock-history me-2 text-primary"></i>Created On: <strong id="modalTaskCreatedAt" class="text-dark">—</strong></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Assigned Officers -->
+            <div class="col-md-6">
+              <div class="p-3 border rounded-3" style="background:#fff;height:100%">
+                <h6 class="fw-bold text-muted mb-2" style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase">Assigned Officers</h6>
+                <div id="modalTaskAssignedList" class="d-flex flex-column gap-2"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Attachments & Comments -->
+          <div class="row g-3">
+            <div class="col-md-6">
+              <div class="p-3 border rounded-3" style="background:#fff">
+                <h6 class="fw-bold text-muted mb-2" style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase"><i class="bi bi-paperclip me-1"></i>Attachments</h6>
+                <div id="modalTaskAttachmentsList" style="max-height:160px;overflow-y:auto"></div>
+              </div>
+            </div>
+
+            <div class="col-md-6">
+              <div class="p-3 border rounded-3" style="background:#fff">
+                <h6 class="fw-bold text-muted mb-2" style="font-size:11px;letter-spacing:0.5px;text-transform:uppercase"><i class="bi bi-chat-left-text me-1"></i>Comments</h6>
+                <div id="modalTaskCommentsList" style="max-height:160px;overflow-y:auto"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="modal-footer border-top px-4 py-3 bg-light justify-content-between border-0">
+        <a id="modalFullPageBtn" href="#" class="btn btn-outline-secondary btn-sm" style="border-radius:8px;font-weight:500"><i class="bi bi-box-arrow-up-right me-1"></i> Open Full Page</a>
+        <div>
+          <a id="modalEditBtn" href="#" class="btn btn-primary btn-sm d-none" style="border-radius:8px;font-weight:500"><i class="bi bi-pencil me-1"></i> Edit Task</a>
+          <button type="button" class="btn btn-light btn-sm ms-1" data-bs-dismiss="modal" style="border-radius:8px;border:1px solid #cbd5e1">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CSRF Form Token for Drag & Drop AJAX -->
+<form id="csrfForm">{% csrf_token %}</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  let draggedCard = null;
+  const csrfToken = document.querySelector('#csrfForm input[name=csrfmiddlewaretoken]').value;
+  const detailModal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+
+  // Open Task Detail Modal Function
+  function openTaskModal(taskId) {
+    document.getElementById('modalLoadingSpinner').classList.remove('d-none');
+    document.getElementById('modalTaskContent').classList.add('d-none');
+    detailModal.show();
+
+    fetch(`/tasks/${taskId}/json/`)
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('modalTaskNumber').textContent = data.task_number;
+        document.getElementById('modalTaskTitle').textContent = data.title;
+        document.getElementById('modalTaskDescription').textContent = data.description || 'No description provided.';
+        
+        // Status Badge
+        const statusEl = document.getElementById('modalTaskStatus');
+        statusEl.textContent = data.status_display;
+        statusEl.className = `badge-status badge-${data.status}`;
+        
+        // Priority Badge
+        const priorityEl = document.getElementById('modalTaskPriority');
+        priorityEl.textContent = data.priority_display;
+        priorityEl.className = `badge-status badge-priority-${data.priority}`;
+
+        // Progress Color
+        const pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
+        const progText = document.getElementById('modalTaskProgressText');
+        progText.textContent = `${data.progress}%`;
+        progText.className = `fw-bold text-${pColor}`;
+
+        const progBar = document.getElementById('modalTaskProgressBar');
+        progBar.style.width = `${data.progress}%`;
+        progBar.className = `progress-bar bg-${pColor}`;
+
+        // Dates & Meta
+        document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
+        if (data.is_overdue) {
+          document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
+        } else {
+          document.getElementById('modalTaskDueDate').className = 'text-dark';
+        }
+        document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
+        document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
+
+        // Assigned Officers
+        const assignedList = document.getElementById('modalTaskAssignedList');
+        if (data.assigned_officers && data.assigned_officers.length > 0) {
+          assignedList.innerHTML = data.assigned_officers.map(off => `
+            <div class="d-flex align-items-center justify-content-between p-2" style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+              <div class="d-flex align-items-center gap-2">
+                <span class="badge bg-light text-primary border" style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px">
+                  <i class="bi bi-person-badge me-1"></i>${off.position_title || off.role}
+                </span>
+              </div>
+              <span style="font-size:12px;font-weight:600;color:var(--primary)">${off.name}</span>
+            </div>
+          `).join('');
+        } else {
+          assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
+        }
+
+        // Attachments
+        const attList = document.getElementById('modalTaskAttachmentsList');
+        if (data.attachments && data.attachments.length > 0) {
+          attList.innerHTML = data.attachments.map(att => `
+            <div class="d-flex align-items-center justify-content-between p-2 mb-1" style="background:#f8fafc;border-radius:6px">
+              <div class="d-flex align-items-center gap-2" style="overflow:hidden">
+                <i class="bi bi-file-earmark text-primary"></i>
+                <span class="text-truncate" style="font-size:12px" title="${att.filename}">${att.filename}</span>
+              </div>
+              <a href="${att.url}" target="_blank" class="btn btn-sm btn-light p-1" style="font-size:11px"><i class="bi bi-download"></i></a>
+            </div>
+          `).join('');
+        } else {
+          attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
+        }
+
+        // Comments
+        const commentsList = document.getElementById('modalTaskCommentsList');
+        if (data.comments && data.comments.length > 0) {
+          commentsList.innerHTML = data.comments.map(c => `
+            <div class="p-2 mb-1" style="background:#f8fafc;border-radius:6px">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <strong style="font-size:11px;color:var(--primary)">${c.author}</strong>
+                <small style="font-size:10px;color:#94a3b8">${c.created_at}</small>
+              </div>
+              <p class="mb-0" style="font-size:12px;color:#475569">${c.content}</p>
+            </div>
+          `).join('');
+        } else {
+          commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
+        }
+
+        // Action URLs
+        document.getElementById('modalFullPageBtn').href = data.detail_url;
+        const editBtn = document.getElementById('modalEditBtn');
+        if (data.edit_url) {
+          editBtn.href = data.edit_url;
+          editBtn.classList.remove('d-none');
+        } else {
+          editBtn.classList.add('d-none');
+        }
+
+        document.getElementById('modalLoadingSpinner').classList.add('d-none');
+        document.getElementById('modalTaskContent').classList.remove('d-none');
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Error loading task details', 'danger');
+        detailModal.hide();
+      });
+  }
+
+  // Attach click events to view buttons and task title links
+  document.addEventListener('click', function(e) {
+    const viewBtn = e.target.closest('.view-task-btn');
+    if (viewBtn) {
+      e.stopPropagation();
+      const taskId = viewBtn.getAttribute('data-task-id');
+      openTaskModal(taskId);
+      return;
+    }
+
+    const titleLink = e.target.closest('.task-title-link');
+    if (titleLink) {
+      e.preventDefault();
+      const taskId = titleLink.getAttribute('data-task-id');
+      openTaskModal(taskId);
+      return;
+    }
+  });
+
+  // Drag & Drop logic
+  function initDraggableCards() {
+    {% if user.can_manage_tasks %}
+    const cards = document.querySelectorAll('.kanban-card');
+    cards.forEach(card => {
+      card.removeEventListener('dragstart', handleDragStart);
+      card.removeEventListener('dragend', handleDragEnd);
+
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragend', handleDragEnd);
+    });
+    {% else %}
+    document.querySelectorAll('.kanban-card').forEach(card => {
+      card.style.cursor = 'default';
+    });
+    {% endif %}
+  }
+
+  function handleDragStart(e) {
+    draggedCard = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', this.getAttribute('data-task-id'));
+  }
+
+  function handleDragEnd(e) {
+    this.classList.remove('dragging');
+    draggedCard = null;
+    document.querySelectorAll('.kanban-cards-list').forEach(list => list.classList.remove('drag-over'));
+  }
+
+  const dropzones = document.querySelectorAll('.kanban-cards-list');
+  dropzones.forEach(zone => {
+    zone.addEventListener('dragover', function(e) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      this.classList.add('drag-over');
+    });
+
+    zone.addEventListener('dragleave', function(e) {
+      this.classList.remove('drag-over');
+    });
+
+    zone.addEventListener('drop', function(e) {
+      e.preventDefault();
+      this.classList.remove('drag-over');
+      if (!draggedCard) return;
+
+      const targetZone = this;
+      const newStatus = targetZone.getAttribute('data-status');
+      const currentParent = draggedCard.parentElement;
+      const oldStatus = currentParent.getAttribute('data-status');
+
+      if (oldStatus === newStatus) return;
+
+      const taskId = draggedCard.getAttribute('data-task-id');
+      const taskNum = draggedCard.getAttribute('data-task-num');
+
+      // Optimistically move card in DOM
+      const placeholder = targetZone.querySelector('.empty-col-placeholder');
+      if (placeholder) placeholder.remove();
+
+      targetZone.appendChild(draggedCard);
+
+      // Add placeholder to old zone if empty
+      if (currentParent.querySelectorAll('.kanban-card').length === 0) {
+        currentParent.innerHTML = `
+          <div class="empty-col-placeholder text-center text-muted py-4" style="font-size:12px">
+            <i class="bi bi-inbox d-block mb-1" style="font-size:20px;opacity:0.4"></i> No tasks
+          </div>
+        `;
+      }
+
+      updateColumnCounts();
+
+      // Send AJAX request
+      const formData = new FormData();
+      formData.append('status', newStatus);
+
+      fetch(`/tasks/${taskId}/move/`, {
+        method: 'POST',
+        headers: {
+          'X-CSRFToken': csrfToken
+        },
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.status === 'ok') {
+          showToast(`Task ${taskNum} moved to ${data.new_status_display}`, 'success');
+        } else {
+          showToast('Failed to update task status.', 'danger');
+          location.reload();
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        showToast('Server error while moving task.', 'danger');
+        location.reload();
+      });
+    });
+  });
+
+  function updateColumnCounts() {
+    document.querySelectorAll('.kanban-column').forEach(col => {
+      const list = col.querySelector('.kanban-cards-list');
+      const badge = col.querySelector('.col-count-badge');
+      const count = list.querySelectorAll('.kanban-card').length;
+      if (badge) badge.textContent = count;
+    });
+  }
+
+  function showToast(message, type = 'success') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show shadow-sm`;
+    alert.style.borderRadius = '12px';
+    alert.innerHTML = `
+      <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    container.appendChild(alert);
+    setTimeout(() => {
+      try { bootstrap.Alert.getOrCreateInstance(alert).close(); } catch(e){}
+    }, 3500);
+  }
+
+  // Initialize Bootstrap Tooltips
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+
+  initDraggableCards();
+});
+</script>
+{% endblock %}

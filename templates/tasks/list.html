@@ -1,0 +1,346 @@
+{% extends 'base.html' %}
+{% block title %}Tasks{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
+  <div>
+    <h5 class="mb-1 fw-bold" style="color:var(--primary)">Task Management</h5>
+    <p class="text-muted mb-0" style="font-size:13px">Manage and monitor all organizational tasks</p>
+  </div>
+  <div class="d-flex gap-2 align-items-center flex-wrap">
+    <!-- View Switcher -->
+    <div class="btn-group me-1" role="group" style="border-radius:8px;overflow:hidden;border:1px solid #cbd5e1">
+      <a href="{% url 'tasks:list' %}" class="btn btn-sm btn-primary active" style="font-weight:600;font-size:13px"><i class="bi bi-list-task me-1"></i> List</a>
+      <a href="{% url 'tasks:board' %}" class="btn btn-sm btn-light" style="font-weight:500;font-size:13px"><i class="bi bi-kanban me-1"></i> Board</a>
+    </div>
+
+    {% if user.can_manage_tasks %}
+    <button type="button" id="bulkDeleteBtn" class="btn btn-danger btn-sm d-none" style="border-radius:8px;font-weight:600">
+      <i class="bi bi-trash me-1"></i> Delete Selected (<span id="selectedCount">0</span>)
+    </button>
+    {% endif %}
+    <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> New Task</a>
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown" style="border-radius:8px">
+        <i class="bi bi-download me-1"></i> Export
+      </button>
+      <ul class="dropdown-menu">
+        <li><a class="dropdown-item" href="{% url 'tasks:export_pdf' %}?{{ request.GET.urlencode }}"><i class="bi bi-file-pdf me-2 text-danger"></i>Export PDF</a></li>
+        <li><a class="dropdown-item" href="{% url 'tasks:export_excel' %}?{{ request.GET.urlencode }}"><i class="bi bi-file-excel me-2 text-success"></i>Export Excel</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+  <div class="p-3">
+    <form method="get" class="row g-2 align-items-center">
+      <div class="col-lg-2 col-md-4">
+        <div class="input-group" style="border-radius:8px;overflow:hidden">
+          <span class="input-group-text" style="background:#f8fafc;border-color:#e2e8f0"><i class="bi bi-search text-muted"></i></span>
+          <input type="text" name="q" value="{{ current_filters.q }}" class="form-control" placeholder="Search..." style="border-color:#e2e8f0">
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <select name="status" class="form-select" style="border-color:#e2e8f0;font-size:13px">
+          <option value="">All Status</option>
+          {% for val, label in status_choices %}
+          <option value="{{ val }}" {% if current_filters.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <select name="priority" class="form-select" style="border-color:#e2e8f0;font-size:13px">
+          <option value="">All Priority</option>
+          {% for val, label in priority_choices %}
+          <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-4">
+        <div class="dropdown">
+          <button class="btn btn-outline-secondary dropdown-toggle w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="border-radius:8px;font-size:13px;background:#fff;border-color:#e2e8f0">
+            <span>Officer</span>
+          </button>
+          <ul class="dropdown-menu p-2 shadow-sm" style="max-height:220px;overflow-y:auto;font-size:13px;width:100%">
+            {% for off in officers_list %}
+            <li>
+              <div class="form-check mb-1">
+                <input class="form-check-input" type="checkbox" name="officer" value="{{ off.pk }}" id="off_{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}checked{% endif %} onchange="this.form.submit()">
+                <label class="form-check-label" for="off_{{ off.pk }}" style="cursor:pointer">
+                  {{ off.get_full_name }}
+                </label>
+              </div>
+            </li>
+            {% endfor %}
+          </ul>
+        </div>
+      </div>
+      <div class="col-lg-2 col-md-8">
+        <select name="sort" class="form-select" style="border-color:#e2e8f0;font-size:13px" onchange="this.form.submit()">
+          <option value="-created_at" {% if current_filters.sort == '-created_at' %}selected{% endif %}>Newest First</option>
+          <option value="created_at" {% if current_filters.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
+          <option value="task_number" {% if current_filters.sort == 'task_number' %}selected{% endif %}>Task No. (Asc)</option>
+          <option value="-task_number" {% if current_filters.sort == '-task_number' %}selected{% endif %}>Task No. (Desc)</option>
+          <option value="title" {% if current_filters.sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
+          <option value="-title" {% if current_filters.sort == '-title' %}selected{% endif %}>Title (Z-A)</option>
+          <option value="priority" {% if current_filters.sort == 'priority' %}selected{% endif %}>Priority (High to Low)</option>
+          <option value="-priority" {% if current_filters.sort == '-priority' %}selected{% endif %}>Priority (Low to High)</option>
+          <option value="status" {% if current_filters.sort == 'status' %}selected{% endif %}>Status Stage</option>
+          <option value="due_date" {% if current_filters.sort == 'due_date' %}selected{% endif %}>Due Date (Earliest)</option>
+          <option value="-due_date" {% if current_filters.sort == '-due_date' %}selected{% endif %}>Due Date (Latest)</option>
+          <option value="-progress" {% if current_filters.sort == '-progress' %}selected{% endif %}>Progress (Highest)</option>
+          <option value="progress" {% if current_filters.sort == 'progress' %}selected{% endif %}>Progress (Lowest)</option>
+        </select>
+      </div>
+      <div class="col-lg-2 col-md-4 d-flex gap-1">
+        <button type="submit" class="btn btn-primary btn-sm w-100" style="border-radius:8px;font-weight:600">Filter</button>
+        <a href="{% url 'tasks:list' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-center px-2" style="border-radius:8px" title="Reset Filters"><i class="bi bi-x-lg"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bulk Delete Form & Table -->
+<form method="post" action="{% url 'tasks:bulk_delete' %}" id="bulkDeleteForm">
+  {% csrf_token %}
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table-custom w-100">
+        <thead>
+          <tr>
+            {% if user.can_manage_tasks %}
+            <th style="width:40px;text-align:center">
+              <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
+            </th>
+            {% endif %}
+            <th>
+              <a href="?sort={% if current_filters.sort == 'task_number' %}-task_number{% else %}task_number{% endif %}&q={{ current_filters.q }}&status={{ current_filters.status }}&priority={{ current_filters.priority }}" style="text-decoration:none;color:inherit">
+                Task No.
+                {% if current_filters.sort == 'task_number' %}<i class="bi bi-sort-numeric-down text-primary"></i>{% elif current_filters.sort == '-task_number' %}<i class="bi bi-sort-numeric-down-alt text-primary"></i>{% else %}<i class="bi bi-arrow-down-up text-muted opacity-50"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?sort={% if current_filters.sort == 'title' %}-title{% else %}title{% endif %}&q={{ current_filters.q }}&status={{ current_filters.status }}&priority={{ current_filters.priority }}" style="text-decoration:none;color:inherit">
+                Title
+                {% if current_filters.sort == 'title' %}<i class="bi bi-sort-alpha-down text-primary"></i>{% elif current_filters.sort == '-title' %}<i class="bi bi-sort-alpha-down-alt text-primary"></i>{% else %}<i class="bi bi-arrow-down-up text-muted opacity-50"></i>{% endif %}
+              </a>
+            </th>
+            <th>Assigned To</th>
+            <th>
+              <a href="?sort={% if current_filters.sort == 'priority' %}-priority{% else %}priority{% endif %}&q={{ current_filters.q }}&status={{ current_filters.status }}&priority={{ current_filters.priority }}" style="text-decoration:none;color:inherit">
+                Priority
+                {% if current_filters.sort == 'priority' %}<i class="bi bi-sort-down text-primary"></i>{% elif current_filters.sort == '-priority' %}<i class="bi bi-sort-up text-primary"></i>{% else %}<i class="bi bi-arrow-down-up text-muted opacity-50"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?sort={% if current_filters.sort == 'status' %}-status{% else %}status{% endif %}&q={{ current_filters.q }}&status={{ current_filters.status }}&priority={{ current_filters.priority }}" style="text-decoration:none;color:inherit">
+                Status
+                {% if current_filters.sort == 'status' %}<i class="bi bi-sort-down text-primary"></i>{% elif current_filters.sort == '-status' %}<i class="bi bi-sort-up text-primary"></i>{% else %}<i class="bi bi-arrow-down-up text-muted opacity-50"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?sort={% if current_filters.sort == 'due_date' %}-due_date{% else %}due_date{% endif %}&q={{ current_filters.q }}&status={{ current_filters.status }}&priority={{ current_filters.priority }}" style="text-decoration:none;color:inherit">
+                Due Date
+                {% if current_filters.sort == 'due_date' %}<i class="bi bi-sort-numeric-down text-primary"></i>{% elif current_filters.sort == '-due_date' %}<i class="bi bi-sort-numeric-down-alt text-primary"></i>{% else %}<i class="bi bi-arrow-down-up text-muted opacity-50"></i>{% endif %}
+              </a>
+            </th>
+            <th>
+              <a href="?sort={% if current_filters.sort == '-progress' %}progress{% else %}-progress{% endif %}&q={{ current_filters.q }}&status={{ current_filters.status }}&priority={{ current_filters.priority }}" style="text-decoration:none;color:inherit">
+                Progress
+                {% if current_filters.sort == '-progress' %}<i class="bi bi-sort-down text-primary"></i>{% elif current_filters.sort == 'progress' %}<i class="bi bi-sort-up text-primary"></i>{% else %}<i class="bi bi-arrow-down-up text-muted opacity-50"></i>{% endif %}
+              </a>
+            </th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for task in tasks %}
+          <tr>
+            {% if user.can_manage_tasks %}
+            <td style="text-align:center">
+              <input type="checkbox" name="task_ids" value="{{ task.pk }}" class="form-check-input task-checkbox" style="cursor:pointer;margin:0">
+            </td>
+            {% endif %}
+            <td><span class="task-number">{{ task.task_number }}</span></td>
+            <td>
+              <div style="font-weight:600;font-size:13px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="{{ task.title }}">{{ task.title }}</div>
+              <div style="font-size:11px;color:#94a3b8">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
+            </td>
+            <td>
+              {% if task.assigned_officers.exists %}
+              <div class="dropdown d-inline-block">
+                <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer" title="Click to view officer names">
+                  {% for officer in task.sorted_assigned_officers|slice:":2" %}
+                  <span class="badge bg-light text-primary border" style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:12px">
+                    <i class="bi bi-person-badge me-1"></i>{{ officer.position_title }}
+                  </span>
+                  {% endfor %}
+                  {% if task.assigned_officers.count > 2 %}
+                  <span class="badge bg-secondary text-white" style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:12px">
+                    +{{ task.assigned_officers.count|add:"-2" }}
+                  </span>
+                  {% endif %}
+                  <i class="bi bi-caret-down-fill text-secondary ms-1" style="font-size:9px"></i>
+                </div>
+                <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:12px;min-width:230px;border-radius:10px">
+                  <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">Assigned Officers</li>
+                  {% for officer in task.sorted_assigned_officers %}
+                  <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:#f8fafc;border-radius:6px">
+                    <span class="fw-semibold text-primary" style="font-size:11px"><i class="bi bi-person-badge me-1"></i>{{ officer.position_title }}</span>
+                    <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
+                  </li>
+                  {% endfor %}
+                </ul>
+              </div>
+              {% else %}
+              <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
+              {% endif %}
+            </td>
+            <td><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+            <td><span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span></td>
+            <td style="font-size:12px;white-space:nowrap">
+              {% if task.due_date %}
+              <span {% if task.is_overdue %}style="color:var(--danger);font-weight:600"{% endif %}>
+                {{ task.due_date|date:"M d, Y" }}
+              </span>
+              {% else %}—{% endif %}
+            </td>
+            <td style="min-width:110px">
+              <div class="d-flex align-items-center gap-2">
+                <div class="progress-custom flex-grow-1"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>
+                <small style="font-size:11px;font-weight:700" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
+              </div>
+            </td>
+            <td>
+              <div class="d-flex gap-1">
+                <a href="{% url 'tasks:detail' task.pk %}" class="btn-sm-icon" title="View"><i class="bi bi-eye"></i></a>
+                {% if user.can_manage_tasks %}
+                <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon" title="Edit"><i class="bi bi-pencil"></i></a>
+                <button type="button" class="btn-sm-icon single-delete-btn" style="background:#fff1f2;border-color:#fecdd3;color:#ef4444" title="Delete" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+                  <i class="bi bi-trash"></i>
+                </button>
+                {% endif %}
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr><td colspan="{% if user.can_manage_tasks %}9{% else %}8{% endif %}"><div class="empty-state"><i class="bi bi-inbox text-muted"></i><h6 class="text-muted mt-2">No tasks found</h6><p class="text-muted small">Try adjusting your filters or create a new task.</p></div></td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% if is_paginated %}
+    <div class="d-flex justify-content-between align-items-center p-3 border-top">
+      <small class="text-muted">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</small>
+      <nav>
+        <ul class="pagination pagination-sm mb-0" style="gap:4px">
+          {% if page_obj.has_previous %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" style="border-radius:6px">‹</a></li>
+          {% endif %}
+          {% for num in page_obj.paginator.page_range %}
+          {% if num == page_obj.number %}
+          <li class="page-item active"><span class="page-link" style="border-radius:6px;background:var(--accent);border-color:var(--accent)">{{ num }}</span></li>
+          {% elif num|add:"-3" <= page_obj.number and num|add:"3" >= page_obj.number %}
+          <li class="page-item"><a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode }}" style="border-radius:6px">{{ num }}</a></li>
+          {% endif %}
+          {% endfor %}
+          {% if page_obj.has_next %}
+          <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" style="border-radius:6px">›</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</form>
+
+<!-- Single Delete Form (Hidden) -->
+<form method="post" id="singleDeleteForm" action="">
+  {% csrf_token %}
+</form>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectAll = document.getElementById('selectAllTasks');
+  const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+  const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  const selectedCountEl = document.getElementById('selectedCount');
+  const bulkForm = document.getElementById('bulkDeleteForm');
+
+  function updateBulkDeleteState() {
+    const checked = document.querySelectorAll('.task-checkbox:checked');
+    const count = checked.length;
+    if (selectedCountEl) selectedCountEl.textContent = count;
+    if (bulkDeleteBtn) {
+      if (count > 0) {
+        bulkDeleteBtn.classList.remove('d-none');
+      } else {
+        bulkDeleteBtn.classList.add('d-none');
+      }
+    }
+    if (selectAll) {
+      selectAll.checked = taskCheckboxes.length > 0 && count === taskCheckboxes.length;
+      selectAll.indeterminate = count > 0 && count < taskCheckboxes.length;
+    }
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', function() {
+      taskCheckboxes.forEach(cb => cb.checked = this.checked);
+      updateBulkDeleteState();
+    });
+  }
+
+  taskCheckboxes.forEach(cb => {
+    cb.addEventListener('change', updateBulkDeleteState);
+  });
+
+  if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener('click', function() {
+      const checked = document.querySelectorAll('.task-checkbox:checked');
+      if (checked.length === 0) return;
+      showConfirmModal({
+        title: 'Bulk Delete Tasks',
+        subtitle: 'Multiple Task Deletion',
+        message: `Are you sure you want to delete <strong>${checked.length} selected task(s)</strong>? This action cannot be undone.`,
+        btnText: `Delete ${checked.length} Task(s)`,
+        btnClass: 'btn-danger',
+        icon: 'bi-trash-fill',
+        onConfirm: function() {
+          bulkForm.submit();
+        }
+      });
+    });
+  }
+
+  // Single delete button handler
+  document.querySelectorAll('.single-delete-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const taskId = this.getAttribute('data-task-id');
+      const taskNum = this.getAttribute('data-task-num');
+      showConfirmModal({
+        title: 'Delete Task',
+        subtitle: 'Task Deletion',
+        message: `Are you sure you want to delete task <strong>${taskNum}</strong>? This action cannot be undone.`,
+        btnText: 'Yes, Delete',
+        btnClass: 'btn-danger',
+        icon: 'bi-trash-fill',
+        onConfirm: function() {
+          const form = document.getElementById('singleDeleteForm');
+          form.action = `/tasks/${taskId}/delete/`;
+          form.submit();
+        }
+      });
+    });
+  });
+  // Initialize Bootstrap Tooltips
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.map(function (tooltipTriggerEl) {
+    return new bootstrap.Tooltip(tooltipTriggerEl);
+  });
+});
+</script>
+{% endblock %}

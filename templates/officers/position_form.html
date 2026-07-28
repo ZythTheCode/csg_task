@@ -1,0 +1,14 @@
+{% extends 'base.html' %}{% block content %}
+<a href="{% url 'officers:position_list' %}" class="text-muted" style="font-size:12px;text-decoration:none"><i class="bi bi-arrow-left me-1"></i>Back</a>
+<div class="row justify-content-center mt-2"><div class="col-md-6">
+<div class="card"><div class="card-header-custom"><h6>{{ page_title }}</h6></div>
+<div class="p-4"><form method="post">{% csrf_token %}
+<div class="row g-3">
+  <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px">Position Title</label>{{ form.title }}</div>
+  <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px">Description</label>{{ form.description }}</div>
+</div>
+<hr><div class="d-flex gap-2">
+<button type="submit" class="btn-primary-custom">{{ form_action }}</button>
+<a href="{% url 'officers:position_list' %}" class="btn btn-outline-secondary" style="border-radius:8px">Cancel</a>
+</div></form></div></div>
+</div></div>{% endblock %}

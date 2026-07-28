@@ -1,0 +1,15 @@
+{% extends 'base.html' %}{% block content %}
+<div class="row justify-content-center mt-5"><div class="col-md-5">
+<div class="card text-center p-4 border-0 shadow-lg" style="border-radius:18px">
+  <div style="width:54px;height:54px;background:#fee2e2;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:#dc2626">
+    <i class="bi bi-trash-fill"></i>
+  </div>
+  <h5 class="fw-bold mb-1" style="color:var(--primary)">Delete Task</h5>
+  <p class="text-muted mb-4" style="font-size:14px">Are you sure you want to delete <strong>{{ object.task_number }}: {{ object.title }}</strong>? This action cannot be undone.</p>
+  <form method="post">{% csrf_token %}
+    <div class="d-flex gap-2 justify-content-center">
+      <a href="{% url 'tasks:list' %}" class="btn btn-light px-4" style="border-radius:10px;font-weight:500;font-size:13px;border:1px solid #e2e8f0">Cancel</a>
+      <button type="submit" class="btn btn-danger px-4" style="border-radius:10px;font-weight:600;font-size:13px;box-shadow:0 4px 12px rgba(220,38,38,0.25)">Yes, Delete</button>
+    </div>
+  </form>
+</div></div></div>{% endblock %}

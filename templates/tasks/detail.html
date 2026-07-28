@@ -1,0 +1,359 @@
+{% extends 'base.html' %}
+{% block title %}{{ task.task_number }}{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <a href="{% url 'tasks:list' %}" class="text-muted" style="font-size:12px;text-decoration:none"><i class="bi bi-arrow-left me-1"></i>Back to Tasks</a>
+    <h5 class="mb-0 mt-1 fw-bold" style="color:var(--primary)">{{ task.task_number }} — {{ task.title }}</h5>
+  </div>
+  <div class="d-flex gap-2">
+    {% if user.can_manage_tasks %}
+    <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-outline-primary btn-sm" style="border-radius:8px"><i class="bi bi-pencil me-1"></i>Edit</a>
+    {% if task.assigned_officers.exists %}
+    <button type="button" class="btn btn-warning btn-sm" id="nudgeBtn" style="border-radius:8px;font-weight:600;color:#fff">
+      <i class="bi bi-bell-fill me-1"></i>Nudge
+    </button>
+    {% endif %}
+    {% if task.status == 'waiting_approval' %}
+    <form method="post" action="{% url 'tasks:complete' task.pk %}" class="d-inline" data-confirm="Are you sure you want to mark task <strong>{{ task.task_number }}</strong> as complete?" data-confirm-title="Mark Task Complete" data-confirm-btn="Mark Complete" data-confirm-class="btn-success" data-confirm-icon="bi-check-circle-fill" data-confirm-icon-bg="#dcfce7" data-confirm-icon-color="#16a34a">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-success btn-sm" style="border-radius:8px"><i class="bi bi-check-circle me-1"></i>Mark Complete</button>
+    </form>
+    {% endif %}
+    {% endif %}
+    {% if task.status == 'completed' and user.can_manage_tasks %}
+    <form method="post" action="{% url 'tasks:archive' task.pk %}" class="d-inline" data-confirm="Are you sure you want to archive task <strong>{{ task.task_number }}</strong>?" data-confirm-title="Archive Task" data-confirm-btn="Archive" data-confirm-class="btn-secondary" data-confirm-icon="bi-archive-fill" data-confirm-icon-bg="#f1f5f9" data-confirm-icon-color="#475569">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary btn-sm" style="border-radius:8px"><i class="bi bi-archive me-1"></i>Archive</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+{% if user.can_manage_tasks and task.assigned_officers.exists %}
+<!-- NUDGE MODAL -->
+<div class="modal fade" id="nudgeModal" tabindex="-1" aria-labelledby="nudgeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:18px;overflow:hidden">
+      <div class="modal-header border-0 px-4 pt-4 pb-2">
+        <div>
+          <h5 class="fw-bold mb-0" style="color:#111827"><i class="bi bi-bell-fill text-warning me-2"></i>Send Nudge</h5>
+          <p class="text-muted mb-0" style="font-size:12px">Send a reminder to assigned officers for <strong>{{ task.task_number }}</strong></p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <!-- Officer checklist -->
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <label class="fw-semibold" style="font-size:13px;color:#374151">Select Officers to Nudge</label>
+            <button type="button" id="nudgeToggleAll" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size:12px">Deselect All</button>
+          </div>
+          <div id="nudgeOfficerList" style="max-height:220px;overflow-y:auto;border:1px solid #e5e7eb;border-radius:10px;padding:8px">
+            {% for officer in task.sorted_assigned_officers %}
+            <label class="d-flex align-items-center gap-3 p-2 mb-1 rounded-3" style="cursor:pointer;background:#f9fafb;border:1px solid #f0f0f0" id="nudge-label-{{ officer.pk }}">
+              <input type="checkbox" class="nudge-officer-check form-check-input mt-0" value="{{ officer.pk }}" checked style="width:16px;height:16px;cursor:pointer">
+              <div class="flex-grow-1">
+                <div class="fw-semibold" style="font-size:13px;color:#111827">{{ officer.get_full_name|default:officer.username }}</div>
+                <div style="font-size:11px;color:#6b7280"><i class="bi bi-person-badge me-1"></i>{{ officer.position_title }} &nbsp;&middot;&nbsp; <i class="bi bi-envelope me-1"></i>{{ officer.email|default:"No email" }}</div>
+              </div>
+              <i class="bi bi-check-circle-fill text-success nudge-check-icon" style="font-size:16px"></i>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- Optional message -->
+        <div class="mb-2">
+          <label class="fw-semibold mb-1" style="font-size:13px;color:#374151">Optional Message <span class="text-muted fw-normal">(appears in email &amp; notification)</span></label>
+          <textarea id="nudgeMessage" class="form-control" rows="2" placeholder="e.g. Please update your progress by end of day..." style="border-radius:9px;font-size:13px;resize:none;border-color:#e5e7eb"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer border-0 px-4 pb-4 pt-2 d-flex justify-content-between">
+        <button type="button" class="btn btn-light btn-sm" data-bs-dismiss="modal" style="border-radius:8px;border:1px solid #e5e7eb">Cancel</button>
+        <button type="button" id="nudgeSendBtn" class="btn btn-warning btn-sm fw-bold" style="border-radius:8px;color:#fff;min-width:120px">
+          <i class="bi bi-send-fill me-1"></i>Send Nudge
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<div class="row g-3">
+  <!-- Main Info -->
+  <div class="col-md-8">
+    <div class="card mb-3">
+      <div class="card-header-custom">
+        <h6><i class="bi bi-info-circle me-2"></i>Task Details</h6>
+        <div class="d-flex gap-2">
+          <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
+          <span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
+        </div>
+      </div>
+      <div class="p-4">
+        <p style="font-size:14px;line-height:1.7;color:#374151">{{ task.description }}</p>
+        
+        <!-- Progress Bar -->
+        <div class="p-3 my-3 border rounded-3" style="background:#f8fafc">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-semibold text-muted" style="font-size:12px">Current Completion Progress</span>
+            <span class="fw-bold text-{{ task.progress_color }}" style="font-size:13px">{{ task.progress }}%</span>
+          </div>
+          <div class="progress-custom"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>
+        </div>
+
+        <hr>
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Due Date</div>
+            <div style="font-size:13px;font-weight:600;{% if task.is_overdue %}color:var(--danger){% else %}color:var(--primary){% endif %};margin-top:4px">
+              {% if task.due_date %}{{ task.due_date|date:"F d, Y" }}{% if task.is_overdue %} <i class="bi bi-exclamation-triangle-fill"></i>{% endif %}{% else %}Not set{% endif %}
+            </div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Completion Date</div>
+            <div style="font-size:13px;font-weight:600;color:var(--success);margin-top:4px">{{ task.completion_date|date:"F d, Y"|default:"—" }}</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Created By</div>
+            <div style="font-size:13px;font-weight:600;color:var(--primary);margin-top:4px">{{ task.created_by.get_full_name|default:task.created_by.username }}</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Created</div>
+            <div style="font-size:13px;font-weight:600;color:var(--primary);margin-top:4px">{{ task.created_at|date:"M d, Y" }}</div>
+          </div>
+          <div class="col-md-4">
+            <div style="font-size:11px;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">Last Updated</div>
+            <div style="font-size:13px;font-weight:600;color:var(--primary);margin-top:4px">{{ task.updated_at|date:"M d, Y" }}</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Progress Update -->
+    {% if user.can_manage_tasks or user in task.assigned_officers.all %}
+    <div class="card mb-3">
+      <div class="card-header-custom"><h6><i class="bi bi-speedometer me-2"></i>Update Progress</h6></div>
+      <div class="p-4">
+        <form method="post" action="{% url 'tasks:update_progress' task.pk %}">
+          {% csrf_token %}
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:13px">Progress: <span id="progressVal">{{ task.progress }}</span>%</label>
+            <input type="range" name="progress" class="form-range" min="0" max="100" value="{{ task.progress }}" oninput="document.getElementById('progressVal').textContent=this.value">
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" style="font-size:13px">Status</label>
+            {{ progress_form.status }}
+          </div>
+          <button type="submit" class="btn-primary-custom"><i class="bi bi-arrow-up-circle me-1"></i>Update Progress</button>
+        </form>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- Comments -->
+    <div class="card mb-3">
+      <div class="card-header-custom"><h6><i class="bi bi-chat-left-text me-2"></i>Comments & Remarks</h6></div>
+      <div class="p-4">
+        {% for comment in task.comments.all %}
+        <div class="d-flex gap-3 mb-3">
+          <div class="officer-avatar flex-shrink-0" style="width:34px;height:34px">{{ comment.author.first_name|first }}{{ comment.author.last_name|first }}</div>
+          <div class="flex-grow-1">
+            <div class="d-flex align-items-center gap-2 mb-1">
+              <span style="font-size:13px;font-weight:600;color:var(--primary)">{{ comment.author.get_full_name }}</span>
+              <span style="font-size:11px;color:#94a3b8">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+            </div>
+            <p style="font-size:13px;color:#374151;background:#f8fafc;padding:10px 14px;border-radius:8px;margin:0">{{ comment.content }}</p>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted" style="font-size:13px">No comments yet.</p>
+        {% endfor %}
+        <hr>
+        <form method="post" action="{% url 'tasks:add_comment' task.pk %}">
+          {% csrf_token %}
+          {{ comment_form.content }}
+          <button type="submit" class="btn-primary-custom mt-2"><i class="bi bi-send me-1"></i>Add Comment</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Attachments -->
+    <div class="card">
+      <div class="card-header-custom"><h6><i class="bi bi-paperclip me-2"></i>Attachments</h6></div>
+      <div class="p-4">
+        {% for att in task.attachments.all %}
+        <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-file-earmark text-primary"></i>
+            <span style="font-size:13px">{{ att.filename }}</span>
+            <small class="text-muted">{{ att.created_at|date:"M d" }}</small>
+          </div>
+          <div class="d-flex gap-2">
+            <a href="{{ att.file.url }}" class="btn-sm-icon" target="_blank" title="Download"><i class="bi bi-download"></i></a>
+            <form method="post" action="{% url 'tasks:delete_attachment' att.pk %}" class="d-inline" data-confirm="Are you sure you want to delete attachment <strong>{{ att.filename }}</strong>?" data-confirm-title="Delete Attachment" data-confirm-btn="Delete">
+              {% csrf_token %}
+              <button type="submit" class="btn-sm-icon" style="color:#ef4444" title="Delete"><i class="bi bi-trash"></i></button>
+            </form>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted" style="font-size:13px">No attachments yet.</p>
+        {% endfor %}
+        <hr>
+        <form method="post" action="{% url 'tasks:add_attachment' task.pk %}" enctype="multipart/form-data">
+          {% csrf_token %}
+          {{ attachment_form.file }}
+          <button type="submit" class="btn-primary-custom mt-2"><i class="bi bi-upload me-1"></i>Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div class="col-md-4">
+    <!-- Assigned Officers -->
+    <div class="card mb-3">
+      <div class="card-header-custom"><h6><i class="bi bi-people me-2"></i>Assigned Officers</h6></div>
+      <div class="p-3">
+        {% for officer in task.assigned_officers.all %}
+        <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:#f8fafc;border-radius:8px;border:1px solid #e2e8f0">
+          <div>
+            <div style="font-size:13px;font-weight:600;color:var(--primary)">{{ officer.get_full_name|default:officer.username }}</div>
+            <div style="font-size:11px;color:#94a3b8">{{ officer.email }}</div>
+          </div>
+          <span class="badge bg-light text-primary border" style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px">
+            <i class="bi bi-person-badge me-1"></i>{{ officer.position_title }}
+          </span>
+        </div>
+        {% empty %}
+        <p class="text-muted" style="font-size:13px">No officers assigned.</p>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="card-header-custom"><h6><i class="bi bi-clock-history me-2"></i>Activity History</h6></div>
+      <div class="p-3">
+        {% for h in history %}
+        <div class="d-flex gap-2 mb-2" style="font-size:12px">
+          <div style="width:6px;height:6px;background:var(--accent);border-radius:50%;margin-top:5px;flex-shrink:0"></div>
+          <div>
+            <span class="fw-semibold">{{ h.field_changed }}</span>
+            {% if h.old_value %} changed from <em>{{ h.old_value }}</em>{% endif %}
+            {% if h.new_value %} to <em>{{ h.new_value }}</em>{% endif %}
+            <div style="color:#94a3b8;font-size:11px">{{ h.changed_by.get_full_name|default:"System" }} · {{ h.timestamp|date:"M d, H:i" }}</div>
+          </div>
+        </div>
+        {% empty %}
+        <p class="text-muted" style="font-size:12px">No history yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if user.can_manage_tasks and task.assigned_officers.exists %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const nudgeModal   = new bootstrap.Modal(document.getElementById('nudgeModal'));
+  const sendBtn      = document.getElementById('nudgeSendBtn');
+  const toggleAllBtn = document.getElementById('nudgeToggleAll');
+  const nudgeUrl     = '{% url "tasks:nudge" task.pk %}';
+  const csrfToken    = '{{ csrf_token }}';
+
+  // Open modal on nudge button click
+  document.getElementById('nudgeBtn').addEventListener('click', () => nudgeModal.show());
+
+  // Toggle all checkboxes
+  let allChecked = true;
+  toggleAllBtn.addEventListener('click', function () {
+    allChecked = !allChecked;
+    document.querySelectorAll('.nudge-officer-check').forEach(cb => {
+      cb.checked = allChecked;
+      updateRowStyle(cb);
+    });
+    this.textContent = allChecked ? 'Deselect All' : 'Select All';
+  });
+
+  // Style row when checkbox changes
+  document.querySelectorAll('.nudge-officer-check').forEach(cb => {
+    cb.addEventListener('change', function () { updateRowStyle(this); });
+  });
+
+  function updateRowStyle(cb) {
+    const label = cb.closest('label');
+    const icon  = label.querySelector('.nudge-check-icon');
+    if (cb.checked) {
+      label.style.background = '#f0fdf4';
+      label.style.borderColor = '#bbf7d0';
+      icon.style.display = '';
+    } else {
+      label.style.background = '#f9fafb';
+      label.style.borderColor = '#f0f0f0';
+      icon.style.display = 'none';
+    }
+  }
+
+  // Send nudge
+  sendBtn.addEventListener('click', function () {
+    const checkedIds = [...document.querySelectorAll('.nudge-officer-check:checked')].map(cb => cb.value);
+    if (checkedIds.length === 0) {
+      alert('Please select at least one officer to nudge.');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Sending...';
+
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    checkedIds.forEach(id => formData.append('officer_ids', id));
+    const msg = document.getElementById('nudgeMessage').value.trim();
+    if (msg) formData.append('message', msg);
+
+    fetch(nudgeUrl, { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(data => {
+        nudgeModal.hide();
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="bi bi-send-fill me-1"></i>Send Nudge';
+        document.getElementById('nudgeMessage').value = '';
+        if (data.ok) {
+          showNudgeToast(data.message, 'success');
+        } else {
+          showNudgeToast(data.error || 'Failed to send nudge.', 'danger');
+        }
+      })
+      .catch(() => {
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = '<i class="bi bi-send-fill me-1"></i>Send Nudge';
+        showNudgeToast('Server error. Please try again.', 'danger');
+      });
+  });
+
+  function showNudgeToast(message, type) {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+    const el = document.createElement('div');
+    el.className = `alert alert-${type} alert-dismissible fade show shadow-sm`;
+    el.style.borderRadius = '12px';
+    el.innerHTML = `
+      <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    container.appendChild(el);
+    setTimeout(() => { try { bootstrap.Alert.getOrCreateInstance(el).close(); } catch(e){} }, 5000);
+  }
+});
+</script>
+{% endif %}
+{% endblock %}

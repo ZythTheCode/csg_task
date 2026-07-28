@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Notifications{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <h5 class="mb-1 fw-bold" style="color:var(--primary)">Notifications</h5>
+    {% if unread_count > 0 %}<p class="text-muted mb-0" style="font-size:13px">{{ unread_count }} unread notification{{ unread_count|pluralize }}</p>{% endif %}
+  </div>
+  {% if unread_count > 0 %}
+  <form method="post" action="{% url 'notifications:mark_all_read' %}">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-outline-primary btn-sm" style="border-radius:8px"><i class="bi bi-check-all me-1"></i>Mark All Read</button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="card">
+  <div class="p-3">
+    {% for notif in notifications %}
+    <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
+      <div class="notif-icon bg-{{ notif.color }}-subtle">
+        <i class="bi {{ notif.icon }} text-{{ notif.color }}"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h6 class="mb-1">{{ notif.title }} {% if not notif.is_read %}<span class="badge bg-primary" style="font-size:9px;border-radius:10px">New</span>{% endif %}</h6>
+            <p class="mb-1">{{ notif.message }}</p>
+            {% if notif.related_task %}
+            <a href="{% url 'tasks:detail' notif.related_task.pk %}" style="font-size:11px;color:var(--accent)"><i class="bi bi-link-45deg"></i> View Task: {{ notif.related_task.task_number }}</a>
+            {% endif %}
+          </div>
+          <div class="d-flex flex-column align-items-end gap-1 ms-3">
+            <span class="notif-time">{{ notif.created_at|date:"M d, H:i" }}</span>
+            {% if not notif.is_read %}
+            <form method="post" action="{% url 'notifications:mark_read' notif.pk %}">
+              {% csrf_token %}
+              <button type="submit" class="btn btn-link p-0" style="font-size:11px;color:var(--accent)">Mark read</button>
+            </form>
+            {% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="empty-state"><i class="bi bi-bell-slash text-muted"></i><h6 class="text-muted mt-2">No notifications</h6></div>
+    {% endfor %}
+    {% if is_paginated %}
+    <div class="d-flex justify-content-center mt-3">
+      <nav>
+        <ul class="pagination pagination-sm mb-0">
+          {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a></li>{% endif %}
+          <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+          {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a></li>{% endif %}
+        </ul>
+      </nav>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends 'base.html' %}{% block title %}Settings{% endblock %}{% block content %}
+<h5 class="mb-4 fw-bold" style="color:var(--primary)"><i class="bi bi-gear me-2"></i>System Settings</h5>
+<div class="row justify-content-center"><div class="col-md-8">
+<div class="card p-4">
+  <h6 class="fw-bold mb-3">General Information</h6>
+  <div class="row g-3">
+    <div class="col-md-6"><label class="form-label" style="font-size:13px">Organization Name</label><input class="form-control" value="CSG - Central Student Government" readonly></div>
+    <div class="col-md-6"><label class="form-label" style="font-size:13px">Academic Year</label><input class="form-control" value="2025-2026" readonly></div>
+    <div class="col-md-6"><label class="form-label" style="font-size:13px">Admin Email</label><input class="form-control" value="{{ user.email }}"></div>
+    <div class="col-md-6"><label class="form-label" style="font-size:13px">System Version</label><input class="form-control" value="1.0.0" readonly></div>
+  </div>
+  <hr>
+  <h6 class="fw-bold mb-3">Database</h6>
+  <p class="text-muted" style="font-size:13px"><i class="bi bi-database me-2"></i>PostgreSQL 15.4 · localhost:5432 / csg_db</p>
+  <hr>
+  <h6 class="fw-bold mb-3">Quick Links</h6>
+  <div class="d-flex gap-2 flex-wrap">
+    <a href="/admin/" class="btn btn-outline-primary btn-sm" style="border-radius:8px"><i class="bi bi-shield-lock me-1"></i>Django Admin</a>
+    <a href="{% url 'officers:position_list' %}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px"><i class="bi bi-briefcase me-1"></i>Positions</a>
+  </div>
+</div></div></div>{% endblock %}
