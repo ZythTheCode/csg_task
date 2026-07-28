@@ -25,7 +25,10 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         ctx['page_title'] = 'Reports'
         ctx['status_choices'] = Task.STATUS_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
-        ctx['officers'] = Officer.objects.select_related('user').all()
+        officers_qs = Officer.objects.select_related('user')
+        if self.request.user.organization:
+            officers_qs = officers_qs.filter(user__organization=self.request.user.organization)
+        ctx['officers'] = officers_qs.all()
 
         # Apply filters
         filters = self._get_filters()
@@ -55,6 +58,8 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_filtered_tasks(self, filters):
         qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
+        if self.request.user.organization:
+            qs = qs.filter(organization=self.request.user.organization)
         if filters['officer']:
             qs = qs.filter(assigned_officers__id=filters['officer'])
         if filters['year']:
@@ -83,6 +88,8 @@ class ExportReportPDFView(LoginRequiredMixin, View):
         priority = request.GET.get('priority', '')
 
         qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
+        if request.user.organization:
+            qs = qs.filter(organization=request.user.organization)
         if officer_id:
             qs = qs.filter(assigned_officers__id=officer_id)
         if year:
@@ -155,6 +162,8 @@ class ExportReportExcelView(LoginRequiredMixin, View):
         priority = request.GET.get('priority', '')
 
         qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
+        if request.user.organization:
+            qs = qs.filter(organization=request.user.organization)
         if officer_id:
             qs = qs.filter(assigned_officers__id=officer_id)
         if year:

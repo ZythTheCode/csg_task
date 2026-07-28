@@ -20,6 +20,8 @@ class DashboardStatsAPIView(APIView):
             base_qs = Task.objects.filter(is_archived=False)
         else:
             base_qs = Task.objects.filter(assigned_officers=user, is_archived=False)
+        if user.organization:
+            base_qs = base_qs.filter(organization=user.organization)
 
         return Response({
             'active': base_qs.filter(status__in=['pending', 'not_started', 'in_progress', 'waiting_approval']).count(),
@@ -42,6 +44,8 @@ class DashboardChartsAPIView(APIView):
             base_qs = Task.objects.filter(is_archived=False)
         else:
             base_qs = Task.objects.filter(assigned_officers=user, is_archived=False)
+        if user.organization:
+            base_qs = base_qs.filter(organization=user.organization)
 
         today = timezone.now().date()
 
@@ -130,6 +134,8 @@ class TaskListAPIView(APIView):
             tasks = Task.objects.filter(is_archived=False)
         else:
             tasks = Task.objects.filter(assigned_officers=user, is_archived=False)
+        if user.organization:
+            tasks = tasks.filter(organization=user.organization)
 
         data = []
         for t in tasks[:50]:

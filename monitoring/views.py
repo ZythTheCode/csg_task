@@ -16,14 +16,22 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
         today = timezone.now().date()
         ctx['page_title'] = 'Monitoring Dashboard'
 
+        org = self.request.user.organization
+        officers_qs = Officer.objects.select_related('user', 'position')
+        if org:
+            officers_qs = officers_qs.filter(user__organization=org)
+            tasks_base_qs = Task.objects.filter(organization=org)
+        else:
+            tasks_base_qs = Task.objects.all()
+
         # Officer productivity
         officers_data = []
-        for officer in Officer.objects.select_related('user', 'position'):
+        for officer in officers_qs:
             user = officer.user
-            total = Task.objects.filter(assigned_officers=user).count()
-            completed = Task.objects.filter(assigned_officers=user, status='completed').count()
-            active = Task.objects.filter(assigned_officers=user, status__in=['in_progress', 'pending', 'not_started']).count()
-            overdue = Task.objects.filter(assigned_officers=user, status='overdue').count()
+            total = tasks_base_qs.filter(assigned_officers=user).count()
+            completed = tasks_base_qs.filter(assigned_officers=user, status='completed').count()
+            active = tasks_base_qs.filter(assigned_officers=user, status__in=['in_progress', 'pending', 'not_started']).count()
+            overdue = tasks_base_qs.filter(assigned_officers=user, status='overdue').count()
             rate = round((completed / total * 100), 1) if total > 0 else 0
             officers_data.append({
                 'officer': officer,
@@ -37,7 +45,7 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
         ctx['officers_data'] = officers_data
 
         # Upcoming deadlines (next 7 days)
-        ctx['upcoming_deadlines'] = Task.objects.filter(
+        ctx['upcoming_deadlines'] = tasks_base_qs.filter(
             due_date__gte=today,
             due_date__lte=today + datetime.timedelta(days=7),
             status__in=['pending', 'not_started', 'in_progress'],
@@ -45,14 +53,14 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
         ).prefetch_related('assigned_officers').order_by('due_date')
 
         # Delayed tasks
-        ctx['delayed_tasks'] = Task.objects.filter(
+        ctx['delayed_tasks'] = tasks_base_qs.filter(
             status='overdue',
             is_archived=False
         ).prefetch_related('assigned_officers').order_by('due_date')
 
         # Overall stats
-        total_tasks = Task.objects.filter(is_archived=False).count()
-        completed_tasks = Task.objects.filter(status='completed').count()
+        total_tasks = tasks_base_qs.filter(is_archived=False).count()
+        completed_tasks = tasks_base_qs.filter(status='completed', is_archived=False).count()
         ctx['overall_completion_rate'] = round((completed_tasks / total_tasks * 100), 1) if total_tasks > 0 else 0
         ctx['total_tasks'] = total_tasks
         ctx['completed_tasks'] = completed_tasks

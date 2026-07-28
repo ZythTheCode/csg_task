@@ -55,8 +55,9 @@ class OfficerForm(forms.ModelForm):
             'student_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2024-0001'}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        self.user_creator = user
         self.fields['position'].required = False
 
         # Only show positions not already assigned to another officer.
@@ -73,6 +74,8 @@ class OfficerForm(forms.ModelForm):
 
         from .models import Position as PositionModel
         available_qs = PositionModel.objects.exclude(pk__in=taken_ids)
+        if self.user_creator and self.user_creator.organization:
+            available_qs = available_qs.filter(organization=self.user_creator.organization)
         self.fields['position'].queryset = available_qs
 
         if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
@@ -123,9 +126,11 @@ class OfficerForm(forms.ModelForm):
                 last_name=last_name,
                 role=role
             )
+            if self.user_creator and getattr(self.user_creator, 'organization', None):
+                user.organization = self.user_creator.organization
             if self.cleaned_data.get('profile_picture'):
                 user.profile_picture = self.cleaned_data.get('profile_picture')
-                user.save()
+            user.save()
             officer.user = user
 
         if commit:

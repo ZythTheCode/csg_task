@@ -14,7 +14,10 @@ class OfficerListView(LoginRequiredMixin, ListView):
     context_object_name = 'officers'
 
     def get_queryset(self):
-        return Officer.objects.select_related('user', 'position').order_by('user__last_name')
+        qs = Officer.objects.select_related('user', 'position').order_by('user__last_name')
+        if self.request.user.organization:
+            qs = qs.filter(user__organization=self.request.user.organization)
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -26,6 +29,12 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
     model = Officer
     template_name = 'officers/detail.html'
     context_object_name = 'officer'
+
+    def get_queryset(self):
+        qs = Officer.objects.select_related('user', 'position')
+        if self.request.user.organization:
+            qs = qs.filter(user__organization=self.request.user.organization)
+        return qs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -51,6 +60,11 @@ class OfficerCreateView(LoginRequiredMixin, CreateView):
             return redirect('officers:list')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = 'Add Officer'
@@ -63,6 +77,12 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
     form_class = OfficerForm
     template_name = 'officers/form.html'
 
+    def get_queryset(self):
+        qs = Officer.objects.select_related('user', 'position')
+        if self.request.user.organization:
+            qs = qs.filter(user__organization=self.request.user.organization)
+        return qs
+
     def get_success_url(self):
         return reverse_lazy('officers:detail', kwargs={'pk': self.object.pk})
 
@@ -71,6 +91,11 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
             messages.error(request, 'Permission denied.')
             return redirect('officers:list')
         return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -82,6 +107,12 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
 class OfficerDeleteView(LoginRequiredMixin, DeleteView):
     model = Officer
     success_url = reverse_lazy('officers:list')
+
+    def get_queryset(self):
+        qs = Officer.objects.select_related('user', 'position')
+        if self.request.user.organization:
+            qs = qs.filter(user__organization=self.request.user.organization)
+        return qs
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_officers:
@@ -110,6 +141,12 @@ class PositionListView(LoginRequiredMixin, ListView):
     template_name = 'officers/positions.html'
     context_object_name = 'positions'
 
+    def get_queryset(self):
+        qs = Position.objects.all()
+        if self.request.user.organization:
+            qs = qs.filter(organization=self.request.user.organization)
+        return qs
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = 'Positions'
@@ -128,6 +165,10 @@ class PositionCreateView(LoginRequiredMixin, CreateView):
             return redirect('officers:position_list')
         return super().dispatch(request, *args, **kwargs)
 
+    def form_valid(self, form):
+        form.instance.organization = self.request.user.organization
+        return super().form_valid(form)
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = 'Add Position'
@@ -140,6 +181,12 @@ class PositionUpdateView(LoginRequiredMixin, UpdateView):
     form_class = PositionForm
     template_name = 'officers/position_form.html'
     success_url = reverse_lazy('officers:position_list')
+
+    def get_queryset(self):
+        qs = Position.objects.all()
+        if self.request.user.organization:
+            qs = qs.filter(organization=self.request.user.organization)
+        return qs
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_officers:
@@ -158,6 +205,12 @@ class PositionDeleteView(LoginRequiredMixin, DeleteView):
     model = Position
     template_name = 'officers/position_confirm_delete.html'
     success_url = reverse_lazy('officers:position_list')
+
+    def get_queryset(self):
+        qs = Position.objects.all()
+        if self.request.user.organization:
+            qs = qs.filter(organization=self.request.user.organization)
+        return qs
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_officers:
