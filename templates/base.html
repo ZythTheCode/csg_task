@@ -53,6 +53,12 @@
     </a>
     {% endif %}
 
+    {% if user.is_super_admin %}
+    <a href="{% url 'pending_organizations' %}" class="sidebar-link {% if request.resolver_match.url_name == 'pending_organizations' %}active{% endif %}" title="Organizations">
+      <i class="bi bi-building"></i> <span class="sidebar-link-text">Organizations</span>
+    </a>
+    {% endif %}
+
     <div class="nav-section-label">Account</div>
     <a href="{% url 'notifications:list' %}" class="sidebar-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}" title="Notifications">
       <i class="bi bi-bell"></i> <span class="sidebar-link-text">Notifications</span>

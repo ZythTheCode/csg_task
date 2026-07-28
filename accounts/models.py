@@ -5,11 +5,19 @@ from django.db import models
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('super_admin', 'Super Admin'),
+        ('org_admin', 'Organization Admin'),
         ('president', 'President'),
         ('executive', 'Executive Officer'),
         ('committee_head', 'Committee Head'),
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='committee_head')
+    organization = models.ForeignKey(
+        'organizations.Organization',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='users'
+    )
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True)
     bio = models.TextField(blank=True)
@@ -29,6 +37,10 @@ class User(AbstractUser):
         return self.role == 'super_admin'
 
     @property
+    def is_org_admin(self):
+        return self.role == 'org_admin'
+
+    @property
     def is_president(self):
         return self.role == 'president'
 
@@ -38,12 +50,12 @@ class User(AbstractUser):
 
     @property
     def can_manage_tasks(self):
-        return self.role == 'super_admin'
+        return self.role in ['super_admin', 'org_admin']
 
     @property
     def can_view_reports(self):
-        return self.role in ['super_admin', 'president']
+        return self.role in ['super_admin', 'org_admin', 'president']
 
     @property
     def can_manage_officers(self):
-        return self.role == 'super_admin'
+        return self.role in ['super_admin', 'org_admin']

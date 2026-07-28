@@ -15,14 +15,17 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         active_statuses = ['not_started', 'processing', 'to_advisers', 'accounting', 'oca', 'osas', 'ppss', 'supply']
 
-        # Update overdue statuses
-        Task.objects.filter(
-            due_date__lt=today,
-            status__in=active_statuses
-        ).update(status='overdue')
+        # Update overdue statuses - only for the relevant organization
+        overdue_qs = Task.objects.filter(due_date__lt=today, status__in=active_statuses)
+        if user.organization:
+            overdue_qs = overdue_qs.filter(organization=user.organization)
+        overdue_qs.update(status='overdue')
 
         if user.can_manage_tasks:
-            base_qs = Task.objects.filter(is_archived=False)
+            if user.organization:
+                base_qs = Task.objects.filter(organization=user.organization, is_archived=False)
+            else:
+                base_qs = Task.objects.filter(is_archived=False)
         else:
             base_qs = Task.objects.filter(assigned_officers=user, is_archived=False)
 
@@ -36,7 +39,11 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             status__in=active_statuses
         ).count()
         ctx['recent_tasks'] = base_qs.select_related('created_by').prefetch_related('assigned_officers')[:10]
-        ctx['total_officers'] = Officer.objects.count()
+        
+        if user.organization:
+            ctx['total_officers'] = Officer.objects.filter(user__organization=user.organization).count()
+        else:
+            ctx['total_officers'] = Officer.objects.count()
         return ctx
 
 

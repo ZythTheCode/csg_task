@@ -12,6 +12,7 @@ urlpatterns = [
     path('monitoring/', include('monitoring.urls')),
     path('reports/', include('reports.urls')),
     path('notifications/', include('notifications.urls')),
+    path('organizations/', include('organizations.urls')),
     path('api/', include('tasks.api_urls')),
 ]
 

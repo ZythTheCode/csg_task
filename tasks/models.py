@@ -49,6 +49,13 @@ class Task(models.Model):
     due_date = models.DateField(null=True, blank=True)
     completion_date = models.DateField(null=True, blank=True)
     progress = models.IntegerField(default=0)
+    organization = models.ForeignKey(
+        'organizations.Organization',
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name='tasks'
+    )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_tasks')
     assigned_officers = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
