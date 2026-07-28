@@ -23,8 +23,13 @@ class TaskForm(forms.ModelForm):
             'progress': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 100}),
         }
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if user:
+            if user.organization:
+                self.fields['assigned_officers'].queryset = User.objects.filter(is_active=True, organization=user.organization)
+            else:
+                self.fields['assigned_officers'].queryset = User.objects.filter(is_active=True)
         if self.instance and self.instance.pk:
             self.fields['assigned_officers'].initial = self.instance.assigned_officers.all()
 

@@ -23,7 +23,10 @@ class TaskListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        qs = Task.objects.filter(is_archived=False)
+        if self.request.user.organization:
+            qs = Task.objects.filter(is_archived=False, organization=self.request.user.organization)
+        else:
+            qs = Task.objects.filter(is_archived=False)
 
         if not self.request.user.can_manage_tasks:
             qs = qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
@@ -116,7 +119,10 @@ class TaskListView(LoginRequiredMixin, ListView):
         ctx['page_title'] = 'Task Management'
         ctx['status_choices'] = Task.STATUS_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
-        ctx['officers_list'] = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
+        if self.request.user.organization:
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization=self.request.user.organization).order_by('first_name', 'last_name')
+        else:
+            ctx['officers_list'] = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
         ctx['current_filters'] = {
             'q': self.request.GET.get('q', ''),
             'status': self.request.GET.get('status', ''),
@@ -156,12 +162,18 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     template_name = 'tasks/form.html'
     success_url = reverse_lazy('tasks:list')
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
+
     def dispatch(self, request, *args, **kwargs):
         # All authenticated officers can create tasks
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
+        form.instance.organization = self.request.user.organization
         response = super().form_valid(form)
         task = self.object
         # Create assignments and notifications
@@ -195,6 +207,11 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     model = Task
     form_class = TaskForm
     template_name = 'tasks/form.html'
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_tasks:
@@ -272,7 +289,10 @@ class TaskBoardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        base_qs = Task.objects.filter(is_archived=False)
+        if self.request.user.organization:
+            base_qs = Task.objects.filter(is_archived=False, organization=self.request.user.organization)
+        else:
+            base_qs = Task.objects.filter(is_archived=False)
 
         if not self.request.user.can_manage_tasks:
             base_qs = base_qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
@@ -304,7 +324,10 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         ctx['page_title'] = 'Task Kanban Board'
         ctx['status_columns'] = columns
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
-        ctx['officers_list'] = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
+        if self.request.user.organization:
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization=self.request.user.organization).order_by('first_name', 'last_name')
+        else:
+            ctx['officers_list'] = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
         ctx['current_filters'] = {'q': q, 'priority': priority, 'officer': officers}
         return ctx
 
