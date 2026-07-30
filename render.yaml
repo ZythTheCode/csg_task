@@ -2,11 +2,13 @@ databases:
   - name: csg_db
     databaseName: csg_db
     user: csg_user
+    plan: free
 
 services:
   - type: web
     name: csg-web
     env: python
+    plan: free
     buildCommand: "./build.sh"
     startCommand: "gunicorn csg_project.wsgi:application"
     envVars:
