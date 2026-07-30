@@ -6,72 +6,87 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}{{ page_title|default:"CSG Task System" }}{% endblock %} | CSG Task Management</title>
 <meta name="description" content="CSG Task Management and Monitoring System for university student government">
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🎓</text></svg>">
+<link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<script src="https://unpkg.com/lucide@latest"></script>
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 {% block extra_css %}{% endblock %}
 </head>
 <body>
 
+<!-- Ambient Animated Background Blobs -->
+<div class="bg-ambient-blob bg-blob-1"></div>
+<div class="bg-ambient-blob bg-blob-2"></div>
+<div class="bg-ambient-blob bg-blob-3"></div>
+
 <div class="overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
 <!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
-  <div class="sidebar-brand">
-    <div class="brand-logo">CSG</div>
-    <div>
+  <div class="sidebar-brand position-relative">
+    <div class="brand-logo-container position-relative">
+      <div class="brand-logo">CSG</div>
+      <button type="button" class="sidebar-expand-btn d-none d-lg-flex" onclick="toggleSidebarMin()" title="Expand Sidebar">
+        <i data-lucide="chevrons-right" style="width:18px;height:18px"></i>
+      </button>
+    </div>
+    <div class="sidebar-brand-text">
       <h6>CSG System</h6>
       <small>Task Management</small>
     </div>
+    <button type="button" class="sidebar-collapse-btn d-none d-lg-flex ms-auto" onclick="toggleSidebarMin()" title="Collapse Sidebar">
+      <i data-lucide="chevron-left" style="width:16px;height:16px"></i>
+    </button>
+    <button type="button" class="btn-close d-lg-none ms-auto" onclick="closeSidebar()" aria-label="Close"></button>
   </div>
 
   <nav class="sidebar-nav">
     <div class="nav-section-label">Main</div>
     <a href="{% url 'core:dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'core' %}active{% endif %}" title="Dashboard">
-      <i class="bi bi-speedometer2"></i> <span class="sidebar-link-text">Dashboard</span>
+      <i data-lucide="layout-dashboard"></i> <span class="sidebar-link-text">Dashboard</span>
     </a>
     <a href="{% url 'tasks:list' %}" class="sidebar-link {% if request.resolver_match.app_name == 'tasks' %}active{% endif %}" title="Tasks">
-      <i class="bi bi-clipboard-check"></i> <span class="sidebar-link-text">Tasks</span>
+      <i data-lucide="check-square"></i> <span class="sidebar-link-text">Tasks</span>
     </a>
     <a href="{% url 'monitoring:dashboard' %}" class="sidebar-link {% if request.resolver_match.app_name == 'monitoring' %}active{% endif %}" title="Monitoring">
-      <i class="bi bi-bar-chart-line"></i> <span class="sidebar-link-text">Monitoring</span>
+      <i data-lucide="bar-chart-3"></i> <span class="sidebar-link-text">Monitoring</span>
     </a>
     {% if user.can_view_reports %}
     <a href="{% url 'reports:dashboard' %}" class="sidebar-link {% if request.resolver_match.app_name == 'reports' %}active{% endif %}" title="Reports">
-      <i class="bi bi-file-earmark-bar-graph"></i> <span class="sidebar-link-text">Reports</span>
+      <i data-lucide="file-text"></i> <span class="sidebar-link-text">Reports</span>
     </a>
     {% endif %}
 
     {% if user.can_manage_officers %}
     <div class="nav-section-label">Management</div>
     <a href="{% url 'officers:list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'officers' %}active{% endif %}" title="Officers">
-      <i class="bi bi-people"></i> <span class="sidebar-link-text">Officers</span>
+      <i data-lucide="users"></i> <span class="sidebar-link-text">Officers</span>
     </a>
     <a href="{% url 'officers:position_list' %}" class="sidebar-link {% if 'position' in request.resolver_match.url_name %}active{% endif %}" title="Positions">
-      <i class="bi bi-briefcase"></i> <span class="sidebar-link-text">Positions</span>
+      <i data-lucide="briefcase"></i> <span class="sidebar-link-text">Positions</span>
     </a>
     {% endif %}
 
     {% if user.is_super_admin %}
     <a href="{% url 'pending_organizations' %}" class="sidebar-link {% if request.resolver_match.url_name == 'pending_organizations' %}active{% endif %}" title="Organizations">
-      <i class="bi bi-building"></i> <span class="sidebar-link-text">Organizations</span>
+      <i data-lucide="building"></i> <span class="sidebar-link-text">Organizations</span>
     </a>
     {% endif %}
 
     <div class="nav-section-label">Account</div>
     <a href="{% url 'notifications:list' %}" class="sidebar-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}" title="Notifications">
-      <i class="bi bi-bell"></i> <span class="sidebar-link-text">Notifications</span>
+      <i data-lucide="bell"></i> <span class="sidebar-link-text">Notifications</span>
       {% if unread_notifications_count > 0 %}
       <span class="badge-count">{{ unread_notifications_count }}</span>
       {% endif %}
     </a>
     <a href="{% url 'accounts:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" title="Profile">
-      <i class="bi bi-person-circle"></i> <span class="sidebar-link-text">Profile</span>
+      <i data-lucide="user"></i> <span class="sidebar-link-text">Profile</span>
     </a>
     {% if user.is_super_admin %}
     <a href="{% url 'core:settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" title="Settings">
-      <i class="bi bi-gear"></i> <span class="sidebar-link-text">Settings</span>
+      <i data-lucide="settings"></i> <span class="sidebar-link-text">Settings</span>
     </a>
     {% endif %}
   </nav>
@@ -84,7 +99,7 @@
         <div class="user-role">{{ user.get_role_display }}</div>
       </div>
       <a href="{% url 'accounts:logout' %}" class="ms-auto topbar-icon-btn" title="Logout">
-        <i class="bi bi-box-arrow-right"></i>
+        <i data-lucide="log-out"></i>
       </a>
     </div>
   </div>
@@ -95,11 +110,8 @@
   <!-- TOPBAR -->
   <header class="topbar">
     <div class="d-flex align-items-center gap-3">
-      <button class="topbar-icon-btn d-none d-lg-flex" onclick="toggleSidebarMin()" id="desktopSidebarToggle" title="Minimize / Expand Sidebar">
-        <i class="bi bi-layout-sidebar-inset" style="font-size:18px"></i>
-      </button>
       <button class="topbar-icon-btn d-lg-none" onclick="toggleSidebarMobile()" id="mobileMenuToggle" title="Toggle Navigation Menu">
-        <i class="bi bi-list" style="font-size:18px"></i>
+        <i data-lucide="menu"></i>
       </button>
       <div>
         <div class="page-breadcrumb">CSG System / {{ page_title|default:"Dashboard" }}</div>
@@ -108,7 +120,7 @@
     </div>
     <div class="topbar-right">
       <a href="{% url 'notifications:list' %}" class="topbar-icon-btn" title="Notifications">
-        <i class="bi bi-bell"></i>
+        <i data-lucide="bell"></i>
         {% if unread_notifications_count > 0 %}
         <span class="topbar-badge">{{ unread_notifications_count }}</span>
         {% endif %}
@@ -121,12 +133,12 @@
           {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
           {% endif %}
         </div>
-        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:12px;min-width:180px;margin-top:8px">
-          <li><span class="dropdown-item-text text-muted" style="font-size:11px">{{ user.get_role_display }}</span></li>
-          <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Profile</a></li>
-          <li><a class="dropdown-item" href="{% url 'accounts:password_change' %}"><i class="bi bi-shield-lock me-2"></i>Change Password</a></li>
+        <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0" style="border-radius:16px;min-width:190px;margin-top:10px;padding:8px">
+          <li><span class="dropdown-item-text text-muted fw-semibold" style="font-size:11px">{{ user.get_role_display }}</span></li>
+          <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:profile' %}"><i data-lucide="user" class="me-2" style="width:16px;height:16px"></i>Profile</a></li>
+          <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:password_change' %}"><i data-lucide="shield-check" class="me-2" style="width:16px;height:16px"></i>Change Password</a></li>
           <li><hr class="dropdown-divider"></li>
-          <li><a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+          <li><a class="dropdown-item rounded-2 py-2 text-danger" href="{% url 'accounts:logout' %}"><i data-lucide="log-out" class="me-2" style="width:16px;height:16px"></i>Logout</a></li>
         </ul>
       </div>
     </div>
@@ -154,14 +166,14 @@
 <!-- GLOBAL ACTION CONFIRMATION MODAL -->
 <div class="modal fade" id="globalConfirmModal" tabindex="-1" aria-labelledby="globalConfirmModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width:440px">
-    <div class="modal-content border-0 shadow-lg" style="border-radius:18px;overflow:hidden">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:24px;overflow:hidden">
       <div class="modal-header border-0 pb-0 pt-4 px-4">
         <div class="d-flex align-items-center gap-3">
-          <div id="confirmModalIconContainer" class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:46px;height:46px;border-radius:14px;background:#fee2e2;color:#dc2626;font-size:22px">
+          <div id="confirmModalIconContainer" class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:48px;height:48px;border-radius:16px;background:#FEE2E2;color:#EF4444;font-size:22px">
             <i class="bi bi-exclamation-triangle-fill" id="confirmModalIcon"></i>
           </div>
           <div>
-            <h6 class="modal-title fw-bold" id="globalConfirmModalLabel" style="color:var(--primary);font-size:16px">Confirm Action</h6>
+            <h6 class="modal-title fw-bold" id="globalConfirmModalLabel" style="color:var(--slate-800);font-size:16px">Confirm Action</h6>
             <small class="text-muted" id="confirmModalSubtitle">Please review before proceeding</small>
           </div>
         </div>
@@ -171,17 +183,23 @@
         Are you sure you want to perform this action?
       </div>
       <div class="modal-footer border-0 px-4 pb-4 pt-2 gap-2">
-        <button type="button" class="btn btn-light px-3" data-bs-dismiss="modal" style="border-radius:10px;font-weight:500;font-size:13px;border:1px solid #e2e8f0">Cancel</button>
-        <button type="button" class="btn btn-danger px-4" id="confirmModalBtn" style="border-radius:10px;font-weight:600;font-size:13px;box-shadow:0 4px 12px rgba(220,38,38,0.25)">Confirm</button>
+        <button type="button" class="btn btn-secondary-custom px-4" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" class="btn btn-danger px-4" id="confirmModalBtn" style="border-radius:30px;font-weight:700;font-size:13.5px;box-shadow:0 4px 14px rgba(239,68,68,0.3)">Confirm</button>
       </div>
     </div>
   </div>
 </div>
 
+{% include 'tasks/_modal_detail.html' %}
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 {% block extra_js %}{% endblock %}
 <script>
+if (window.lucide) {
+  lucide.createIcons();
+}
+
 function toggleSidebarMin() {
   const isMin = document.body.classList.toggle('sidebar-minimized');
   localStorage.setItem('csg_sidebar_minimized', isMin ? 'true' : 'false');
@@ -200,6 +218,23 @@ function closeSidebar() {
 if (localStorage.getItem('csg_sidebar_minimized') === 'true') {
   document.body.classList.add('sidebar-minimized');
 }
+// Smooth page transition navigation
+document.addEventListener('click', function(e) {
+  const link = e.target.closest('a');
+  if (!link) return;
+  const href = link.getAttribute('href');
+  if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-bs-dismiss') || link.classList.contains('no-transition')) {
+    return;
+  }
+  if (link.hostname === window.location.hostname && href !== window.location.href) {
+    e.preventDefault();
+    document.body.classList.add('page-transitioning');
+    setTimeout(function() {
+      window.location.href = href;
+    }, 180);
+  }
+});
+
 // Auto-dismiss alerts
 setTimeout(() => { document.querySelectorAll('.alert').forEach(a => { try { bootstrap.Alert.getOrCreateInstance(a).close(); } catch(e){} }); }, 4000);
 
@@ -276,5 +311,8 @@ document.addEventListener('submit', function(e) {
   }
 });
 </script>
+
+{% block modals %}{% endblock %}
+
 </body>
 </html>

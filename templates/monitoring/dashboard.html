@@ -5,21 +5,21 @@
 <div class="row g-3 mb-4">
   <div class="col-md-4">
     <div class="stat-card success">
-      <div class="stat-icon"><i class="bi bi-check-circle"></i></div>
+      <div class="stat-icon"><i data-lucide="percent"></i></div>
       <div class="stat-value">{{ overall_completion_rate }}%</div>
       <div class="stat-label">Overall Completion Rate</div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="stat-card primary">
-      <div class="stat-icon"><i class="bi bi-clipboard-check"></i></div>
+      <div class="stat-icon"><i data-lucide="check-square"></i></div>
       <div class="stat-value">{{ completed_tasks }}/{{ total_tasks }}</div>
       <div class="stat-label">Tasks Completed</div>
     </div>
   </div>
   <div class="col-md-4">
     <div class="stat-card danger">
-      <div class="stat-icon"><i class="bi bi-exclamation-triangle"></i></div>
+      <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
       <div class="stat-value">{{ delayed_tasks|length }}</div>
       <div class="stat-label">Delayed Tasks</div>
     </div>
@@ -27,9 +27,9 @@
 </div>
 
 <!-- Officer Ranking -->
-<div class="card mb-4">
+<div class="table-custom-container mb-4">
   <div class="card-header-custom">
-    <h6><i class="bi bi-trophy me-2 text-warning"></i>Officer Productivity Ranking</h6>
+    <h6><i data-lucide="award" class="me-2" style="width:18px;height:18px;color:var(--warning)"></i>Officer Productivity Ranking</h6>
   </div>
   <div class="table-responsive">
     <table class="table-custom w-100">
@@ -48,26 +48,26 @@
             <div class="d-flex align-items-center gap-2">
               <div class="officer-avatar">{{ item.officer.user.first_name|first }}{{ item.officer.user.last_name|first }}</div>
               <div>
-                <div style="font-size:13px;font-weight:600">{{ item.officer.user.get_full_name }}</div>
-                <div style="font-size:11px;color:#94a3b8">{{ item.officer.position }}</div>
+                <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ item.officer.user.get_full_name }}</div>
+                <div style="font-size:11.5px;color:var(--slate-500)">{{ item.officer.position }}</div>
               </div>
             </div>
           </td>
           <td><span class="fw-bold">{{ item.total }}</span></td>
-          <td><span style="color:var(--success);font-weight:600">{{ item.completed }}</span></td>
-          <td><span style="color:var(--accent);font-weight:600">{{ item.active }}</span></td>
-          <td><span style="color:var(--danger);font-weight:600">{{ item.overdue }}</span></td>
+          <td><span style="color:var(--success);font-weight:700">{{ item.completed }}</span></td>
+          <td><span style="color:var(--primary);font-weight:700">{{ item.active }}</span></td>
+          <td><span style="color:var(--danger);font-weight:700">{{ item.overdue }}</span></td>
           <td style="min-width:140px">
             <div class="d-flex align-items-center gap-2">
               <div class="progress-custom flex-grow-1" style="height:8px">
                 <div class="progress-bar {% if item.completion_rate >= 75 %}bg-success{% elif item.completion_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ item.completion_rate }}%"></div>
               </div>
-              <span style="font-size:12px;font-weight:600">{{ item.completion_rate }}%</span>
+              <span style="font-size:12px;font-weight:800">{{ item.completion_rate }}%</span>
             </div>
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="7"><div class="empty-state"><i class="bi bi-people text-muted"></i><p class="text-muted">No officers found</p></div></td></tr>
+        <tr><td colspan="7"><div class="empty-state"><i data-lucide="users"></i><h6>No officers found</h6><p style="font-size:13px">Productivity details will show once officers are assigned to tasks.</p></div></td></tr>
         {% endfor %}
       </tbody>
     </table>
@@ -78,20 +78,20 @@
   <!-- Upcoming Deadlines -->
   <div class="col-md-12">
     <div class="card h-100">
-      <div class="card-header-custom"><h6><i class="bi bi-calendar-week me-2 text-warning"></i>Upcoming Deadlines (7 days)</h6></div>
+      <div class="card-header-custom"><h6><i data-lucide="calendar" class="me-2" style="width:18px;height:18px;color:var(--warning)"></i>Upcoming Deadlines (7 days)</h6></div>
       <div class="p-3">
         {% for task in upcoming_deadlines %}
-        <div class="d-flex align-items-start justify-content-between mb-3 pb-3" style="border-bottom:1px solid #f1f5f9">
+        <div class="d-flex align-items-start justify-content-between mb-3 pb-3" style="border-bottom:1px solid rgba(249, 168, 212, 0.15)">
           <div>
-            <div style="font-size:13px;font-weight:600;color:var(--primary)">{{ task.title|truncatechars:65 }}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ task.title|truncatechars:65 }}</div>
           </div>
           <div class="text-end">
-            <div style="font-size:12px;font-weight:600;color:var(--warning)">{{ task.due_date|date:"M d" }}</div>
-            <span class="badge-status badge-{{ task.status }}" style="font-size:10px">{{ task.get_status_display }}</span>
+            <div style="font-size:12px;font-weight:700;color:var(--warning)">{{ task.due_date|date:"M d" }}</div>
+            <span class="badge-status badge-{{ task.status }}" style="font-size:10.5px">{{ task.get_status_display }}</span>
           </div>
         </div>
         {% empty %}
-        <div class="empty-state"><i class="bi bi-calendar-check text-muted"></i><p class="text-muted small mt-2">No upcoming deadlines</p></div>
+        <div class="empty-state"><i data-lucide="calendar-check"></i><h6>No upcoming deadlines</h6><p style="font-size:13px">All scheduled deadlines are up to date.</p></div>
         {% endfor %}
       </div>
     </div>
@@ -100,20 +100,20 @@
 
 <!-- Delayed/Overdue Tasks -->
 {% if delayed_tasks %}
-<div class="card mt-3">
-  <div class="card-header-custom"><h6><i class="bi bi-exclamation-triangle me-2 text-danger"></i>Overdue Tasks</h6></div>
+<div class="table-custom-container mt-3">
+  <div class="card-header-custom"><h6><i data-lucide="alert-circle" class="me-2" style="width:18px;height:18px;color:var(--danger)"></i>Overdue Tasks</h6></div>
   <div class="table-responsive">
     <table class="table-custom w-100">
       <thead><tr><th>Task No.</th><th>Title</th><th>Assigned To</th><th>Due Date</th><th>Status</th></tr></thead>
       <tbody>
         {% for task in delayed_tasks %}
         <tr>
-          <td><span class="task-number">{{ task.task_number }}</span></td>
-          <td style="font-weight:600;font-size:13px">{{ task.title|truncatechars:40 }}</td>
-          <td>{% for o in task.assigned_officers.all|slice:":2" %}<span class="officer-avatar" style="width:24px;height:24px;font-size:9px">{{ o.first_name|first }}{{ o.last_name|first }}</span>{% endfor %}</td>
-          <td style="font-size:12px;color:var(--danger);font-weight:600">{{ task.due_date|date:"M d, Y" }}</td>
+          <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
+          <td style="font-weight:700;font-size:13.5px;color:var(--slate-800)">{{ task.title|truncatechars:40 }}</td>
+          <td>{% for o in task.assigned_officers.all|slice:":2" %}<span class="officer-avatar me-1" style="width:26px;height:26px;font-size:10px">{{ o.first_name|first }}{{ o.last_name|first }}</span>{% endfor %}</td>
+          <td style="font-size:12.5px;color:var(--danger);font-weight:700">{{ task.due_date|date:"M d, Y" }}</td>
           <td>
-            <span style="color:var(--danger);font-weight:600;font-size:13px">Overdue</span>
+            <span class="badge-status badge-overdue">Overdue</span>
           </td>
         </tr>
         {% endfor %}

@@ -22,4 +22,5 @@ urlpatterns = [
     path('export/pdf/', views.ExportTasksPDFView.as_view(), name='export_pdf'),
     path('export/excel/', views.ExportTasksExcelView.as_view(), name='export_excel'),
     path('<int:pk>/nudge/', views.NudgeOfficersView.as_view(), name='nudge'),
+    path('search-suggestions/', views.TaskSearchSuggestionsView.as_view(), name='search_suggestions'),
 ]

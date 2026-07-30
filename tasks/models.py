@@ -75,6 +75,9 @@ class Task(models.Model):
         return f"[{self.task_number}] {self.title}"
 
     def save(self, *args, **kwargs):
+        if self.status == 'completed':
+            self.progress = 100
+            
         if not self.task_number:
             year = timezone.now().year
             last = Task.objects.filter(task_number__startswith=f'CSG-{year}-').order_by('-task_number').first()

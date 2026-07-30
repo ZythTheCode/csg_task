@@ -3,12 +3,12 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <h5 class="mb-0 fw-bold" style="color:var(--primary)">Officers & User Accounts</h5>
+    <h5 class="mb-0 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Officers & User Accounts</h5>
     <small class="text-muted">Manage system users, assigned positions, and role permissions.</small>
   </div>
   {% if user.can_manage_officers %}
   <a href="{% url 'officers:create' %}" class="btn-primary-custom">
-    <i class="bi bi-plus-lg me-1"></i> Add Officer Account
+    <i data-lucide="user-plus" style="width:16px;height:16px"></i> Add Officer Account
   </a>
   {% endif %}
 </div>
@@ -16,31 +16,31 @@
 <div class="row g-3 mb-5">
   {% for officer in officers %}
   <div class="col-md-4 col-lg-3">
-    <div class="card h-100 text-center p-3" style="border-radius:14px;transition:all 0.2s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 30px rgba(0,0,0,0.12)'" onmouseout="this.style.transform='';this.style.boxShadow=''">
+    <div class="glass-card h-100 text-center p-4">
       {% if officer.user.profile_picture %}
-      <div class="mx-auto mb-3 shadow-sm border border-2 border-white" style="width:64px;height:64px;border-radius:18px;overflow:hidden">
+      <div class="mx-auto mb-3 shadow-sm border border-2 border-white" style="width:64px;height:64px;border-radius:20px;overflow:hidden">
         <img src="{{ officer.user.profile_picture.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
       </div>
       {% else %}
-      <div class="officer-avatar mx-auto mb-3" style="width:64px;height:64px;font-size:24px;border-radius:18px">{{ officer.user.first_name|first }}{{ officer.user.last_name|first }}</div>
+      <div class="officer-avatar mx-auto mb-3" style="width:64px;height:64px;font-size:22px;border-radius:20px">{{ officer.user.first_name|first }}{{ officer.user.last_name|first }}</div>
       {% endif %}
-      <h6 class="mb-1 fw-bold" style="color:var(--primary);font-size:14px">{{ officer.user.get_full_name }}</h6>
-      <div style="font-size:12px;color:var(--accent);font-weight:600">{{ officer.position|default:"—" }}</div>
-      <span class="badge bg-light text-muted border mt-1 mx-auto" style="font-size:10px;padding:3px 8px;border-radius:10px">
+      <h6 class="mb-1 fw-bold" style="color:var(--slate-800);font-size:14.5px">{{ officer.user.get_full_name }}</h6>
+      <div style="font-size:12px;color:var(--primary);font-weight:700">{{ officer.position|default:"—" }}</div>
+      <span class="badge bg-light text-muted border mt-2 mx-auto" style="font-size:10.5px;padding:4px 10px;border-radius:20px">
         {{ officer.user.get_role_display }}
       </span>
-      <div class="d-flex justify-content-center gap-3 mt-3 mb-3" style="font-size:12px">
-        <div><div class="fw-bold" style="color:var(--primary)">{{ officer.total_tasks }}</div><div class="text-muted">Total</div></div>
-        <div><div class="fw-bold" style="color:var(--success)">{{ officer.completed_tasks }}</div><div class="text-muted">Done</div></div>
-        <div><div class="fw-bold" style="color:var(--accent)">{{ officer.active_tasks }}</div><div class="text-muted">Active</div></div>
+      <div class="d-flex justify-content-center gap-3 mt-3 mb-3 p-2 rounded-3" style="font-size:12px;background:var(--pink-50)">
+        <div><div class="fw-bold" style="color:var(--slate-800)">{{ officer.total_tasks }}</div><div class="text-muted" style="font-size:11px">Total</div></div>
+        <div><div class="fw-bold" style="color:var(--success)">{{ officer.completed_tasks }}</div><div class="text-muted" style="font-size:11px">Done</div></div>
+        <div><div class="fw-bold" style="color:var(--primary)">{{ officer.active_tasks }}</div><div class="text-muted" style="font-size:11px">Active</div></div>
       </div>
       <div class="d-flex justify-content-center gap-2">
-        <a href="{% url 'officers:detail' officer.pk %}" class="btn-sm-icon" title="View"><i class="bi bi-eye"></i></a>
+        <a href="{% url 'officers:detail' officer.pk %}" class="btn-sm-icon" title="View"><i data-lucide="eye" style="width:14px;height:14px"></i></a>
         {% if user.can_manage_officers %}
-        <a href="{% url 'officers:edit' officer.pk %}" class="btn-sm-icon" title="Edit User & Position"><i class="bi bi-pencil"></i></a>
+        <a href="{% url 'officers:edit' officer.pk %}" class="btn-sm-icon" title="Edit User & Position"><i data-lucide="edit-3" style="width:14px;height:14px"></i></a>
         {% if officer.user != user %}
-        <button type="button" class="btn-sm-icon text-danger border-0 bg-transparent" data-bs-toggle="modal" data-bs-target="#deleteOfficerModal{{ officer.pk }}" title="Delete User Account">
-          <i class="bi bi-trash"></i>
+        <button type="button" class="btn-sm-icon border-0" style="background:#FFF1F2;color:#EF4444" data-bs-toggle="modal" data-bs-target="#deleteOfficerModal{{ officer.pk }}" title="Delete User Account">
+          <i data-lucide="trash-2" style="width:14px;height:14px"></i>
         </button>
         {% endif %}
         {% endif %}
@@ -48,102 +48,102 @@
     </div>
   </div>
   {% empty %}
-  <div class="col-12"><div class="empty-state"><i class="bi bi-people text-muted"></i><p class="text-muted">No officers found</p></div></div>
+  <div class="col-12"><div class="empty-state"><i data-lucide="users"></i><h6>No officers found</h6></div></div>
   {% endfor %}
 </div>
 
 <!-- System Roles & Access Table -->
-<div class="card border-0 shadow-sm mt-4" style="border-radius:16px">
-  <div class="card-header bg-transparent border-bottom py-3 px-4">
+<div class="table-custom-container mt-4">
+  <div class="card-header-custom py-3 px-4">
     <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2" style="font-size:14px">
-      <i class="bi bi-shield-shaded text-primary"></i> System Roles &amp; Position Access Descriptions
+      <i data-lucide="shield" class="text-primary" style="width:18px;height:18px"></i> System Roles &amp; Position Access Descriptions
     </h6>
-    <small class="text-muted">Exclusive permissions and access privileges per role tier. <i class="bi bi-check-circle-fill text-success"></i> = Allowed &nbsp; <i class="bi bi-x-circle-fill text-danger"></i> = Not Allowed</small>
   </div>
-  <div class="card-body p-0">
-    <div class="table-responsive">
-      <table class="table mb-0 align-middle" style="font-size:12.5px">
-        <thead style="background:#f1f5f9">
-          <tr>
-            <th class="px-4 py-3" style="min-width:140px">Role</th>
-            <th class="px-3 py-3 text-center">Manage Officers &amp; Positions</th>
-            <th class="px-3 py-3 text-center">Create / Edit / Delete Tasks</th>
-            <th class="px-3 py-3 text-center">View Tasks</th>
-            <th class="px-3 py-3 text-center">Move Task Stages</th>
-            <th class="px-3 py-3 text-center">Update Progress</th>
-            <th class="px-3 py-3 text-center">View Reports</th>
-            <th class="px-3 py-3 text-center">System Monitoring</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr class="border-bottom">
-            <td class="px-4 py-3">
-              <span class="badge bg-danger text-white me-2" style="font-size:10px;border-radius:6px">Super Admin</span>
-              <span class="fw-semibold text-dark">System Administrator</span>
-            </td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-          </tr>
-          <tr class="border-bottom">
-            <td class="px-4 py-3">
-              <span class="badge bg-warning text-dark me-2" style="font-size:10px;border-radius:6px">President</span>
-              <span class="fw-semibold text-dark">Executive Leader</span>
-            </td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-          </tr>
-          <tr class="border-bottom">
-            <td class="px-4 py-3">
-              <span class="badge bg-primary text-white me-2" style="font-size:10px;border-radius:6px">Executive Officer</span>
-              <span class="fw-semibold text-dark" title="VP, Secretary, Treasurer, Auditor, P.R.O., BM, EA, P.V." style="cursor:help;text-decoration:underline dotted #94a3b8;text-underline-offset:3px">VP, Sec, Treas, Auditor, PRO…</span>
-            </td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-          </tr>
-          <tr>
-            <td class="px-4 py-3">
-              <span class="badge bg-info text-dark me-2" style="font-size:10px;border-radius:6px">Committee Head</span>
-              <span class="fw-semibold text-dark" title="Assistant Secretary/Treasurer, Events Manager, Graphics & Media" style="cursor:help;text-decoration:underline dotted #94a3b8;text-underline-offset:3px">Asst. Sec/Treas, Events, Media</span>
-            </td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>
-            <td class="text-center"><i class="bi bi-check-circle-fill text-success fs-5"></i></td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
+  <div class="table-responsive">
+    <table class="table-custom w-100" style="font-size:12.5px">
+      <thead>
+        <tr>
+          <th class="px-4 py-3" style="min-width:140px">Role</th>
+          <th class="px-3 py-3 text-center">Manage Officers &amp; Positions</th>
+          <th class="px-3 py-3 text-center">Create / Edit / Delete Tasks</th>
+          <th class="px-3 py-3 text-center">View Tasks</th>
+          <th class="px-3 py-3 text-center">Move Task Stages</th>
+          <th class="px-3 py-3 text-center">Update Progress</th>
+          <th class="px-3 py-3 text-center">View Reports</th>
+          <th class="px-3 py-3 text-center">System Monitoring</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="px-4 py-3">
+            <span class="badge bg-danger text-white me-2" style="font-size:10px;border-radius:6px">Super Admin</span>
+            <span class="fw-bold text-dark">System Administrator</span>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3">
+            <span class="badge bg-warning text-dark me-2" style="font-size:10px;border-radius:6px">President</span>
+            <span class="fw-bold text-dark">Executive Leader</span>
+          </td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3">
+            <span class="badge bg-primary text-white me-2" style="font-size:10px;border-radius:6px">Executive Officer</span>
+            <span class="fw-bold text-dark">VP, Sec, Treas, Auditor, PRO…</span>
+          </td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+        </tr>
+        <tr>
+          <td class="px-4 py-3">
+            <span class="badge bg-info text-dark me-2" style="font-size:10px;border-radius:6px">Committee Head</span>
+            <span class="fw-bold text-dark">Asst. Sec/Treas, Events, Media</span>
+          </td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </div>
 
+{% endblock %}
+
+{% block modals %}
 <!-- Type-to-Confirm Deletion Modals for Super Admin -->
 {% if user.can_manage_officers %}
 {% for officer in officers %}
 {% if officer.user != user %}
 <div class="modal fade" id="deleteOfficerModal{{ officer.pk }}" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
-    <div class="modal-content border-0 shadow" style="border-radius:16px">
-      <div class="modal-header bg-danger text-white border-0 py-3 px-4" style="border-top-left-radius:16px;border-top-right-radius:16px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:18px; overflow:hidden;">
+      <div class="modal-header bg-danger text-white border-0 py-3 px-4">
         <h6 class="modal-title fw-bold d-flex align-items-center gap-2">
-          <i class="bi bi-exclamation-triangle-fill fs-5"></i> Delete User Account
+          <i data-lucide="alert-triangle" style="width:20px;height:20px"></i> Delete User Account
         </h6>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -155,8 +155,7 @@
             <strong class="text-danger">{{ officer.user.get_full_name }}</strong> 
             (<code>{{ officer.user.username }}</code>)?
           </p>
-          <div class="alert alert-warning border-0 text-dark p-3 mb-3" style="font-size:12px;border-radius:10px;background:#fff8e6">
-            <i class="bi bi-info-circle me-1 text-warning"></i> 
+          <div class="alert alert-warning border-0 text-dark p-3 mb-3" style="font-size:12px;border-radius:12px;background:var(--pink-50)">
             This action is <strong>irreversible</strong>. The user account and officer profile will be permanently removed.
           </div>
           <div class="mb-3">
@@ -165,17 +164,17 @@
             </label>
             <input type="text" 
                    name="confirm_text" 
-                   class="form-control form-control-sm text-center fw-bold text-uppercase border-danger-subtle" 
+                   class="form-control form-control-sm text-center fw-bold text-uppercase" 
                    id="confirmDeleteInput{{ officer.pk }}" 
                    onkeyup="validateDeleteConfirm('{{ officer.pk }}')" 
                    placeholder="Type DELETE to confirm" 
                    autocomplete="off">
           </div>
         </div>
-        <div class="modal-footer bg-light border-0 py-2 px-4" style="border-bottom-left-radius:16px;border-bottom-right-radius:16px">
-          <button type="button" class="btn btn-sm btn-light" data-bs-dismiss="modal" style="border-radius:8px">Cancel</button>
-          <button type="submit" id="confirmDeleteBtn{{ officer.pk }}" class="btn btn-sm btn-danger px-3" disabled style="border-radius:8px">
-            <i class="bi bi-trash me-1"></i> Permanently Delete Account
+        <div class="modal-footer bg-light border-0 py-2 px-4" style="border-bottom-left-radius:18px;border-bottom-right-radius:18px">
+          <button type="button" class="btn btn-secondary-custom btn-sm" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" id="confirmDeleteBtn{{ officer.pk }}" class="btn btn-danger btn-sm px-3" disabled style="border-radius:30px;font-weight:700">
+            Permanently Delete Account
           </button>
         </div>
       </form>
@@ -197,7 +196,7 @@ function validateDeleteConfirm(pk) {
     }
   }
 }
+if (window.lucide) lucide.createIcons();
 </script>
 {% endif %}
-
 {% endblock %}

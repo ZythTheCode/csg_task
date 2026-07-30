@@ -6,41 +6,48 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login | CSG Task Management System</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 <style>
-/* Specific additions for login page missing in style.css */
-.form-label { font-size: 13px; font-weight: 500; color: #374151; margin-bottom: 6px; }
-.form-control { border-radius: 10px; border: 1.5px solid #e2e8f0; padding: 11px 14px; font-size: 14px; transition: all 0.2s; }
-.input-group .form-control { border-radius: 10px 0 0 10px; }
-.input-group .btn { border-radius: 0 10px 10px 0; border: 1.5px solid #e2e8f0; border-left: none; color: #94a3b8; background: #f8fafc; }
-.btn-login { 
-  background: linear-gradient(135deg, #166534, #14532d); 
-  color: #fff; border: none; padding: 13px; border-radius: 10px; font-size: 15px; font-weight: 600; width: 100%; transition: all 0.2s; margin-top: 8px; 
+.login-btn {
+  background: linear-gradient(135deg, var(--primary), var(--primary-light));
+  color: #fff; border: none; padding: 12px; border-radius: 30px;
+  font-size: 15px; font-weight: 700; width: 100%; transition: all var(--transition);
+  margin-top: 10px; box-shadow: var(--shadow-glow); cursor: pointer;
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
 }
-.btn-login:hover { opacity: 0.92; transform: translateY(-1px); box-shadow: 0 6px 20px rgba(22, 163, 74, 0.35); }
-.forgot-link { text-align: center; margin-top: 16px; font-size: 13px; }
-.forgot-link a { color: #16a34a; text-decoration: none; font-weight: 500; }
-.forgot-link a:hover { text-decoration: underline; color: #15803d; }
-.divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; color: #94a3b8; font-size: 12px; }
-.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: #e2e8f0; }
-.errorlist { list-style: none; padding: 0; margin: 0 0 12px; }
-.errorlist li { color: #ef4444; font-size: 12.5px; padding: 6px 10px; background: #fee2e2; border-radius: 6px; margin-bottom: 4px; }
-.input-icon { position: relative; }
-.input-icon i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: #94a3b8; z-index: 5; }
-.input-icon input { padding-left: 38px; }
+.login-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(255, 79, 163, 0.45);
+  background: linear-gradient(135deg, #FF6FB5, #FF4FA3);
+  color: #fff;
+}
+.login-btn:active { transform: scale(0.97); }
+.forgot-link { text-align: center; margin-top: 18px; font-size: 13px; }
+.forgot-link a { color: var(--primary); text-decoration: none; font-weight: 600; }
+.forgot-link a:hover { text-decoration: underline; color: var(--primary-dark); }
+.divider { display: flex; align-items: center; gap: 12px; margin: 24px 0 20px; color: var(--slate-400); font-size: 11.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: rgba(249, 168, 212, 0.25); }
+.input-icon-wrapper { position: relative; }
+.input-icon-wrapper [data-lucide] { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--slate-400); z-index: 5; width: 18px; height: 18px; }
+.input-icon-wrapper input { padding-left: 42px; border-radius: 14px; }
 </style>
 </head>
 <body class="login-page">
+
+<!-- Ambient Animated Background Blobs -->
+<div class="bg-ambient-blob bg-blob-1"></div>
+<div class="bg-ambient-blob bg-blob-2"></div>
+<div class="bg-ambient-blob bg-blob-3"></div>
+
 <div class="login-card">
   <div class="login-logo">CSG</div>
-  <h4>CSG Task Management</h4>
+  <h4>CSG Task System</h4>
   <div class="subtitle">University Student Government System</div>
 
   {% if form.non_field_errors %}
-  <div class="alert alert-danger" style="border-radius:10px;font-size:13px">
-    <i class="bi bi-exclamation-triangle me-2"></i>{{ form.non_field_errors.0 }}
+  <div class="alert alert-danger" style="border-radius:14px;font-size:13px">
+    {{ form.non_field_errors.0 }}
   </div>
   {% endif %}
 
@@ -48,41 +55,49 @@
     {% csrf_token %}
     <div class="mb-3">
       <label class="form-label">Username</label>
-      <div class="input-icon">
-        <i class="bi bi-person"></i>
+      <div class="input-icon-wrapper">
+        <i data-lucide="user"></i>
         <input type="text" name="username" class="form-control" placeholder="Enter your username" value="{{ form.username.value|default:'' }}" required autofocus>
       </div>
       {% if form.username.errors %}
-      <div class="errorlist">{% for e in form.username.errors %}<li>{{ e }}</li>{% endfor %}</div>
+      <div class="text-danger mt-1" style="font-size:12px">{% for e in form.username.errors %}{{ e }}{% endfor %}</div>
       {% endif %}
     </div>
-    <div class="mb-3">
+    <div class="mb-4">
       <label class="form-label">Password</label>
       <div class="input-group">
-        <div class="input-icon flex-grow-1">
-          <i class="bi bi-lock"></i>
-          <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter your password" required>
+        <div class="input-icon-wrapper flex-grow-1">
+          <i data-lucide="lock"></i>
+          <input type="password" name="password" id="passwordInput" class="form-control" placeholder="Enter your password" required style="border-radius:14px 0 0 14px">
         </div>
-        <button type="button" class="btn" onclick="togglePwd()"><i class="bi bi-eye" id="pwdIcon"></i></button>
+        <button type="button" class="btn btn-outline-secondary" onclick="togglePwd()" style="border-radius:0 14px 14px 0;border-color:var(--slate-200);background:#fff"><i data-lucide="eye" id="pwdIcon" style="width:18px;height:18px;color:var(--slate-500)"></i></button>
       </div>
     </div>
-    <button type="submit" class="btn-login"><i class="bi bi-box-arrow-in-right me-2"></i>Sign In</button>
+    <button type="submit" class="login-btn"><i data-lucide="log-in" style="width:18px;height:18px"></i>Sign In</button>
   </form>
 
   <div class="forgot-link">
-    <a href="{% url 'accounts:password_reset' %}"><i class="bi bi-key me-1"></i>Forgot your password?</a><br>
-    <a href="{% url 'register_organization' %}" style="margin-top: 8px; display: inline-block; color: #3b82f6;"><i class="bi bi-building-add me-1"></i>Register an Organization</a>
+    <a href="{% url 'accounts:password_reset' %}">Forgot your password?</a><br>
+    <a href="{% url 'register_organization' %}" style="margin-top: 10px; display: inline-block; color: var(--info);"><i data-lucide="building" class="me-1" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></i>Register an Organization</a>
   </div>
 
-  <div class="divider">CSG System 2025</div>
-  <p style="text-align:center;font-size:11px;color:#94a3b8;margin:0">Authorized personnel only. All activities are monitored and logged.</p>
+  <div class="divider">CSG Task System</div>
+  <p style="text-align:center;font-size:11px;color:var(--slate-400);margin:0">Authorized personnel only. All activities are monitored and logged.</p>
 </div>
 <script>
+if (window.lucide) lucide.createIcons();
+
 function togglePwd() {
   const input = document.getElementById('passwordInput');
   const icon = document.getElementById('pwdIcon');
-  input.type = input.type === 'password' ? 'text' : 'password';
-  icon.className = input.type === 'password' ? 'bi bi-eye' : 'bi bi-eye-slash';
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    input.type = 'password';
+    icon.setAttribute('data-lucide', 'eye');
+  }
+  if (window.lucide) lucide.createIcons();
 }
 </script>
 </body>

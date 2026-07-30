@@ -122,7 +122,7 @@ class TaskListView(LoginRequiredMixin, ListView):
         if self.request.user.organization:
             ctx['officers_list'] = User.objects.filter(is_active=True, organization=self.request.user.organization).order_by('first_name', 'last_name')
         else:
-            ctx['officers_list'] = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).order_by('organization__name', 'first_name', 'last_name')
         ctx['current_filters'] = {
             'q': self.request.GET.get('q', ''),
             'status': self.request.GET.get('status', ''),
@@ -327,7 +327,7 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         if self.request.user.organization:
             ctx['officers_list'] = User.objects.filter(is_active=True, organization=self.request.user.organization).order_by('first_name', 'last_name')
         else:
-            ctx['officers_list'] = User.objects.filter(is_active=True).order_by('first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).order_by('organization__name', 'first_name', 'last_name')
         ctx['current_filters'] = {'q': q, 'priority': priority, 'officer': officers}
         return ctx
 
@@ -766,3 +766,35 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                 f' Email failed for: {", ".join(failed_emails)}.' if failed_emails else ''
             ),
         })
+
+
+class TaskSearchSuggestionsView(LoginRequiredMixin, View):
+    """Returns matching tasks for live search suggestions."""
+    def get(self, request, *args, **kwargs):
+        q = request.GET.get('q', '').strip()
+        if not q:
+            return JsonResponse({'results': []})
+
+        qs = Task.objects.filter(is_archived=False)
+        if request.user.organization:
+            qs = qs.filter(organization=request.user.organization)
+        
+        qs = qs.filter(
+            Q(title__icontains=q) | Q(task_number__icontains=q) | Q(description__icontains=q)
+        ).distinct()[:8]
+
+        results = []
+        for t in qs:
+            results.append({
+                'id': t.pk,
+                'task_number': t.task_number,
+                'title': t.title,
+                'status': t.status,
+                'status_display': t.get_status_display(),
+                'priority': t.priority,
+                'due_date': t.due_date.strftime('%b %d, %Y') if t.due_date else '',
+                'progress': t.progress,
+            })
+
+        return JsonResponse({'results': results})
+

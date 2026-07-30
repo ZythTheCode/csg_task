@@ -3,62 +3,68 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <a href="{% url 'tasks:list' %}" class="text-muted" style="font-size:12px;text-decoration:none"><i class="bi bi-arrow-left me-1"></i>Back</a>
-    <h5 class="mb-0 mt-1 fw-bold" style="color:var(--primary)">{{ page_title }}</h5>
+    <a href="{% url 'tasks:list' %}" class="text-muted text-decoration-none fw-semibold" style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back</a>
+    <h5 class="mb-0 mt-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">{{ page_title }}</h5>
   </div>
 </div>
 
 <div class="row justify-content-center">
   <div class="col-md-10">
-    <div class="card">
-      <div class="card-header-custom"><h6><i class="bi bi-clipboard-plus me-2"></i>Task Information</h6></div>
+    <div class="glass-card">
+      <div class="card-header-custom"><h6><i data-lucide="edit" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Information</h6></div>
       <div class="p-4">
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
           <div class="row g-3">
             <div class="col-md-12">
-              <label class="form-label fw-semibold" style="font-size:13px">Task Title *</label>
+              <label class="form-label fw-bold" style="font-size:13px">Task Title *</label>
               {{ form.title }}
             </div>
             <div class="col-12">
-              <label class="form-label fw-semibold" style="font-size:13px">Description *</label>
+              <label class="form-label fw-bold" style="font-size:13px">Description *</label>
               {{ form.description }}
             </div>
             <div class="col-md-3">
-              <label class="form-label fw-semibold" style="font-size:13px">Priority</label>
+              <label class="form-label fw-bold" style="font-size:13px">Priority</label>
               {{ form.priority }}
             </div>
             <div class="col-md-3">
-              <label class="form-label fw-semibold" style="font-size:13px">Status</label>
+              <label class="form-label fw-bold" style="font-size:13px">Status</label>
               {{ form.status }}
             </div>
             <div class="col-md-3">
-              <label class="form-label fw-semibold" style="font-size:13px">Due Date</label>
+              <label class="form-label fw-bold" style="font-size:13px">Due Date</label>
               {{ form.due_date }}
             </div>
             <div class="col-md-3">
-              <label class="form-label fw-semibold" style="font-size:13px">Progress (%)</label>
+              <label class="form-label fw-bold" style="font-size:13px">Progress (%)</label>
               {{ form.progress }}
             </div>
             <div class="col-12">
-              <label class="form-label fw-semibold" style="font-size:13px">Assign Officers</label>
-              <div style="max-height:220px;overflow-y:auto;border:1px solid #e2e8f0;border-radius:10px;padding:12px;background:#f8fafc">
+              <label class="form-label fw-bold" style="font-size:13px">Assign Officers</label>
+              <div style="max-height:220px;overflow-y:auto;border:1.5px solid var(--slate-200);border-radius:14px;padding:14px;background:var(--pink-50)">
                 {% for checkbox in form.assigned_officers %}
-                <div class="form-check mb-1">
-                  {{ checkbox.tag }} <label class="form-check-label" style="font-size:13px" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                <div class="form-check mb-2">
+                  {{ checkbox.tag }} <label class="form-check-label fw-semibold" style="font-size:13px;color:var(--slate-800);cursor:pointer" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
                 </div>
                 {% endfor %}
               </div>
             </div>
           </div>
-          <hr class="my-4">
+          <hr class="my-4" style="border-color:rgba(249, 168, 212, 0.2)">
           <div class="d-flex gap-2">
-            <button type="submit" class="btn-primary-custom"><i class="bi bi-save me-1"></i>{{ form_action }}</button>
-            <a href="{% url 'tasks:list' %}" class="btn btn-outline-secondary" style="border-radius:8px">Cancel</a>
+            <button type="submit" class="btn-primary-custom"><i data-lucide="check" style="width:16px;height:16px"></i>{{ form_action }}</button>
+            <a href="{% url 'tasks:list' %}" class="btn btn-secondary-custom">Cancel</a>
           </div>
         </form>
       </div>
     </div>
   </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+if (window.lucide) lucide.createIcons();
+</script>
 {% endblock %}

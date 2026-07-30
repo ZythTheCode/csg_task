@@ -84,7 +84,10 @@
                                 <td>{{ org.description|truncatewords:10 }}</td>
                                 <td>{{ org.updated_at|date:"M d, Y" }}</td>
                                 <td class="text-end">
-                                    <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteOrgModal" data-org-id="{{ org.id }}" data-org-name="{{ org.name }}">
+                                    <button type="button" class="btn btn-sm btn-primary me-1 view-org-info-btn" data-org-id="{{ org.id }}">
+                                        View Info
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteOrgModal" data-org-id="{{ org.id }}" data-org-name="{{ org.name }}">
                                         Delete
                                     </button>
                                 </td>
@@ -170,6 +173,78 @@
     </div>
 </div>
 
+<!-- View Organization Modal -->
+<div class="modal fade" id="viewOrgModal" tabindex="-1" aria-labelledby="viewOrgModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 40px rgba(0,0,0,0.15)">
+            <div class="modal-header border-0 pb-0" style="background:var(--pink-50,#fff5fa);border-radius:20px 20px 0 0;padding:20px 24px">
+                <div>
+                    <span class="badge bg-success mb-1" id="orgModalStatus">Active</span>
+                    <h4 class="modal-title fw-bold text-dark mb-0" id="orgModalTitle">Organization Name</h4>
+                </div>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <div id="orgModalLoading" class="text-center py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                <div id="orgModalContent" class="d-none">
+                    <p class="text-muted" style="font-size:14px" id="orgModalDesc"></p>
+                    
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-3">
+                            <div class="p-3 text-center rounded-3 bg-light border">
+                                <span class="d-block text-muted" style="font-size:11px;text-transform:uppercase;font-weight:700">Total Officers</span>
+                                <strong class="fs-4 text-primary" id="orgModalOfficersCount">0</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 text-center rounded-3 bg-light border">
+                                <span class="d-block text-muted" style="font-size:11px;text-transform:uppercase;font-weight:700">Total Tasks</span>
+                                <strong class="fs-4 text-dark" id="orgModalTasksCount">0</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 text-center rounded-3 bg-light border">
+                                <span class="d-block text-muted" style="font-size:11px;text-transform:uppercase;font-weight:700">Completed Tasks</span>
+                                <strong class="fs-4 text-success" id="orgModalCompletedTasks">0</strong>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="p-3 text-center rounded-3 bg-light border">
+                                <span class="d-block text-muted" style="font-size:11px;text-transform:uppercase;font-weight:700">Org Admin</span>
+                                <strong class="fs-6 text-truncate d-block" id="orgModalAdmin">N/A</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Registered Officers & Roles</h6>
+                    <div class="table-responsive rounded-3 border" style="max-height:240px;overflow-y:auto">
+                        <table class="table table-sm table-hover align-middle mb-0" style="font-size:13px">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Username</th>
+                                    <th>Email</th>
+                                    <th>Role</th>
+                                    <th>Position Title</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orgModalOfficersList">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius:12px">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         var deleteOrgModal = document.getElementById('deleteOrgModal');
@@ -199,6 +274,49 @@
                 }
             });
         }
+
+        // View Org Info Modal Script
+        const viewOrgModalEl = document.getElementById('viewOrgModal');
+        const viewOrgModal = new bootstrap.Modal(viewOrgModalEl);
+
+        document.querySelectorAll('.view-org-info-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const orgId = this.getAttribute('data-org-id');
+                document.getElementById('orgModalLoading').classList.remove('d-none');
+                document.getElementById('orgModalContent').classList.add('d-none');
+                viewOrgModal.show();
+
+                fetch(`/organizations/${orgId}/json/`)
+                    .then(res => res.json())
+                    .then(data => {
+                        document.getElementById('orgModalTitle').textContent = data.name;
+                        document.getElementById('orgModalStatus').textContent = data.status;
+                        document.getElementById('orgModalDesc').textContent = data.description;
+                        document.getElementById('orgModalOfficersCount').textContent = data.officers_count;
+                        document.getElementById('orgModalTasksCount').textContent = data.tasks_count;
+                        document.getElementById('orgModalCompletedTasks').textContent = data.completed_tasks;
+                        document.getElementById('orgModalAdmin').textContent = data.admin_name;
+
+                        const list = document.getElementById('orgModalOfficersList');
+                        if (data.officers && data.officers.length > 0) {
+                            list.innerHTML = data.officers.map(off => `
+                                <tr>
+                                    <td><strong>${off.name}</strong></td>
+                                    <td class="text-muted">@${off.username}</td>
+                                    <td>${off.email}</td>
+                                    <td><span class="badge bg-light text-dark border">${off.role}</span></td>
+                                    <td><span class="badge bg-primary text-white">${off.position || 'General Officer'}</span></td>
+                                </tr>
+                            `).join('');
+                        } else {
+                            list.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">No registered officers found</td></tr>';
+                        }
+
+                        document.getElementById('orgModalLoading').classList.add('d-none');
+                        document.getElementById('orgModalContent').classList.remove('d-none');
+                    });
+            });
+        });
     });
 </script>
 {% endblock %}
