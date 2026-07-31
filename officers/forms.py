@@ -6,9 +6,10 @@ from accounts.models import User
 class PositionForm(forms.ModelForm):
     class Meta:
         model = Position
-        fields = ['title', 'description']
+        fields = ['title', 'initials', 'description']
         widgets = {
-            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'title': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_title', 'placeholder': 'e.g. Vice President'}),
+            'initials': forms.TextInput(attrs={'class': 'form-control', 'id': 'id_initials', 'placeholder': 'Auto-generated (e.g. VP) or custom'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 

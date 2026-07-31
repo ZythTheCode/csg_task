@@ -6,7 +6,7 @@
   <div class="col-md-4">
     <div class="stat-card success">
       <div class="stat-icon"><i data-lucide="percent"></i></div>
-      <div class="stat-value">{{ overall_completion_rate }}%</div>
+      <div class="stat-value">{{ overall_completion_rate|floatformat:0 }}%</div>
       <div class="stat-label">Overall Completion Rate</div>
     </div>
   </div>
@@ -62,7 +62,7 @@
               <div class="progress-custom flex-grow-1" style="height:8px">
                 <div class="progress-bar {% if item.completion_rate >= 75 %}bg-success{% elif item.completion_rate >= 40 %}bg-warning{% else %}bg-danger{% endif %}" style="width:{{ item.completion_rate }}%"></div>
               </div>
-              <span style="font-size:12px;font-weight:800">{{ item.completion_rate }}%</span>
+              <span style="font-size:12px;font-weight:800">{{ item.completion_rate|floatformat:0 }}%</span>
             </div>
           </td>
         </tr>

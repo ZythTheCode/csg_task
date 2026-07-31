@@ -1,18 +1,66 @@
-{% extends 'base.html' %}{% block title %}Positions{% endblock %}{% block content %}
+{% extends 'base.html' %}
+{% block title %}Positions{% endblock %}
+
+{% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-<h5 class="mb-0 fw-bold" style="color:var(--primary)">Positions</h5>
-{% if user.can_manage_officers %}<a href="{% url 'officers:position_create' %}" class="btn-primary-custom"><i class="bi bi-plus-lg"></i> Add Position</a>{% endif %}
+  <div>
+    <h5 class="mb-0 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Organizational Positions</h5>
+    <small class="text-muted">Manage position titles, display initials, and descriptions.</small>
+  </div>
+  {% if user.can_manage_officers %}
+  <a href="{% url 'officers:position_create' %}" class="btn-primary-custom">
+    <i data-lucide="plus" style="width:16px;height:16px"></i> Add Position
+  </a>
+  {% endif %}
 </div>
-<div class="card">
-<div class="table-responsive">
-<table class="table-custom w-100"><thead><tr><th>Title</th><th>Description</th><th>Actions</th></tr></thead><tbody>
-{% for pos in positions %}
-<tr>
-  <td class="fw-semibold" style="font-size:13px">{{ pos.title }}</td>
-  <td style="font-size:12px;color:#64748b">{{ pos.description|default:"—" }}</td>
-  <td>{% if user.can_manage_officers %}<a href="{% url 'officers:position_edit' pos.pk %}" class="btn-sm-icon"><i class="bi bi-pencil"></i></a><a href="{% url 'officers:position_delete' pos.pk %}" class="btn-sm-icon ms-1" style="color:#dc2626" title="Delete Position"><i class="bi bi-trash3"></i></a>{% endif %}</td>
-</tr>
-{% empty %}
-<tr><td colspan="3"><div class="empty-state"><i class="bi bi-briefcase text-muted"></i><p class="text-muted small">No positions yet</p></div></td></tr>
-{% endfor %}
-</tbody></table></div></div>{% endblock %}
+
+<div class="table-custom-container">
+  <div class="table-responsive">
+    <table class="table-custom w-100">
+      <thead>
+        <tr>
+          <th style="width:220px">Title</th>
+          <th style="width:120px">Initials</th>
+          <th>Description</th>
+          <th style="width:100px;text-align:right">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for pos in positions %}
+        <tr>
+          <td class="fw-semibold" style="font-size:13.5px;color:var(--slate-800)">{{ pos.title }}</td>
+          <td>
+            <span class="badge bg-light text-primary border" style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:12px">
+              {{ pos.get_initials }}
+            </span>
+          </td>
+          <td style="font-size:12.5px;color:var(--slate-600)">{{ pos.description|default:"—" }}</td>
+          <td style="text-align:right">
+            {% if user.can_manage_officers %}
+            <div class="d-inline-flex gap-1">
+              <a href="{% url 'officers:position_edit' pos.pk %}" class="btn-sm-icon" title="Edit Position">
+                <i data-lucide="edit-3" style="width:14px;height:14px"></i>
+              </a>
+              <a href="{% url 'officers:position_delete' pos.pk %}" class="btn-sm-icon ms-1" style="background:#FFF1F2;border-color:#FECDD3;color:#EF4444" title="Delete Position">
+                <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+              </a>
+            </div>
+            {% endif %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4">
+            <div class="empty-state">
+              <i data-lucide="briefcase"></i>
+              <h6>No positions defined</h6>
+              <p class="text-muted small">Click "Add Position" to create your organization's first position.</p>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

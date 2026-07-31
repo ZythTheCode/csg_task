@@ -12,6 +12,17 @@ class CustomLoginView(LoginView):
     template_name = 'accounts/login.html'
     redirect_authenticated_user = True
 
+    def form_valid(self, form):
+        from core.services.audit import log_activity
+        user = form.get_user()
+        log_activity(self.request, 'USER_LOGIN', f"User '{user.username}' logged in successfully.", resource_type='User', resource_id=user.pk)
+        return super().form_valid(form)
+
+    def form_invalid(self, form):
+        from core.services.audit import log_activity
+        log_activity(self.request, 'USER_LOGIN_FAILED', "Failed login attempt.", status='failed')
+        return super().form_invalid(form)
+
     def get_success_url(self):
         return reverse_lazy('core:dashboard')
 
@@ -19,12 +30,20 @@ class CustomLoginView(LoginView):
 class CustomLogoutView(LogoutView):
     next_page = 'accounts:login'
 
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated:
+            from core.services.audit import log_activity
+            log_activity(request, 'USER_LOGOUT', f"User '{request.user.username}' logged out.", resource_type='User', resource_id=request.user.pk)
+        return super().dispatch(request, *args, **kwargs)
+
 
 class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
     template_name = 'accounts/password_change.html'
     success_url = reverse_lazy('accounts:profile')
 
     def form_valid(self, form):
+        from core.services.audit import log_activity
+        log_activity(self.request, 'PASSWORD_CHANGE', "User changed password successfully.", resource_type='User', resource_id=self.request.user.pk)
         messages.success(self.request, 'Password changed successfully.')
         return super().form_valid(form)
 

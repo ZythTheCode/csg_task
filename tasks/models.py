@@ -44,9 +44,9 @@ class Task(models.Model):
     task_number = models.CharField(max_length=20, unique=True, editable=False)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started')
-    due_date = models.DateField(null=True, blank=True)
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium', db_index=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started', db_index=True)
+    due_date = models.DateField(null=True, blank=True, db_index=True)
     completion_date = models.DateField(null=True, blank=True)
     progress = models.IntegerField(default=0)
     organization = models.ForeignKey(
@@ -54,7 +54,8 @@ class Task(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='tasks'
+        related_name='tasks',
+        db_index=True
     )
     created_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='created_tasks')
     assigned_officers = models.ManyToManyField(
@@ -64,12 +65,18 @@ class Task(models.Model):
         related_name='assigned_tasks',
         blank=True
     )
-    is_archived = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
+    is_archived = models.BooleanField(default=False, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['organization', 'status', 'is_archived']),
+            models.Index(fields=['organization', 'due_date']),
+            models.Index(fields=['status', 'due_date']),
+            models.Index(fields=['-created_at']),
+        ]
 
     def __str__(self):
         return f"[{self.task_number}] {self.title}"

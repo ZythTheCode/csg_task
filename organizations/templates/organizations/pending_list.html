@@ -1,24 +1,28 @@
 {% extends 'base.html' %}
+{% block title %}Organization Management{% endblock %}
 
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2>Organization Management</h2>
+    <div>
+        <h5 class="mb-0 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Organization Management</h5>
+        <small class="text-muted">Approve, monitor, and manage student organization workspaces</small>
+    </div>
 </div>
 
-<ul class="nav nav-tabs mb-4" id="orgTabs" role="tablist">
+<ul class="nav nav-tabs mb-4" id="orgTabs" role="tablist" style="border-bottom-color:var(--pink-200)">
     <li class="nav-item" role="presentation">
-        <button class="nav-link active fw-bold" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
-            Pending Approvals <span class="badge bg-warning text-dark ms-1">{{ pending_orgs.count }}</span>
+        <button class="nav-link active fw-bold" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true" style="border-radius:12px 12px 0 0">
+            <i data-lucide="clock" class="me-1" style="width:15px;height:15px"></i> Pending Approvals <span class="badge bg-warning text-dark ms-1" style="border-radius:10px">{{ pending_orgs.count }}</span>
         </button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link fw-bold" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="false">
-            Active Organizations <span class="badge bg-success ms-1">{{ approved_orgs.count }}</span>
+        <button class="nav-link fw-bold" id="active-tab" data-bs-toggle="tab" data-bs-target="#active" type="button" role="tab" aria-controls="active" aria-selected="false" style="border-radius:12px 12px 0 0">
+            <i data-lucide="building" class="me-1" style="width:15px;height:15px"></i> Active Organizations <span class="badge bg-success text-white ms-1" style="border-radius:10px">{{ approved_orgs.count }}</span>
         </button>
     </li>
     <li class="nav-item" role="presentation">
-        <button class="nav-link fw-bold text-danger" id="deleting-tab" data-bs-toggle="tab" data-bs-target="#deleting" type="button" role="tab" aria-controls="deleting" aria-selected="false">
-            Pending Deletion <span class="badge bg-danger ms-1">{{ deleting_orgs.count }}</span>
+        <button class="nav-link fw-bold text-danger" id="deleting-tab" data-bs-toggle="tab" data-bs-target="#deleting" type="button" role="tab" aria-controls="deleting" aria-selected="false" style="border-radius:12px 12px 0 0">
+            <i data-lucide="trash-2" class="me-1" style="width:15px;height:15px"></i> Pending Deletion <span class="badge bg-danger text-white ms-1" style="border-radius:10px">{{ deleting_orgs.count }}</span>
         </button>
     </li>
 </ul>
@@ -26,147 +30,155 @@
 <div class="tab-content" id="orgTabsContent">
     <!-- PENDING TAB -->
     <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
-        <div class="card shadow">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Organization Name</th>
-                                <th>Description</th>
-                                <th>Registered On</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for org in pending_orgs %}
-                            <tr>
-                                <td><strong>{{ org.name }}</strong></td>
-                                <td>{{ org.description|truncatewords:10 }}</td>
-                                <td>{{ org.created_at|date:"M d, Y" }}</td>
-                                <td class="text-end">
-                                    <a href="{% url 'approve_organization' org.id %}" class="btn btn-sm btn-success">Approve</a>
-                                    <a href="{% url 'reject_organization' org.id %}" class="btn btn-sm btn-outline-danger">Reject</a>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">
-                                    No pending organizations.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <div class="table-custom-container">
+            <div class="table-responsive">
+                <table class="table-custom w-100" style="table-layout:fixed">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3" style="width:250px">Organization Name</th>
+                            <th class="px-3 py-3">Description</th>
+                            <th class="px-3 py-3" style="width:160px">Registered On</th>
+                            <th class="px-4 py-3 text-end" style="width:120px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for org in pending_orgs %}
+                        <tr>
+                            <td class="px-4 py-3"><strong>{{ org.name }}</strong></td>
+                            <td class="px-3 py-3">{{ org.description|default:"No description provided"|truncatewords:12 }}</td>
+                            <td class="px-3 py-3" style="font-size:12.5px">{{ org.created_at|date:"M d, Y" }}</td>
+                            <td class="px-4 py-3 text-end">
+                                <div class="d-inline-flex gap-1 justify-content-end">
+                                    <a href="{% url 'approve_organization' org.id %}" class="btn-sm-icon" style="background:#DCFCE7;border-color:#86EFAC;color:#16A34A" title="Approve Organization">
+                                        <i data-lucide="check" style="width:14px;height:14px"></i>
+                                    </a>
+                                    <a href="{% url 'reject_organization' org.id %}" class="btn-sm-icon" style="background:#FFF1F2;border-color:#FECDD3;color:#EF4444" title="Reject Organization">
+                                        <i data-lucide="x" style="width:14px;height:14px"></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state py-4"><i data-lucide="inbox"></i><h6>No pending organizations</h6></div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- ACTIVE TAB -->
     <div class="tab-pane fade" id="active" role="tabpanel" aria-labelledby="active-tab">
-        <div class="card shadow">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Organization Name</th>
-                                <th>Description</th>
-                                <th>Approved On</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for org in approved_orgs %}
-                            <tr>
-                                <td><strong>{{ org.name }}</strong></td>
-                                <td>{{ org.description|truncatewords:10 }}</td>
-                                <td>{{ org.updated_at|date:"M d, Y" }}</td>
-                                <td class="text-end">
-                                    <button type="button" class="btn btn-sm btn-primary me-1 view-org-info-btn" data-org-id="{{ org.id }}">
-                                        View Info
+        <div class="table-custom-container">
+            <div class="table-responsive">
+                <table class="table-custom w-100" style="table-layout:fixed">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3" style="width:250px">Organization Name</th>
+                            <th class="px-3 py-3">Description</th>
+                            <th class="px-3 py-3" style="width:160px">Approved On</th>
+                            <th class="px-4 py-3 text-end" style="width:120px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for org in approved_orgs %}
+                        <tr>
+                            <td class="px-4 py-3"><strong>{{ org.name }}</strong></td>
+                            <td class="px-3 py-3">{{ org.description|default:"No description provided"|truncatewords:12 }}</td>
+                            <td class="px-3 py-3" style="font-size:12.5px">{{ org.updated_at|date:"M d, Y" }}</td>
+                            <td class="px-4 py-3 text-end">
+                                <div class="d-inline-flex gap-1 justify-content-end">
+                                    <button type="button" class="btn-sm-icon view-org-info-btn" data-org-id="{{ org.id }}" title="View Organization Information">
+                                        <i data-lucide="eye" style="width:14px;height:14px"></i>
                                     </button>
-                                    <button type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#deleteOrgModal" data-org-id="{{ org.id }}" data-org-name="{{ org.name }}">
-                                        Delete
+                                    <button type="button" class="btn-sm-icon single-delete-btn" style="background:#FFF1F2;border-color:#FECDD3;color:#EF4444" data-bs-toggle="modal" data-bs-target="#deleteOrgModal" data-org-id="{{ org.id }}" data-org-name="{{ org.name }}" title="Delete Organization">
+                                        <i data-lucide="trash-2" style="width:14px;height:14px"></i>
                                     </button>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="4" class="text-center py-4 text-muted">
-                                    No active organizations.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4">
+                                <div class="empty-state py-4"><i data-lucide="building"></i><h6>No active organizations found</h6></div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 
     <!-- DELETING TAB -->
     <div class="tab-pane fade" id="deleting" role="tabpanel" aria-labelledby="deleting-tab">
-        <div class="card shadow border-danger">
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0">
-                        <thead class="table-light">
-                            <tr>
-                                <th>Organization Name</th>
-                                <th>Scheduled Deletion</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for org in deleting_orgs %}
-                            <tr>
-                                <td><strong>{{ org.name }}</strong></td>
-                                <td>{{ org.marked_for_deletion_at|date:"M d, Y H:i" }} (Will delete in 24 hours)</td>
-                                <td class="text-end">
-                                    <form action="{% url 'restore_organization' org.id %}" method="POST" class="d-inline">
-                                        {% csrf_token %}
-                                        <button type="submit" class="btn btn-sm btn-warning">Restore</button>
-                                    </form>
-                                </td>
-                            </tr>
-                            {% empty %}
-                            <tr>
-                                <td colspan="3" class="text-center py-4 text-muted">
-                                    No organizations pending deletion.
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
+        <div class="table-custom-container">
+            <div class="table-responsive">
+                <table class="table-custom w-100" style="table-layout:fixed">
+                    <thead>
+                        <tr>
+                            <th class="px-4 py-3" style="width:250px">Organization Name</th>
+                            <th class="px-3 py-3">Scheduled Deletion</th>
+                            <th class="px-4 py-3 text-end" style="width:120px">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for org in deleting_orgs %}
+                        <tr>
+                            <td class="px-4 py-3"><strong>{{ org.name }}</strong></td>
+                            <td class="px-3 py-3" style="font-size:12.5px"><span class="text-danger fw-bold"><i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></i> {{ org.marked_for_deletion_at|date:"M d, Y H:i" }}</span> (Deletes in 24h)</td>
+                            <td class="px-4 py-3 text-end">
+                                <form action="{% url 'restore_organization' org.id %}" method="POST" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-sm-icon" style="background:#FEF3C7;border-color:#FDE68A;color:#D97706" title="Restore Organization">
+                                        <i data-lucide="rotate-ccw" style="width:14px;height:14px"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3">
+                                <div class="empty-state py-4"><i data-lucide="check-circle"></i><h6>No organizations pending deletion</h6></div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
 
+{% block modals %}
 <!-- Strict Delete Modal -->
 <div class="modal fade" id="deleteOrgModal" tabindex="-1" aria-labelledby="deleteOrgModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <form id="deleteOrgForm" method="POST" action="">
                 {% csrf_token %}
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title" id="deleteOrgModalLabel">Delete Organization</h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="modal-header border-0 pb-0" style="background:#FFF1F2;border-radius:24px 24px 0 0;padding:20px 24px">
+                    <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="deleteOrgModalLabel">
+                        <i data-lucide="alert-triangle" style="width:20px;height:20px"></i> Delete Organization
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <p class="text-danger fw-bold">Warning: This action will schedule the organization for deletion in 24 hours.</p>
-                    <p>You are about to delete <strong id="modalOrgName"></strong>.</p>
+                <div class="modal-body p-4">
+                    <p class="text-danger fw-bold mb-2">Warning: This action will schedule the organization for deletion in 24 hours.</p>
+                    <p class="text-muted" style="font-size:13.5px">You are about to delete <strong id="modalOrgName" class="text-dark"></strong>.</p>
                     <div class="mb-3">
-                        <label for="confirmText" class="form-label">To confirm, type <strong>DELETE</strong> below:</label>
-                        <input type="text" class="form-control" id="confirmText" name="confirm_text" required autocomplete="off" pattern="DELETE" title="Please type DELETE exactly">
+                        <label for="confirmText" class="form-label">To confirm, type <strong class="text-danger">DELETE</strong> below:</label>
+                        <input type="text" class="form-control" id="confirmText" name="confirm_text" required autocomplete="off" pattern="DELETE" title="Please type DELETE exactly" placeholder="Type DELETE to confirm">
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-danger" id="confirmDeleteBtn" disabled>Mark for Deletion</button>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger-custom" id="confirmDeleteBtn" disabled>Mark for Deletion</button>
                 </div>
             </form>
         </div>
@@ -176,22 +188,22 @@
 <!-- View Organization Modal -->
 <div class="modal fade" id="viewOrgModal" tabindex="-1" aria-labelledby="viewOrgModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered">
-        <div class="modal-content" style="border-radius:20px;border:none;box-shadow:0 20px 40px rgba(0,0,0,0.15)">
-            <div class="modal-header border-0 pb-0" style="background:var(--pink-50,#fff5fa);border-radius:20px 20px 0 0;padding:20px 24px">
+        <div class="modal-content" style="border-radius:24px;border:none;box-shadow:0 20px 50px rgba(0,0,0,0.18)">
+            <div class="modal-header border-0 pb-0" style="background:var(--pink-50,#fff5fa);border-radius:24px 24px 0 0;padding:20px 24px">
                 <div>
-                    <span class="badge bg-success mb-1" id="orgModalStatus">Active</span>
+                    <span class="badge bg-success text-white mb-1" id="orgModalStatus" style="border-radius:12px;font-size:11px">Active</span>
                     <h4 class="modal-title fw-bold text-dark mb-0" id="orgModalTitle">Organization Name</h4>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body p-4">
-                <div id="orgModalLoading" class="text-center py-4">
+                <div id="orgModalLoading" class="text-center py-5">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Loading...</span>
                     </div>
                 </div>
                 <div id="orgModalContent" class="d-none">
-                    <p class="text-muted" style="font-size:14px" id="orgModalDesc"></p>
+                    <p class="text-muted mb-4" style="font-size:13.5px" id="orgModalDesc"></p>
                     
                     <div class="row g-3 mb-4">
                         <div class="col-md-3">
@@ -215,12 +227,12 @@
                         <div class="col-md-3">
                             <div class="p-3 text-center rounded-3 bg-light border">
                                 <span class="d-block text-muted" style="font-size:11px;text-transform:uppercase;font-weight:700">Org Admin</span>
-                                <strong class="fs-6 text-truncate d-block" id="orgModalAdmin">N/A</strong>
+                                <strong class="fs-6 text-truncate d-block text-dark" id="orgModalAdmin">N/A</strong>
                             </div>
                         </div>
                     </div>
 
-                    <h6 class="fw-bold mb-2">Registered Officers & Roles</h6>
+                    <h6 class="fw-bold mb-2 text-dark" style="font-size:13.5px">Registered Officers &amp; Roles</h6>
                     <div class="table-responsive rounded-3 border" style="max-height:240px;overflow-y:auto">
                         <table class="table table-sm table-hover align-middle mb-0" style="font-size:13px">
                             <thead class="table-light">
@@ -238,85 +250,102 @@
                     </div>
                 </div>
             </div>
-            <div class="modal-footer border-0 pt-0">
-                <button type="button" class="btn btn-secondary px-4" data-bs-dismiss="modal" style="border-radius:12px">Close</button>
+            <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                <button type="button" class="btn btn-secondary-custom px-4" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>
 </div>
 
 <script>
-    document.addEventListener('DOMContentLoaded', function () {
-        var deleteOrgModal = document.getElementById('deleteOrgModal');
-        if (deleteOrgModal) {
-            var confirmInput = document.getElementById('confirmText');
-            var confirmBtn = document.getElementById('confirmDeleteBtn');
-            var form = document.getElementById('deleteOrgForm');
+document.addEventListener('DOMContentLoaded', function () {
+    // Lucide Icons initialization
+    if (window.lucide) lucide.createIcons();
 
-            deleteOrgModal.addEventListener('show.bs.modal', function (event) {
-                var button = event.relatedTarget;
-                var orgId = button.getAttribute('data-org-id');
-                var orgName = button.getAttribute('data-org-name');
-                
-                document.getElementById('modalOrgName').textContent = orgName;
-                confirmInput.value = '';
-                confirmBtn.disabled = true;
+    // Delete Modal Handling
+    const deleteOrgModalEl = document.getElementById('deleteOrgModal');
+    if (deleteOrgModalEl) {
+        const confirmInput = document.getElementById('confirmText');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const form = document.getElementById('deleteOrgForm');
 
-                // Set form action dynamicly
-                form.action = "{% url 'delete_organization' 0 %}".replace('0', orgId);
-            });
+        deleteOrgModalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            if (!button) return;
+            const orgId = button.getAttribute('data-org-id');
+            const orgName = button.getAttribute('data-org-name');
+            
+            document.getElementById('modalOrgName').textContent = orgName || '';
+            confirmInput.value = '';
+            confirmBtn.disabled = true;
 
-            confirmInput.addEventListener('input', function() {
-                if (this.value === 'DELETE') {
-                    confirmBtn.disabled = false;
-                } else {
-                    confirmBtn.disabled = true;
-                }
-            });
+            form.action = "{% url 'delete_organization' 0 %}".replace('0', orgId);
+        });
+
+        confirmInput.addEventListener('input', function() {
+            confirmBtn.disabled = (this.value.trim() !== 'DELETE');
+        });
+    }
+
+    // View Org Info Dynamic Modal via Event Delegation
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.view-org-info-btn');
+        if (btn) {
+            e.preventDefault();
+            const orgId = btn.getAttribute('data-org-id');
+            const modalEl = document.getElementById('viewOrgModal');
+            
+            // Get or create Bootstrap modal safely
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+
+            document.getElementById('orgModalLoading').classList.remove('d-none');
+            document.getElementById('orgModalContent').classList.add('d-none');
+            modalInstance.show();
+
+            fetch(`/organizations/${orgId}/json/`)
+                .then(res => res.json())
+                .then(data => {
+                    document.getElementById('orgModalTitle').textContent = data.name;
+                    document.getElementById('orgModalStatus').textContent = data.status;
+                    document.getElementById('orgModalDesc').textContent = data.description || 'No description provided.';
+                    document.getElementById('orgModalOfficersCount').textContent = data.officers_count;
+                    document.getElementById('orgModalTasksCount').textContent = data.tasks_count;
+                    document.getElementById('orgModalCompletedTasks').textContent = data.completed_tasks;
+                    document.getElementById('orgModalAdmin').textContent = data.admin_name;
+
+                    const list = document.getElementById('orgModalOfficersList');
+                    if (data.officers && data.officers.length > 0) {
+                        list.innerHTML = data.officers.map(off => `
+                            <tr>
+                                <td><strong>${off.name}</strong></td>
+                                <td class="text-muted">@${off.username}</td>
+                                <td>${off.email}</td>
+                                <td><span class="badge bg-light text-dark border">${off.role}</span></td>
+                                <td><span class="badge bg-primary text-white">${off.position || 'General Officer'}</span></td>
+                            </tr>
+                        `).join('');
+                    } else {
+                        list.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">No registered officers found</td></tr>';
+                    }
+
+                    document.getElementById('orgModalLoading').classList.add('d-none');
+                    document.getElementById('orgModalContent').classList.remove('d-none');
+                    if (window.lucide) lucide.createIcons();
+                })
+                .catch(err => {
+                    console.error('Failed to load organization details:', err);
+                    document.getElementById('orgModalLoading').classList.add('d-none');
+                });
         }
+    });
 
-        // View Org Info Modal Script
-        const viewOrgModalEl = document.getElementById('viewOrgModal');
-        const viewOrgModal = new bootstrap.Modal(viewOrgModalEl);
-
-        document.querySelectorAll('.view-org-info-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                const orgId = this.getAttribute('data-org-id');
-                document.getElementById('orgModalLoading').classList.remove('d-none');
-                document.getElementById('orgModalContent').classList.add('d-none');
-                viewOrgModal.show();
-
-                fetch(`/organizations/${orgId}/json/`)
-                    .then(res => res.json())
-                    .then(data => {
-                        document.getElementById('orgModalTitle').textContent = data.name;
-                        document.getElementById('orgModalStatus').textContent = data.status;
-                        document.getElementById('orgModalDesc').textContent = data.description;
-                        document.getElementById('orgModalOfficersCount').textContent = data.officers_count;
-                        document.getElementById('orgModalTasksCount').textContent = data.tasks_count;
-                        document.getElementById('orgModalCompletedTasks').textContent = data.completed_tasks;
-                        document.getElementById('orgModalAdmin').textContent = data.admin_name;
-
-                        const list = document.getElementById('orgModalOfficersList');
-                        if (data.officers && data.officers.length > 0) {
-                            list.innerHTML = data.officers.map(off => `
-                                <tr>
-                                    <td><strong>${off.name}</strong></td>
-                                    <td class="text-muted">@${off.username}</td>
-                                    <td>${off.email}</td>
-                                    <td><span class="badge bg-light text-dark border">${off.role}</span></td>
-                                    <td><span class="badge bg-primary text-white">${off.position || 'General Officer'}</span></td>
-                                </tr>
-                            `).join('');
-                        } else {
-                            list.innerHTML = '<tr><td colspan="5" class="text-center py-3 text-muted">No registered officers found</td></tr>';
-                        }
-
-                        document.getElementById('orgModalLoading').classList.add('d-none');
-                        document.getElementById('orgModalContent').classList.remove('d-none');
-                    });
-            });
+    // Re-initialize Lucide icons when tab changes
+    const tabEls = document.querySelectorAll('button[data-bs-toggle="tab"]');
+    tabEls.forEach(tabEl => {
+        tabEl.addEventListener('shown.bs.tab', function () {
+            if (window.lucide) lucide.createIcons();
         });
     });
+});
 </script>
 {% endblock %}

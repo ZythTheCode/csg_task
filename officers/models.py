@@ -11,6 +11,7 @@ class Position(models.Model):
         related_name='positions'
     )
     title = models.CharField(max_length=100)
+    initials = models.CharField(max_length=20, blank=True, help_text="Default or custom initials for position")
     description = models.TextField(blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -19,6 +20,23 @@ class Position(models.Model):
 
     def __str__(self):
         return self.title
+
+    def get_initials(self):
+        if self.initials and self.initials.strip():
+            return self.initials.strip()
+        from tasks.templatetags.task_filters import ABBREVIATIONS
+        lower = self.title.lower().strip()
+        if lower in ABBREVIATIONS:
+            return ABBREVIATIONS[lower]
+        words = self.title.split()
+        if len(words) == 1:
+            return self.title[:4].upper()
+        return ''.join(w[0].upper() for w in words if w)
+
+    def save(self, *args, **kwargs):
+        if not self.initials or not self.initials.strip():
+            self.initials = self.get_initials()
+        super().save(*args, **kwargs)
 
 
 class Officer(models.Model):

@@ -32,7 +32,7 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
             completed = tasks_base_qs.filter(assigned_officers=user, status='completed').count()
             active = tasks_base_qs.filter(assigned_officers=user, status__in=['in_progress', 'pending', 'not_started']).count()
             overdue = tasks_base_qs.filter(assigned_officers=user, status='overdue').count()
-            rate = round((completed / total * 100), 1) if total > 0 else 0
+            rate = round(completed / total * 100) if total > 0 else 0
             officers_data.append({
                 'officer': officer,
                 'total': total,
@@ -61,7 +61,7 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
         # Overall stats
         total_tasks = tasks_base_qs.filter(is_archived=False).count()
         completed_tasks = tasks_base_qs.filter(status='completed', is_archived=False).count()
-        ctx['overall_completion_rate'] = round((completed_tasks / total_tasks * 100), 1) if total_tasks > 0 else 0
+        ctx['overall_completion_rate'] = round(completed_tasks / total_tasks * 100) if total_tasks > 0 else 0
         ctx['total_tasks'] = total_tasks
         ctx['completed_tasks'] = completed_tasks
 

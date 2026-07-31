@@ -193,6 +193,8 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
             task=task, changed_by=self.request.user,
             field_changed='Created', old_value='', new_value='Task created'
         )
+        from core.services.audit import log_activity
+        log_activity(self.request, 'TASK_CREATE', f"Created task {task.task_number}: '{task.title}'", resource_type='Task', resource_id=task.pk)
         messages.success(self.request, f'Task {task.task_number} created successfully.')
         return response
 
@@ -262,7 +264,11 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
 
     def delete(self, request, *args, **kwargs):
         task = self.get_object()
-        messages.success(request, f'Task {task.task_number} deleted.')
+        task_num = task.task_number
+        task_pk = task.pk
+        from core.services.audit import log_activity
+        log_activity(request, 'TASK_DELETE', f"Deleted task {task_num}", resource_type='Task', resource_id=task_pk)
+        messages.success(request, f'Task {task_num} deleted.')
         return super().delete(request, *args, **kwargs)
 
 
@@ -274,7 +280,8 @@ class TaskBulkDeleteView(LoginRequiredMixin, View):
 
         task_ids = request.POST.getlist('task_ids')
         if task_ids:
-            deleted_count, _ = Task.objects.filter(id__in=task_ids).delete()
+            from tasks.services import TaskService
+            deleted_count = TaskService.bulk_delete_tasks(task_ids, request.user, request)
             messages.success(request, f'Successfully deleted {deleted_count} task(s).')
         else:
             messages.warning(request, 'No tasks selected for deletion.')

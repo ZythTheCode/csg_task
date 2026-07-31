@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load task_filters %}
 {% block title %}Reports{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
@@ -62,8 +63,8 @@
   <div class="card-header-custom py-3 px-4">
     <h6 class="mb-0 fw-bold"><i data-lucide="table" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Report Results <span class="badge bg-primary ms-2" style="border-radius:20px">{{ task_count }}</span></h6>
   </div>
-  <div class="table-responsive">
-    <table class="table-custom w-100">
+  <div class="table-responsive" style="overflow-x:visible">
+    <table class="table-custom w-100" style="table-layout:auto">
       <thead><tr><th>Task No.</th><th>Title</th><th>Status</th><th>Priority</th><th>Assigned To</th><th>Due Date</th><th>Progress</th></tr></thead>
       <tbody>
         {% for task in tasks %}
@@ -72,7 +73,31 @@
           <td style="font-weight:700;font-size:13.5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)">{{ task.title }}</td>
           <td><span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span></td>
           <td><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
-          <td style="font-size:12.5px">{% for o in task.assigned_officers.all|slice:":2" %}{{ o.get_full_name }}{% if not forloop.last %}, {% endif %}{% endfor %}</td>
+          <td>
+            {% if task.assigned_officers.exists %}
+            <div class="dropdown d-inline-block">
+              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer" title="Click to view officer names">
+                {% for officer in task.sorted_assigned_officers|slice:":2" %}
+                <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">{{ officer.position_title|initials }}</span>
+                {% endfor %}
+                {% if task.assigned_officers.count > 2 %}
+                <span class="badge bg-secondary text-white" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{ task.assigned_officers.count|add:"-2" }}</span>
+                {% endif %}
+              </div>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:12px;min-width:230px;border-radius:12px">
+                <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">Assigned Officers</li>
+                {% for officer in task.sorted_assigned_officers %}
+                <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:var(--pink-50);border-radius:6px">
+                  <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
+                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% else %}
+            <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
+            {% endif %}
+          </td>
           <td style="font-size:12.5px">{{ task.due_date|date:"M d, Y"|default:"—" }}</td>
           <td>
             <div class="d-flex align-items-center gap-1">

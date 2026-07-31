@@ -129,9 +129,12 @@ class OfficerDeleteView(LoginRequiredMixin, DeleteView):
 
         user = self.object.user
         user_name = user.get_full_name() or user.username if user else 'Officer'
+        user_pk = user.pk if user else None
         self.object.delete()
         if user:
             user.delete()
+        from core.services.audit import log_activity
+        log_activity(request, 'OFFICER_DELETE', f"Deleted officer account '{user_name}'", resource_type='Officer', resource_id=user_pk)
         messages.success(request, f"User account '{user_name}' has been permanently deleted.")
         return redirect(self.success_url)
 
@@ -167,7 +170,10 @@ class PositionCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.organization = self.request.user.organization
-        return super().form_valid(form)
+        resp = super().form_valid(form)
+        from core.services.audit import log_activity
+        log_activity(self.request, 'POSITION_CREATE', f"Created position '{self.object.title}' ({self.object.get_initials()})", resource_type='Position', resource_id=self.object.pk)
+        return resp
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -193,6 +199,12 @@ class PositionUpdateView(LoginRequiredMixin, UpdateView):
             messages.error(request, 'Permission denied.')
             return redirect('officers:position_list')
         return super().dispatch(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        resp = super().form_valid(form)
+        from core.services.audit import log_activity
+        log_activity(self.request, 'POSITION_UPDATE', f"Updated position '{self.object.title}' ({self.object.get_initials()})", resource_type='Position', resource_id=self.object.pk)
+        return resp
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -230,6 +242,9 @@ class PositionDeleteView(LoginRequiredMixin, DeleteView):
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
         position_title = self.object.title
+        position_pk = self.object.pk
         self.object.delete()
+        from core.services.audit import log_activity
+        log_activity(request, 'POSITION_DELETE', f"Deleted position '{position_title}'", resource_type='Position', resource_id=position_pk)
         messages.success(request, f"Position '{position_title}' has been deleted. Affected officers' positions have been cleared.")
         return redirect(self.success_url)

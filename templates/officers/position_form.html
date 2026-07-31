@@ -1,14 +1,110 @@
-{% extends 'base.html' %}{% block content %}
-<a href="{% url 'officers:position_list' %}" class="text-muted" style="font-size:12px;text-decoration:none"><i class="bi bi-arrow-left me-1"></i>Back</a>
-<div class="row justify-content-center mt-2"><div class="col-md-6">
-<div class="card"><div class="card-header-custom"><h6>{{ page_title }}</h6></div>
-<div class="p-4"><form method="post">{% csrf_token %}
-<div class="row g-3">
-  <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px">Position Title</label>{{ form.title }}</div>
-  <div class="col-12"><label class="form-label fw-semibold" style="font-size:13px">Description</label>{{ form.description }}</div>
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'officers:position_list' %}" class="text-muted text-decoration-none" style="font-size:12px">
+  <i class="bi bi-arrow-left me-1"></i>Back to Positions
+</a>
+
+<div class="row justify-content-center mt-3">
+  <div class="col-md-6 col-lg-5">
+    <div class="card glass-card border-0 shadow-sm">
+      <div class="card-header-custom py-3 px-4">
+        <h6 class="fw-bold mb-0 text-dark">{{ page_title }}</h6>
+      </div>
+      <div class="p-4">
+        <form method="post" id="positionForm">
+          {% csrf_token %}
+          <div class="row g-3 mb-4">
+            <div class="col-12">
+              <label class="form-label fw-bold text-dark" style="font-size:13px">Position Title <span class="text-danger">*</span></label>
+              {{ form.title }}
+              {% if form.title.errors %}<div class="text-danger small mt-1">{{ form.title.errors }}</div>{% endif %}
+            </div>
+            
+            <div class="col-12">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <label class="form-label fw-bold text-dark mb-0" style="font-size:13px">Position Initials / Abbreviation</label>
+                <small class="text-muted" style="font-size:11px">Auto-generated (editable)</small>
+              </div>
+              {{ form.initials }}
+              <div class="form-text" style="font-size:11.5px">Used as compact chip badge in task assignments &amp; reports (e.g. VP, PRES, AUD).</div>
+              {% if form.initials.errors %}<div class="text-danger small mt-1">{{ form.initials.errors }}</div>{% endif %}
+            </div>
+
+            <div class="col-12">
+              <label class="form-label fw-bold text-dark" style="font-size:13px">Description</label>
+              {{ form.description }}
+              {% if form.description.errors %}<div class="text-danger small mt-1">{{ form.description.errors }}</div>{% endif %}
+            </div>
+          </div>
+
+          <div class="d-flex gap-2 justify-content-end pt-3 border-top">
+            <a href="{% url 'officers:position_list' %}" class="btn-secondary-custom btn-sm">Cancel</a>
+            <button type="submit" class="btn-primary-custom btn-sm px-4">{{ form_action }}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
-<hr><div class="d-flex gap-2">
-<button type="submit" class="btn-primary-custom">{{ form_action }}</button>
-<a href="{% url 'officers:position_list' %}" class="btn btn-outline-secondary" style="border-radius:8px">Cancel</a>
-</div></form></div></div>
-</div></div>{% endblock %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const titleInput = document.getElementById('id_title');
+  const initialsInput = document.getElementById('id_initials');
+  let userEditedInitials = false;
+
+  const ABBREVIATIONS = {
+    'vice president': 'VP',
+    'president': 'PRES',
+    'treasurer': 'TRES',
+    'auditor': 'AUD',
+    'secretary': 'SEC',
+    'assistant secretary': 'Asst. Sec',
+    'assistant treasurer': 'Asst. Tres',
+    'executive assistant': 'EA',
+    'business manager': 'BM',
+    'events manager': 'EM',
+    'p.r.o.': 'PRO',
+    'public relations officer': 'PRO'
+  };
+
+  function computeDefaultInitials(title) {
+    if (!title) return '';
+    const clean = title.trim();
+    const lower = clean.toLowerCase();
+    if (ABBREVIATIONS[lower]) return ABBREVIATIONS[lower];
+
+    const words = clean.split(/\s+/).filter(Boolean);
+    if (words.length === 1) {
+      return words[0].substring(0, 4).toUpperCase();
+    }
+    return words.map(w => w[0].toUpperCase()).join('');
+  }
+
+  if (initialsInput) {
+    initialsInput.addEventListener('input', function() {
+      if (this.value.trim() !== '') {
+        userEditedInitials = true;
+      } else {
+        userEditedInitials = false;
+        if (titleInput) {
+          this.value = computeDefaultInitials(titleInput.value);
+        }
+      }
+    });
+  }
+
+  if (titleInput && initialsInput) {
+    titleInput.addEventListener('input', function() {
+      if (!userEditedInitials) {
+        initialsInput.value = computeDefaultInitials(this.value);
+      }
+    });
+  }
+});
+</script>
+{% endblock %}

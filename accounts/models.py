@@ -33,6 +33,13 @@ class User(AbstractUser):
         return self.get_role_display() or 'Officer'
 
     @property
+    def position_initials(self):
+        if hasattr(self, 'officer_profile') and self.officer_profile and self.officer_profile.position:
+            return self.officer_profile.position.get_initials()
+        from tasks.templatetags.task_filters import initials
+        return initials(self.position_title)
+
+    @property
     def is_super_admin(self):
         return self.role == 'super_admin'
 

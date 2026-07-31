@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load task_filters %}
 {% block title %}Tasks{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
@@ -110,52 +111,52 @@
   {% csrf_token %}
   <div class="table-custom-container">
     <div class="table-responsive">
-      <table class="table-custom w-100" id="taskTable">
+      <table class="table-custom w-100" id="taskTable" style="table-layout:fixed">
         <thead>
           <tr>
             {% if user.can_manage_tasks %}
-            <th style="width:38px;text-align:center">
+            <th style="width:32px;text-align:center">
               <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
             </th>
             {% endif %}
-            <th style="width:115px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task_number">
+            <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task_number">
               <div class="d-flex align-items-center justify-content-between">
                 <span>Task No.</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:230px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+            <th style="width:165px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
               <div class="d-flex align-items-center justify-content-between">
                 <span>Title</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:190px">Assigned To</th>
-            <th style="width:90px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
+            <th style="width:110px">Assigned To</th>
+            <th style="width:75px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
               <div class="d-flex align-items-center justify-content-between">
                 <span>Priority</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
+            <th style="width:92px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
               <div class="d-flex align-items-center justify-content-between">
                 <span>Status</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due_date">
+            <th style="width:85px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due_date">
               <div class="d-flex align-items-center justify-content-between">
                 <span>Due Date</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
+            <th style="width:85px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
               <div class="d-flex align-items-center justify-content-between">
                 <span>Progress</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:90px;text-align:right">Actions</th>
+            <th style="width:88px;text-align:right" class="pe-3">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -176,7 +177,7 @@
               <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span>
             </td>
             <td>
-              <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="font-weight:700;font-size:13px;max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800);text-decoration:none;display:inline-block" title="{{ task.title }}">{{ task.title }}</a>
+              <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="font-weight:700;font-size:13px;max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800);text-decoration:none;display:inline-block" title="{{ task.title }}">{{ task.title }}</a>
               <div style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
             </td>
             <td>
@@ -184,8 +185,8 @@
               <div class="dropdown d-inline-block">
                 <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer" title="Click to view officer names">
                   {% for officer in task.sorted_assigned_officers|slice:":2" %}
-                  <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">
-                    {{ officer.position_title }}
+                  <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">
+                    {{ officer.position_title|initials }}
                   </span>
                   {% endfor %}
                   {% if task.assigned_officers.count > 2 %}
