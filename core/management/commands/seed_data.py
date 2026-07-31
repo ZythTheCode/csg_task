@@ -1,177 +1,213 @@
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 from django.contrib.auth import get_user_model
+from organizations.models import Organization
 from officers.models import Position, Officer
 from tasks.models import Task, TaskAssignment, TaskComment
 from notifications.models import Notification
-import random
 import datetime
 
 User = get_user_model()
 
 
 class Command(BaseCommand):
-    help = 'Seeds the database with updated CSG positions and sample data'
+    help = 'Seeds the database with current local CSG organizations, positions, users, officers, and tasks'
 
     def handle(self, *args, **kwargs):
-        self.stdout.write('[*] Seeding CSG Task Management System...')
+        self.stdout.write('[*] Seeding CSG Task Management System with local snapshot data...')
+
+        # ── ORGANIZATIONS ─────────────────────────
+        orgs_data = [
+            {'name': 'CSG', 'description': 'Central Student Government Main Organization', 'status': 'approved'},
+            {'name': 'CO:DE', 'description': 'Computer Developers and Engineers Society', 'status': 'approved'},
+            {'name': 'ACES', 'description': 'Association of Civil Engineering Students', 'status': 'approved'},
+        ]
+        org_map = {}
+        for o_info in orgs_data:
+            org, created = Organization.objects.get_or_create(
+                name=o_info['name'],
+                defaults={'description': o_info['description'], 'status': o_info['status']}
+            )
+            if not created:
+                org.description = o_info['description']
+                org.status = o_info['status']
+                org.save()
+            org_map[o_info['name']] = org
+            self.stdout.write(f'  [+] Organization: {org.name} ({org.status})')
+
+        csg_org = org_map.get('CSG')
+        code_org = org_map.get('CO:DE')
+        aces_org = org_map.get('ACES')
 
         # ── POSITIONS ────────────────────────────
-        positions_titles = [
-            'President',
-            'Vice President',
-            'Secretary',
-            'Treasurer',
-            'Auditor',
-            'P.R.O.',
-            'Business Manager',
-            'Executive Assistant',
-            'Assistant Secretary',
-            'Assistant Treasurer',
-            'Events Manager',
-            'Graphics and Media',
-            'P.V.',
+        positions_data = [
+            {'title': 'President', 'initials': 'PRES', 'org': csg_org},
+            {'title': 'Vice President', 'initials': 'VP', 'org': csg_org},
+            {'title': 'Secretary', 'initials': 'SEC', 'org': csg_org},
+            {'title': 'Treasurer', 'initials': 'TREAS', 'org': csg_org},
+            {'title': 'Auditor', 'initials': 'AUD', 'org': csg_org},
+            {'title': 'P.R.O.', 'initials': 'PRO', 'org': csg_org},
+            {'title': 'Business Manager', 'initials': 'BM', 'org': csg_org},
+            {'title': 'Executive Assistant', 'initials': 'EA', 'org': csg_org},
+            {'title': 'Assistant Secretary', 'initials': 'ASEC', 'org': csg_org},
+            {'title': 'Assistant Treasurer', 'initials': 'ATREAS', 'org': csg_org},
+            {'title': 'Events Manager', 'initials': 'EM', 'org': csg_org},
+            {'title': 'Graphics and Media', 'initials': 'GM', 'org': csg_org},
+            {'title': 'P.V.', 'initials': 'PV', 'org': csg_org},
+            {'title': 'Executive Officer', 'initials': 'EO', 'org': csg_org},
+            {'title': 'Chief Technology Officer', 'initials': 'CTO', 'org': code_org},
+            {'title': 'Vice President', 'initials': 'VP', 'org': code_org},
+            {'title': 'President', 'initials': 'PRES', 'org': aces_org},
         ]
 
-        # Clear out old positions and re-create updated list
-        positions = {}
-        for title in positions_titles:
-            pos, _ = Position.objects.get_or_create(title=title)
-            positions[title] = pos
+        pos_map = {}
+        for p_info in positions_data:
+            key = (p_info['title'], p_info['org'].name if p_info['org'] else None)
+            pos, _ = Position.objects.get_or_create(
+                title=p_info['title'],
+                organization=p_info['org'],
+                defaults={'initials': p_info['initials']}
+            )
+            if p_info['initials'] and pos.initials != p_info['initials']:
+                pos.initials = p_info['initials']
+                pos.save()
+            pos_map[key] = pos
+            self.stdout.write(f'  [+] Position: {pos.title} [{pos.organization.name if pos.organization else "Global"}]')
 
-        # Remove any positions not in the new list
-        Position.objects.exclude(title__in=positions_titles).delete()
-
-        # ── USERS & OFFICERS ─────────────────────
+        # ── USERS ─────────────────────────────────
         users_data = [
-            ('admin', 'Admin', 'CSG', 'admin@csg.edu.ph', 'super_admin', '2024-9000', 'President'),
-            ('president', 'Maria', 'Santos', 'president@csg.edu.ph', 'president', '2024-0001', 'President'),
-            ('vp_juan', 'Juan', 'Dela Cruz', 'juan@csg.edu.ph', 'executive', '2024-0002', 'Vice President'),
-            ('sec_anna', 'Anna', 'Reyes', 'anna@csg.edu.ph', 'executive', '2024-0003', 'Secretary'),
-            ('treas_ben', 'Benjamin', 'Torres', 'ben@csg.edu.ph', 'executive', '2024-0004', 'Treasurer'),
-            ('auditor_lea', 'Lea', 'Garcia', 'lea@csg.edu.ph', 'executive', '2024-0005', 'Auditor'),
-            ('pro_chris', 'Christopher', 'Lim', 'chris@csg.edu.ph', 'executive', '2024-0006', 'P.R.O.'),
-            ('bm_rose', 'Roselyn', 'Cruz', 'rose@csg.edu.ph', 'executive', '2024-0007', 'Business Manager'),
-            ('ea_mark', 'Mark', 'Villanueva', 'mark@csg.edu.ph', 'executive', '2024-0008', 'Executive Assistant'),
-            ('asec_jen', 'Jennifer', 'Bautista', 'jen@csg.edu.ph', 'committee_head', '2024-0009', 'Assistant Secretary'),
-            ('atreas_mike', 'Michael', 'Ramos', 'mike@csg.edu.ph', 'committee_head', '2024-0010', 'Assistant Treasurer'),
-            ('em_david', 'David', 'Flores', 'david@csg.edu.ph', 'committee_head', '2024-0011', 'Events Manager'),
-            ('gm_sophia', 'Sophia', 'Mendoza', 'sophia@csg.edu.ph', 'committee_head', '2024-0012', 'Graphics and Media'),
-            ('pv_alex', 'Alex', 'Navarro', 'alex@csg.edu.ph', 'executive', '2024-0013', 'P.V.'),
+            {'username': 'admin', 'first_name': 'Admin', 'last_name': 'CSG', 'email': 'admin@csg.edu.ph', 'role': 'super_admin', 'org': csg_org},
+            {'username': 'president', 'first_name': 'Zyron Asty', 'last_name': 'Bustamante', 'email': 'president@csg.edu.ph', 'role': 'president', 'org': csg_org},
+            {'username': 'vp_juan', 'first_name': 'Boris', 'last_name': 'Alano', 'email': 'juan@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'sec_anna', 'first_name': 'Jazel', 'last_name': 'Moradas', 'email': 'anna@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'treas_ben', 'first_name': 'Benjamin', 'last_name': 'Torres', 'email': 'ben@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'auditor_lea', 'first_name': 'Lea', 'last_name': 'Garcia', 'email': 'lea@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'pro_chris', 'first_name': 'Christopher', 'last_name': 'Lim', 'email': 'chris@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'bm_rose', 'first_name': 'Roselyn', 'last_name': 'Cruz', 'email': 'rose@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'ea_mark', 'first_name': 'Mark', 'last_name': 'Villanueva', 'email': 'mark@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'ext_mark', 'first_name': 'Mark', 'last_name': 'Villanueva', 'email': 'mark@csg.edu.ph', 'role': 'executive', 'org': csg_org},
+            {'username': 'asec_jen', 'first_name': 'Jennifer', 'last_name': 'Bautista', 'email': 'jen@csg.edu.ph', 'role': 'committee_head', 'org': csg_org},
+            {'username': 'atreas_mike', 'first_name': 'Michael', 'last_name': 'Ramos', 'email': 'mike@csg.edu.ph', 'role': 'committee_head', 'org': csg_org},
+            {'username': 'codeadmin', 'first_name': 'Bian Avan', 'last_name': 'Toledo', 'email': 'rc.maurice.montano@cvsu.edu.ph', 'role': 'org_admin', 'org': code_org},
+            {'username': 'em_david', 'first_name': 'David', 'last_name': 'Flores', 'email': 'david@csg.edu.ph', 'role': 'committee_head', 'org': code_org},
+            {'username': 'gm_sophia', 'first_name': 'Sophia', 'last_name': 'Mendoza', 'email': 'sophia@csg.edu.ph', 'role': 'committee_head', 'org': code_org},
+            {'username': 'pv_alex', 'first_name': 'Alex', 'last_name': 'Navarro', 'email': 'alex@csg.edu.ph', 'role': 'executive', 'org': code_org},
+            {'username': 'acesadmin', 'first_name': 'John', 'last_name': 'Doe', 'email': 'mmauricemontano16@gmail.com', 'role': 'org_admin', 'org': aces_org},
         ]
 
-        officers_list = []
-        for username, first, last, email, role, sid, pos_title in users_data:
+        user_map = {}
+        for u_info in users_data:
             user, created = User.objects.get_or_create(
-                username=username,
+                username=u_info['username'],
                 defaults={
-                    'first_name': first, 'last_name': last,
-                    'email': email, 'role': role,
+                    'first_name': u_info['first_name'],
+                    'last_name': u_info['last_name'],
+                    'email': u_info['email'],
+                    'role': u_info['role'],
+                    'organization': u_info['org'],
+                    'is_active': True
                 }
             )
             if created:
                 user.set_password('csg2025')
                 user.save()
+            else:
+                user.first_name = u_info['first_name']
+                user.last_name = u_info['last_name']
+                user.role = u_info['role']
+                user.organization = u_info['org']
+                user.save()
+            user_map[u_info['username']] = user
+            self.stdout.write(f'  [+] User: {user.username} ({user.get_role_display()}) - Org: {user.organization.name if user.organization else "None"}')
 
-            if role != 'super_admin':
-                officer = Officer.objects.filter(user=user).first()
-                if not officer:
-                    officer = Officer.objects.filter(student_id=sid).first()
-                if not officer:
-                    officer = Officer(user=user, student_id=sid)
-                else:
-                    officer.user = user
-                    officer.student_id = sid
-                officer.position = positions.get(pos_title)
-                officer.save()
-                officers_list.append(user)
-
-            self.stdout.write(f'  [+] User: {first} {last} ({role}) - Position: {pos_title}')
-
-        admin_user = User.objects.filter(username='admin').first()
-
-        # ── TASKS ────────────────────────────────
-        today = timezone.now().date()
-        tasks_data = [
-            ('Prepare Annual Financial Report', 'Compile all financial transactions and prepare the annual report for submission to the administration.', 'high', 'completed', -30, 100, today - datetime.timedelta(days=30)),
-            ('Organize Freshmen Orientation', 'Plan and execute the freshmen orientation program for incoming students.', 'urgent', 'completed', -20, 100, today - datetime.timedelta(days=5)),
-            ('Update CSG Constitution', 'Review and propose amendments to the CSG constitution for ratification.', 'medium', 'to_advisers', 15, 60, None),
-            ('Social Media Campaign Q3', 'Create and schedule social media content for the third quarter campaign.', 'medium', 'processing', 10, 45, None),
-            ('Scholarship Monitoring Report', 'Collect and verify scholarship recipient data for the semester.', 'high', 'osas', -2, 90, None),
-            ('Budget Proposal 2026', 'Prepare the annual budget proposal for the next academic year.', 'high', 'accounting', 20, 10, None),
-            ('Inter-University Debate', 'Coordinate participation in the inter-university debate competition.', 'medium', 'not_started', 25, 0, None),
-            ('Year-End Report', 'Consolidate all accomplishments for the year-end report.', 'urgent', 'overdue', -5, 30, None),
-            ('Website Redesign Graphics', 'Oversee the redesign and branding assets for the CSG website.', 'medium', 'processing', 30, 55, None),
-            ('Executive Assistant Briefing', 'Prepare briefing documents for upcoming student council summit.', 'high', 'oca', 14, 5, None),
-            ('Audit Report Semester 1', 'Complete internal audit of all funds and expenses for Semester 1.', 'high', 'completed', -15, 100, today - datetime.timedelta(days=15)),
-            ('Student Assembly Planning', 'Organize the quarterly student assembly agenda and logistics.', 'medium', 'ppss', 7, 70, None),
-            ('Membership Drive Event', 'Plan and execute the membership drive for new student members.', 'low', 'completed', -10, 100, today - datetime.timedelta(days=10)),
-            ('Grant Application Review', 'Review and process grant applications from student organizations.', 'high', 'supply', 21, 0, None),
-            ('Community Service Activity', 'Coordinate the semestral community service activity.', 'medium', 'not_started', 28, 0, None),
-            ('Campus Eco-Waste Management Drive', 'Organize campus-wide segregated recycling bins and information dissemination.', 'medium', 'not_started', 14, 0, None),
-            ('Student Council Budget Audit Q1', 'Review and process expense vouchers and receipts for Q1 student council events.', 'high', 'accounting', 8, 25, None),
-            ('OSAS Facility Request Endorsement', 'Submit formal facility reservation for the upcoming University Student Summit.', 'medium', 'osas', 5, 40, None),
-            ('OCA Event Approval for Cultural Night', 'Prepare and submit event proposal paperwork to the Office of Cultural Affairs.', 'urgent', 'oca', 3, 60, None),
-            ('PPSS Sound System Procurement', 'Coordinate with Physical Plant & Site Services for AV equipment setup.', 'high', 'ppss', 6, 50, None),
-            ('Office Supplies Requisition for CSG Secretariat', 'Submit requisition forms for printer ink, paper, and organizational materials.', 'low', 'supply', 12, 10, None),
-            ('Adviser Endorsement for Leadership Seminar', 'Obtain official signatures from faculty advisers for the leadership workshop.', 'medium', 'to_advisers', 4, 75, None),
-            ('Student Grievance Hotline Setup', 'Establish an online feedback form and ticketing system for student complaints.', 'high', 'processing', 10, 30, None),
-            ('Annual Campus Clean-up Drive Logistics', 'Coordinate volunteer registration and equipment distribution for campus cleanup.', 'medium', 'not_started', 20, 0, None),
-            ('Mid-Year Constitutional Review Assembly', 'Conduct mid-year review of council resolutions and bylaws.', 'urgent', 'completed', -2, 100, today),
+        # ── OFFICERS ─────────────────────────────
+        officers_data = [
+            {'username': 'president', 'student_id': '2024-0001', 'pos_title': 'President', 'org': csg_org},
+            {'username': 'vp_juan', 'student_id': '2024-0002', 'pos_title': 'Vice President', 'org': csg_org},
+            {'username': 'sec_anna', 'student_id': '2024-0003', 'pos_title': 'Secretary', 'org': csg_org},
+            {'username': 'treas_ben', 'student_id': '2024-0004', 'pos_title': 'Treasurer', 'org': csg_org},
+            {'username': 'auditor_lea', 'student_id': '2024-0005', 'pos_title': 'Auditor', 'org': csg_org},
+            {'username': 'pro_chris', 'student_id': '2024-0006', 'pos_title': 'P.R.O.', 'org': csg_org},
+            {'username': 'bm_rose', 'student_id': '2024-0007', 'pos_title': 'Business Manager', 'org': csg_org},
+            {'username': 'ea_mark', 'student_id': '2024-0008', 'pos_title': 'Executive Assistant', 'org': csg_org},
+            {'username': 'asec_jen', 'student_id': '2024-0009', 'pos_title': 'Assistant Secretary', 'org': csg_org},
+            {'username': 'atreas_mike', 'student_id': '2024-0010', 'pos_title': 'Assistant Treasurer', 'org': csg_org},
+            {'username': 'em_david', 'student_id': '2024-0011', 'pos_title': 'Events Manager', 'org': code_org},
+            {'username': 'gm_sophia', 'student_id': '2024-0012', 'pos_title': 'Graphics and Media', 'org': code_org},
+            {'username': 'pv_alex', 'student_id': '2024-0013', 'pos_title': 'P.V.', 'org': code_org},
+            {'username': 'codeadmin', 'student_id': '2024102365', 'pos_title': 'Chief Technology Officer', 'org': code_org},
+            {'username': 'acesadmin', 'student_id': '202210267', 'pos_title': 'President', 'org': aces_org},
         ]
 
-        created_tasks = []
-        assignee_pool = officers_list[:10]  # top officers for assignments
-        for i, (title, desc, priority, status, due_days, progress, completion_date) in enumerate(tasks_data):
-            if not Task.objects.filter(title=title).exists():
-                task = Task(
-                    title=title,
-                    description=desc,
-                    priority=priority,
-                    status=status,
-                    due_date=today + datetime.timedelta(days=due_days),
-                    progress=progress,
-                    completion_date=completion_date,
-                    created_by=admin_user,
+        for off_info in officers_data:
+            user = user_map.get(off_info['username'])
+            if user:
+                pos = pos_map.get((off_info['pos_title'], off_info['org'].name if off_info['org'] else None))
+                officer, _ = Officer.objects.get_or_create(
+                    user=user,
+                    defaults={'student_id': off_info['student_id'], 'position': pos}
                 )
-                task.save()
+                officer.student_id = off_info['student_id']
+                officer.position = pos
+                officer.save()
 
-                # Assign 1-3 officers
-                assigned = random.sample(assignee_pool, k=min(random.randint(1, 3), len(assignee_pool)))
-                for officer_user in assigned:
-                    TaskAssignment.objects.get_or_create(
-                        task=task, officer=officer_user,
-                        defaults={'assigned_by': admin_user}
-                    )
+        # ── TASKS ────────────────────────────────
+        admin_user = user_map['admin']
+        tasks_data = [
+            {'task_number': 'CODE-2026-0002', 'title': 'Website Portal Infrastructure Upgrade', 'desc': 'Deploy Vite and Django backend updates for student portal.', 'priority': 'urgent', 'status': 'not_started', 'progress': 0, 'due_date': None, 'org': code_org, 'created_by': 'codeadmin', 'assignees': ['em_david']},
+            {'task_number': 'CODE-2026-0001', 'title': 'CO:DE Hackathon 2026 Preparation', 'desc': 'Organize sponsorship and challenge tracks for the upcoming hackathon.', 'priority': 'high', 'status': 'not_started', 'progress': 45, 'due_date': None, 'org': code_org, 'created_by': 'codeadmin', 'assignees': ['em_david', 'codeadmin']},
+            {'task_number': 'CSG-2026-0027', 'title': 'from vp', 'desc': 'fdsfae', 'priority': 'medium', 'status': 'to_advisers', 'progress': 18, 'due_date': '2026-07-31', 'org': csg_org, 'created_by': 'vp_juan', 'assignees': ['atreas_mike', 'asec_jen', 'vp_juan']},
+            {'task_number': 'CSG-2026-0026', 'title': 'Mid-Year Constitutional Review Assembly', 'desc': 'Conduct mid-year review of council resolutions and bylaws.', 'priority': 'urgent', 'status': 'overdue', 'progress': 100, 'due_date': '2026-07-24', 'org': csg_org, 'created_by': 'admin', 'assignees': ['em_david', 'treas_ben']},
+            {'task_number': 'CSG-2026-0025', 'title': 'Annual Campus Clean-up Drive Logistics', 'desc': 'Coordinate volunteer registration and equipment distribution for campus cleanup.', 'priority': 'medium', 'status': 'completed', 'progress': 100, 'due_date': '2026-08-15', 'org': csg_org, 'created_by': 'admin', 'assignees': ['ea_mark']},
+            {'task_number': 'CSG-2026-0024', 'title': 'Student Grievance Hotline Setup', 'desc': 'Establish an online feedback form and ticketing system for student complaints.', 'priority': 'high', 'status': 'not_started', 'progress': 47, 'due_date': '2026-08-05', 'org': csg_org, 'created_by': 'admin', 'assignees': ['asec_jen', 'ea_mark']},
+            {'task_number': 'CSG-2026-0023', 'title': 'Adviser Endorsement for Leadership Seminar', 'desc': 'Obtain official signatures from faculty advisers for the leadership workshop.', 'priority': 'medium', 'status': 'completed', 'progress': 100, 'due_date': '2026-07-30', 'org': csg_org, 'created_by': 'admin', 'assignees': ['em_david', 'gm_sophia', 'bm_rose']},
+            {'task_number': 'CSG-2026-0022', 'title': 'Office Supplies Requisition for CSG Secretariat', 'desc': 'Submit requisition forms for printer ink, paper, and organizational materials.', 'priority': 'low', 'status': 'supply', 'progress': 10, 'due_date': '2026-08-07', 'org': csg_org, 'created_by': 'admin', 'assignees': ['em_david', 'pro_chris', 'auditor_lea']},
+            {'task_number': 'CSG-2026-0021', 'title': 'PPSS Sound System Procurement', 'desc': 'Coordinate with Physical Plant & Site Services for AV equipment setup.', 'priority': 'high', 'status': 'ppss', 'progress': 50, 'due_date': '2026-08-01', 'org': csg_org, 'created_by': 'admin', 'assignees': ['em_david', 'ext_mark']},
+            {'task_number': 'CSG-2026-0020', 'title': 'OCA Event Approval for Cultural Night', 'desc': 'Prepare and submit event proposal paperwork to the Office of Cultural Affairs.', 'priority': 'urgent', 'status': 'overdue', 'progress': 60, 'due_date': '2026-07-29', 'org': csg_org, 'created_by': 'admin', 'assignees': ['ext_mark']},
+            {'task_number': 'CSG-2026-0019', 'title': 'OSAS Facility Request Endorsement', 'desc': 'Submit formal facility reservation for the upcoming University Student Summit.', 'priority': 'medium', 'status': 'osas', 'progress': 40, 'due_date': '2026-07-31', 'org': csg_org, 'created_by': 'admin', 'assignees': ['asec_jen', 'pro_chris']},
+            {'task_number': 'CSG-2026-0018', 'title': 'Student Council Budget Audit Q1', 'desc': 'Review and process expense vouchers and receipts for Q1 student council events.', 'priority': 'high', 'status': 'accounting', 'progress': 25, 'due_date': '2026-08-03', 'org': csg_org, 'created_by': 'admin', 'assignees': ['em_david']},
+            {'task_number': 'CSG-2026-0017', 'title': 'Campus Eco-Waste Management Drive', 'desc': 'Organize campus-wide segregated recycling bins and information dissemination.', 'priority': 'medium', 'status': 'not_started', 'progress': 0, 'due_date': '2026-08-09', 'org': csg_org, 'created_by': 'admin', 'assignees': ['gm_sophia']},
+            {'task_number': 'CSG-2026-0016', 'title': 'Cook Ilocos Empanada', 'desc': 'hkdsjhfjkdshfaweafae fesfesfesfe', 'priority': 'low', 'status': 'overdue', 'progress': 0, 'due_date': '2026-07-31', 'org': csg_org, 'created_by': 'admin', 'assignees': ['vp_juan', 'treas_ben', 'auditor_lea', 'sec_anna', 'president']},
+            {'task_number': 'CSG-2026-0015', 'title': 'Community Service Event', 'desc': 'Coordinate the semestral community service activity.', 'priority': 'medium', 'status': 'to_advisers', 'progress': 0, 'due_date': '2026-08-20', 'org': csg_org, 'created_by': 'admin', 'assignees': ['president']},
+            {'task_number': 'CSG-2026-0014', 'title': 'Grant Application Review', 'desc': 'Review and process grant applications from student organizations.', 'priority': 'high', 'status': 'not_started', 'progress': 0, 'due_date': '2026-08-13', 'org': csg_org, 'created_by': 'admin', 'assignees': ['pro_chris', 'president']},
+            {'task_number': 'CSG-2026-0013', 'title': 'Membership Drive', 'desc': 'Plan and execute the membership drive for new student members.', 'priority': 'low', 'status': 'completed', 'progress': 100, 'due_date': '2026-07-13', 'org': csg_org, 'created_by': 'admin', 'assignees': ['sec_anna']},
+        ]
 
-                # Add a sample comment
-                commenter = random.choice(assigned)
-                TaskComment.objects.create(
-                    task=task, author=commenter,
-                    content=random.choice([
-                        'Working on this task. Will update progress soon.',
-                        'Task is proceeding as planned.',
-                        'Encountered minor delays but still on track.',
-                        'Completed initial phase. Moving to next steps.',
-                        'Requesting additional support for this task.',
-                    ])
-                )
-
-                created_tasks.append(task)
-                self.stdout.write(f'  [+] Task: [{task.task_number}] {title}')
-
-        # ── NOTIFICATIONS ─────────────────────────
-        for user in officers_list[:5]:
-            Notification.objects.get_or_create(
-                recipient=user,
-                title='Welcome to CSG Task System',
+        for t_info in tasks_data:
+            creator = user_map.get(t_info['created_by'], admin_user)
+            due_dt = datetime.datetime.strptime(t_info['due_date'], '%Y-%m-%d').date() if t_info['due_date'] else None
+            
+            task, created = Task.objects.get_or_create(
+                task_number=t_info['task_number'],
                 defaults={
-                    'message': 'You have been added to the CSG Task Management System. Check your assigned tasks.',
-                    'notification_type': 'system',
+                    'title': t_info['title'],
+                    'description': t_info['desc'],
+                    'priority': t_info['priority'],
+                    'status': t_info['status'],
+                    'progress': t_info['progress'],
+                    'due_date': due_dt,
+                    'organization': t_info['org'],
+                    'created_by': creator,
                 }
             )
+            if not created:
+                task.title = t_info['title']
+                task.description = t_info['desc']
+                task.priority = t_info['priority']
+                task.status = t_info['status']
+                task.progress = t_info['progress']
+                task.due_date = due_dt
+                task.organization = t_info['org']
+                task.save()
 
-        self.stdout.write(self.style.SUCCESS('\n[OK] Seed complete! Positions updated:'))
-        for title in positions_titles:
-            self.stdout.write(f'  - {title}')
-    
+            for assignee_username in t_info['assignees']:
+                off_user = user_map.get(assignee_username)
+                if off_user:
+                    TaskAssignment.objects.get_or_create(
+                        task=task,
+                        officer=off_user,
+                        defaults={'assigned_by': creator}
+                    )
+            self.stdout.write(f'  [+] Task: [{task.task_number}] {task.title} ({task.organization.name if task.organization else "Global"})')
+
+        self.stdout.write(self.style.SUCCESS('\n[OK] Seed complete! Local snapshot data synced.'))
