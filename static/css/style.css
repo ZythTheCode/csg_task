@@ -136,13 +136,46 @@
    GLOBAL DARK MODE ([data-mode="dark"]) OVERRIDES
 ══════════════════════════════════════ */
 [data-mode="dark"], [data-theme="dark"] {
-  --slate-800: #F8FAFC; --slate-700: #F1F5F9; --slate-600: #E2E8F0; --slate-500: #94A3B8; --slate-400: #94A3B8;
+  --pink-50:  rgba(15, 23, 42, 0.65) !important;
+  --pink-100: rgba(51, 65, 85, 0.5) !important;
+  --pink-200: rgba(71, 85, 105, 0.6) !important;
+  --slate-800: #F8FAFC !important;
+  --slate-700: #F1F5F9 !important;
+  --slate-600: #E2E8F0 !important;
+  --slate-500: #94A3B8 !important;
+  --slate-400: #64748B !important;
+  --slate-200: rgba(51, 65, 85, 0.6) !important;
   --sidebar-bg: rgba(15, 23, 42, 0.95);
   --sidebar-border: rgba(51, 65, 85, 0.6);
   --sidebar-text: #CBD5E1;
   --sidebar-hover: rgba(51, 65, 85, 0.5);
   --page-bg: linear-gradient(135deg, #090D16 0%, #0F172A 50%, #0B1120 100%);
   color: #F8FAFC;
+}
+
+/* ── Dark Mode: Light Sub-Containers & Inline Boxes ── */
+[data-mode="dark"] .bg-light,
+[data-mode="dark"] [style*="background:var(--pink-50)"],
+[data-mode="dark"] [style*="background: var(--pink-50)"],
+[data-mode="dark"] [style*="background:#fff"],
+[data-mode="dark"] [style*="background: #fff"],
+[data-mode="dark"] [style*="background:#ffffff"],
+[data-mode="dark"] [style*="background: #ffffff"],
+[data-mode="dark"] [style*="background:rgba(255,255,255"],
+[data-mode="dark"] [style*="background: rgba(255, 255, 255"] {
+  background: rgba(15, 23, 42, 0.7) !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+  color: #F8FAFC !important;
+}
+
+[data-mode="dark"] .text-dark {
+  color: #F8FAFC !important;
+}
+
+[data-mode="dark"] .badge.bg-light {
+  background-color: rgba(51, 65, 85, 0.6) !important;
+  color: var(--primary-light) !important;
+  border-color: rgba(71, 85, 105, 0.7) !important;
 }
 
 [data-mode="dark"] .sidebar, [data-theme="dark"] .sidebar {
