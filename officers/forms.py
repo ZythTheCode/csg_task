@@ -14,6 +14,18 @@ class PositionForm(forms.ModelForm):
         }
 
 
+class DisabledPositionSelect(forms.Select):
+    def __init__(self, attrs=None, choices=(), disabled_choices=()):
+        super().__init__(attrs, choices)
+        self.disabled_choices = set(str(x) for x in disabled_choices)
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex, attrs)
+        if value and str(value) in self.disabled_choices:
+            option['attrs']['disabled'] = True
+        return option
+
+
 class OfficerForm(forms.ModelForm):
     first_name = forms.CharField(
         max_length=150,
@@ -52,32 +64,56 @@ class OfficerForm(forms.ModelForm):
         model = Officer
         fields = ['position', 'student_id']
         widgets = {
-            'position': forms.Select(attrs={'class': 'form-select'}),
             'student_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2024-0001'}),
         }
 
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_creator = user
-        self.fields['position'].required = False
 
-        # Only show positions not already assigned to another officer.
-        # If editing, always include the officer's current position.
-        current_position_pk = None
-        if self.instance and self.instance.pk:
-            current_position_pk = self.instance.position_id
-
-        # Positions that are taken by someone else
-        taken_qs = Officer.objects.filter(position__isnull=False)
-        if self.instance and self.instance.pk:
-            taken_qs = taken_qs.exclude(pk=self.instance.pk)
-        taken_ids = taken_qs.values_list('position_id', flat=True)
-
+        # Build position choices showing assigned officer names and disabled state
         from .models import Position as PositionModel
-        available_qs = PositionModel.objects.exclude(pk__in=taken_ids)
+        all_positions = PositionModel.objects.all()
         if self.user_creator and self.user_creator.organization:
-            available_qs = available_qs.filter(organization=self.user_creator.organization)
-        self.fields['position'].queryset = available_qs
+            all_positions = all_positions.filter(organization=self.user_creator.organization)
+        all_positions = all_positions.select_related('officer__user').order_by('title')
+
+        assigned_map = {}
+        for pos in all_positions:
+            try:
+                officer = pos.officer
+                if self.instance and self.instance.pk and officer.pk == self.instance.pk:
+                    continue
+                if officer and getattr(officer, 'user', None):
+                    full_name = officer.user.get_full_name() or officer.user.username
+                    assigned_map[pos.pk] = full_name
+            except Officer.DoesNotExist:
+                pass
+
+        choices = [('', '---------')]
+        self.disabled_position_pks = set()
+
+        for pos in all_positions:
+            if pos.pk in assigned_map:
+                officer_name = assigned_map[pos.pk]
+                label = f"{pos.title} ({officer_name})"
+                choices.append((pos.pk, label))
+                self.disabled_position_pks.add(str(pos.pk))
+            else:
+                label = pos.title
+                choices.append((pos.pk, label))
+
+        initial_position_id = self.instance.position_id if (self.instance and self.instance.pk) else None
+
+        self.fields['position'] = forms.ChoiceField(
+            choices=choices,
+            required=False,
+            initial=initial_position_id,
+            widget=DisabledPositionSelect(
+                attrs={'class': 'form-select'},
+                disabled_choices=self.disabled_position_pks
+            )
+        )
 
         # Restrict role choices
         allowed_roles = []
@@ -88,7 +124,6 @@ class OfficerForm(forms.ModelForm):
             
         if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
             user = self.instance.user
-            # Ensure their current role is in choices if they are editing themselves or another admin
             if not any(c == user.role for c, l in allowed_roles):
                 allowed_roles.append((user.role, dict(User.ROLE_CHOICES).get(user.role, user.role)))
         
@@ -102,6 +137,23 @@ class OfficerForm(forms.ModelForm):
             self.fields['email'].initial = user.email
             self.fields['role'].initial = user.role
             self.fields['profile_picture'].initial = user.profile_picture
+
+    def clean_position(self):
+        position_val = self.cleaned_data.get('position')
+        if not position_val:
+            return None
+        if isinstance(position_val, Position):
+            position_obj = position_val
+        else:
+            try:
+                position_obj = Position.objects.get(pk=position_val)
+            except Position.DoesNotExist:
+                raise forms.ValidationError("Invalid position selected.")
+
+        if hasattr(self, 'disabled_position_pks') and str(position_obj.pk) in self.disabled_position_pks:
+            raise forms.ValidationError("This position is already assigned to another officer.")
+
+        return position_obj
 
     def save(self, commit=True):
         officer = super().save(commit=False)
