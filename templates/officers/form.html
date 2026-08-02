@@ -29,11 +29,44 @@
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
-            <!-- Section 1: User Identity -->
+            <!-- Section 1: User Identity & Profile Photo -->
             <div class="mb-4">
               <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom" style="font-size:13px">
-                <i class="bi bi-person me-1 text-primary"></i> 1. User Identity & Full Name
+                <i class="bi bi-person me-1 text-primary"></i> 1. Profile Photo & User Identity
               </h6>
+
+              <!-- Interactive Avatar Component -->
+              <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:var(--pink-50)">
+                <div class="avatar-upload-wrapper" onclick="document.getElementById('id_profile_picture').click()" title="Click to upload profile photo">
+                  <div class="avatar-upload-circle">
+                    {% if form.instance.pk and form.instance.user.profile_picture %}
+                      <img id="avatarPreviewForm" src="{{ form.instance.user.profile_picture.url }}" alt="Profile Preview" style="width:100%;height:100%;object-fit:cover;">
+                      <div id="avatarFallbackForm" class="officer-avatar d-none" style="width:100%;height:100%;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center">
+                        <i class="bi bi-person"></i>
+                      </div>
+                    {% else %}
+                      <img id="avatarPreviewForm" src="" alt="Profile Preview" class="d-none" style="width:100%;height:100%;object-fit:cover;">
+                      <div id="avatarFallbackForm" class="officer-avatar" style="width:100%;height:100%;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center;background:var(--pink-100);color:var(--primary)">
+                        {% if form.instance.pk %}{{ form.instance.user.first_name|first }}{{ form.instance.user.last_name|first }}{% else %}<i class="bi bi-person"></i>{% endif %}
+                      </div>
+                    {% endif %}
+                  </div>
+                  <div class="avatar-upload-btn" title="Edit Profile Photo">
+                    <i class="bi bi-pencil-fill" style="font-size:13px"></i>
+                  </div>
+                </div>
+                <div>
+                  <h6 class="fw-bold mb-1 text-dark" style="font-size:14px">
+                    {% if form.instance.pk %}{{ form.instance.user.get_full_name }}{% else %}Officer Profile Photo{% endif %}
+                  </h6>
+                  <small class="text-muted d-block mb-2" style="font-size:11px">Click the avatar or pencil icon to upload a photo (JPG, PNG, WebP).</small>
+                  <button type="button" class="btn btn-sm btn-outline-primary px-3" style="border-radius:20px;font-size:12px;font-weight:600" onclick="document.getElementById('id_profile_picture').click()">
+                    <i class="bi bi-camera me-1"></i> Choose Photo
+                  </button>
+                  <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" style="display:none" onchange="previewAvatarForm(this)">
+                </div>
+              </div>
+
               <div class="row g-3">
                 <div class="col-md-6">
                   <label class="form-label fw-semibold" style="font-size:12px">First Name <span class="text-danger">*</span></label>
@@ -55,11 +88,6 @@
                   <label class="form-label fw-semibold" style="font-size:12px">Email Address</label>
                   {{ form.email }}
                   {% if form.email.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.email.errors.0 }}</div>{% endif %}
-                </div>
-                <div class="col-md-12">
-                  <label class="form-label fw-semibold" style="font-size:12px">Profile Picture (Optional)</label>
-                  {{ form.profile_picture }}
-                  {% if form.profile_picture.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.profile_picture.errors.0 }}</div>{% endif %}
                 </div>
               </div>
             </div>
@@ -253,6 +281,23 @@
 </div>
 
 <script>
+function previewAvatarForm(input) {
+  if (input.files && input.files[0]) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      const preview = document.getElementById('avatarPreviewForm');
+      const fallback = document.getElementById('avatarFallbackForm');
+      if (preview) {
+        preview.src = e.target.result;
+        preview.classList.remove('d-none');
+      }
+      if (fallback) {
+        fallback.classList.add('d-none');
+      }
+    };
+    reader.readAsDataURL(input.files[0]);
+  }
+}
 function validateDeleteConfirmForm() {
   const input = document.getElementById('confirmDeleteInputForm');
   const btn = document.getElementById('confirmDeleteBtnForm');
