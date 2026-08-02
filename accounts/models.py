@@ -7,8 +7,8 @@ class User(AbstractUser):
         ('super_admin', 'Super Admin'),
         ('org_admin', 'Organization Admin'),
         ('president', 'President'),
-        ('executive', 'Executive Officer'),
-        ('committee_head', 'Committee Head'),
+        ('executive', 'Elected Officer'),
+        ('committee_head', 'Committee Member'),
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='committee_head')
     organization = models.ForeignKey(

@@ -54,7 +54,7 @@ class Command(BaseCommand):
             {'title': 'Events Manager', 'initials': 'EM', 'org': csg_org},
             {'title': 'Graphics and Media', 'initials': 'GM', 'org': csg_org},
             {'title': 'P.V.', 'initials': 'PV', 'org': csg_org},
-            {'title': 'Executive Officer', 'initials': 'EO', 'org': csg_org},
+            {'title': 'Elected Officer', 'initials': 'EO', 'org': csg_org},
             {'title': 'Chief Technology Officer', 'initials': 'CTO', 'org': code_org},
             {'title': 'Vice President', 'initials': 'VP', 'org': code_org},
             {'title': 'President', 'initials': 'PRES', 'org': aces_org},
