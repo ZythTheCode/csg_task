@@ -63,7 +63,7 @@
                   <button type="button" class="btn btn-sm btn-outline-primary px-3" style="border-radius:20px;font-size:12px;font-weight:600" onclick="document.getElementById('id_profile_picture').click()">
                     <i class="bi bi-camera me-1"></i> Choose Photo
                   </button>
-                  <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" style="display:none" onchange="previewAvatarForm(this)">
+                  <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" style="display:none" onchange="handleProfilePhotoSelect(this, 'avatarPreviewForm', 'avatarFallbackForm')">
                 </div>
               </div>
 
