@@ -88,6 +88,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -110,6 +111,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -132,6 +134,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -154,6 +157,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -176,6 +180,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -198,6 +203,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -220,6 +226,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -242,6 +249,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -264,6 +272,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -286,6 +295,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -308,6 +318,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -330,6 +341,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -352,6 +364,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -374,6 +387,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -396,6 +410,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -418,6 +433,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []
@@ -440,6 +456,7 @@
     "profile_picture": "",
     "phone": "",
     "bio": "",
+    "dark_mode": false,
     "is_active": true,
     "groups": [],
     "user_permissions": []

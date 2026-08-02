@@ -14,6 +14,14 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
 <script src="{% static 'js/lucide.min.js' %}"></script>
+<script>
+  (function() {
+    const userPref = "{% if user.dark_mode %}dark{% else %}light{% endif %}";
+    const localPref = localStorage.getItem('csg_dark_mode');
+    const activeMode = localPref || userPref;
+    document.documentElement.setAttribute('data-mode', activeMode);
+  })();
+</script>
 {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -122,6 +130,10 @@
       </div>
     </div>
     <div class="topbar-right">
+      <button class="topbar-icon-btn" onclick="toggleUserDarkMode()" id="darkModeToggleBtn" type="button" title="Toggle Dark/Light Mode">
+        <i data-lucide="sun" id="darkModeIconSun" style="display:none"></i>
+        <i data-lucide="moon" id="darkModeIconMoon"></i>
+      </button>
       <a href="{% url 'notifications:list' %}" class="topbar-icon-btn" title="Notifications">
         <i data-lucide="bell"></i>
         {% if unread_notifications_count > 0 %}
@@ -301,6 +313,42 @@ document.addEventListener('DOMContentLoaded', function() {
       });
     }
   });
+
+  window.toggleUserDarkMode = function() {
+    const html = document.documentElement;
+    const currentMode = html.getAttribute('data-mode') || 'light';
+    const newMode = currentMode === 'dark' ? 'light' : 'dark';
+    
+    html.setAttribute('data-mode', newMode);
+    localStorage.setItem('csg_dark_mode', newMode);
+    updateDarkModeIcon(newMode);
+    
+    fetch("{% url 'accounts:toggle_dark_mode' %}", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'X-CSRFToken': '{{ csrf_token }}'
+      },
+      body: new URLSearchParams({'mode': newMode})
+    }).catch(err => console.log('Dark mode sync error:', err));
+  };
+
+  window.updateDarkModeIcon = function(mode) {
+    const sun = document.getElementById('darkModeIconSun');
+    const moon = document.getElementById('darkModeIconMoon');
+    if (sun && moon) {
+      if (mode === 'dark') {
+        sun.style.display = 'inline-block';
+        moon.style.display = 'none';
+      } else {
+        sun.style.display = 'none';
+        moon.style.display = 'inline-block';
+      }
+    }
+  };
+
+  const initialMode = document.documentElement.getAttribute('data-mode') || 'light';
+  updateDarkModeIcon(initialMode);
 });
 </script>
 

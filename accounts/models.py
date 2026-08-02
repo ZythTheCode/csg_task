@@ -21,6 +21,7 @@ class User(AbstractUser):
     profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True)
     bio = models.TextField(blank=True)
+    dark_mode = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
 
     def __str__(self):

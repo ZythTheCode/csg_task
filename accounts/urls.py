@@ -27,4 +27,5 @@ urlpatterns = [
     ), name='password_reset_complete'),
     path('profile/', views.ProfileView.as_view(), name='profile'),
     path('profile/edit/', views.ProfileEditView.as_view(), name='profile_edit'),
+    path('toggle-dark-mode/', views.ToggleDarkModeView.as_view(), name='toggle_dark_mode'),
 ]

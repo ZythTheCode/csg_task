@@ -73,3 +73,19 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
     def form_valid(self, form):
         messages.success(self.request, 'Profile updated successfully.')
         return super().form_valid(form)
+
+
+from django.http import JsonResponse
+from django.views import View
+
+class ToggleDarkModeView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        requested_mode = request.POST.get('mode')
+        if requested_mode in ['dark', 'light']:
+            user.dark_mode = (requested_mode == 'dark')
+        else:
+            user.dark_mode = not user.dark_mode
+        user.save(update_fields=['dark_mode'])
+        return JsonResponse({'status': 'ok', 'dark_mode': user.dark_mode})
+
