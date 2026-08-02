@@ -21,6 +21,12 @@ class Organization(models.Model):
         ('coral', 'Coral Sunset'),
         ('forest', 'Deep Forest'),
         ('nordic', 'Nordic Frost'),
+        ('sapphire', 'Sapphire Velvet'),
+        ('amethyst', 'Amethyst Dusk'),
+        ('rosegold', 'Rose Gold Lux'),
+        ('monochrome', 'Slate Monochrome'),
+        ('neon', 'Neon Cyber'),
+        ('cherry', 'Sakura Cherry'),
     ]
 
     name = models.CharField(max_length=255, unique=True)

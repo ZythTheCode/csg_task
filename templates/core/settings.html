@@ -175,6 +175,78 @@
               <div class="text-muted text-center" style="font-size:10.5px">Ice Cyan</div>
             </label>
           </div>
+
+          <!-- Sapphire -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'sapphire' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="sapphire" class="d-none" {% if target_org.theme == 'sapphire' %}checked{% endif %} onchange="previewTheme('sapphire')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #1E40AF, #3B82F6);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'sapphire' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Sapphire Velvet</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Deep Royal Blue</div>
+            </label>
+          </div>
+
+          <!-- Amethyst -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'amethyst' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="amethyst" class="d-none" {% if target_org.theme == 'amethyst' %}checked{% endif %} onchange="previewTheme('amethyst')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #7E22CE, #C084FC);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'amethyst' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Amethyst Dusk</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Pastel Orchid</div>
+            </label>
+          </div>
+
+          <!-- Rose Gold -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'rosegold' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="rosegold" class="d-none" {% if target_org.theme == 'rosegold' %}checked{% endif %} onchange="previewTheme('rosegold')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #E11D74, #FB7185);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'rosegold' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Rose Gold Lux</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Warm Gold & Rose</div>
+            </label>
+          </div>
+
+          <!-- Cherry -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'cherry' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="cherry" class="d-none" {% if target_org.theme == 'cherry' %}checked{% endif %} onchange="previewTheme('cherry')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #EC4899, #F472B6);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'cherry' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Sakura Cherry</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Blossom Pink</div>
+            </label>
+          </div>
+
+          <!-- Monochrome -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'monochrome' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="monochrome" class="d-none" {% if target_org.theme == 'monochrome' %}checked{% endif %} onchange="previewTheme('monochrome')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #334155, #94A3B8);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'monochrome' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Slate Monochrome</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Obsidian & Silver</div>
+            </label>
+          </div>
+
+          <!-- Neon -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'neon' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="neon" class="d-none" {% if target_org.theme == 'neon' %}checked{% endif %} onchange="previewTheme('neon')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #65A30D, #84CC16);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'neon' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Neon Cyber</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Hyper Electric Lime</div>
+            </label>
+          </div>
         </div>
 
         <div class="d-flex justify-content-end">
