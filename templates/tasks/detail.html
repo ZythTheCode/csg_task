@@ -4,24 +4,24 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <a href="{% url 'tasks:list' %}" class="text-muted text-decoration-none fw-semibold" style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back to Tasks</a>
-    <h5 class="mb-0 mt-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px"><span style="color:var(--primary);font-family:monospace">{{ task.task_number }}</span> — {{ task.title }}</h5>
+    <h5 class="mb-0 mt-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px"><span style="color:var(--primary);font-family:monospace">{{ task.task_number }}</span> {% if task.is_overdue %}<span class="badge bg-danger align-middle ms-1 me-1" style="font-size:11px;padding:3px 8px;letter-spacing:0.5px">OVERDUE</span>{% endif %}— {{ task.title }}</h5>
   </div>
   <div class="d-flex gap-2">
-    {% if user.can_manage_tasks %}
+    {% if can_edit_task %}
     <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-secondary-custom btn-sm"><i data-lucide="edit-3" style="width:14px;height:14px"></i>Edit</a>
-    {% if task.assigned_officers.exists %}
+    {% endif %}
+    {% if user.has_task_override and task.assigned_officers.exists %}
     <button type="button" class="btn btn-warning btn-sm" id="nudgeBtn" style="border-radius:30px;font-weight:700;color:#fff;padding:8px 18px">
       <i data-lucide="bell" style="width:14px;height:14px"></i> Nudge
     </button>
     {% endif %}
-    {% if task.status == 'waiting_approval' %}
+    {% if task.status == 'waiting_approval' and can_update_progress %}
     <form method="post" action="{% url 'tasks:complete' task.pk %}" class="d-inline" data-confirm="Are you sure you want to mark task <strong>{{ task.task_number }}</strong> as complete?" data-confirm-title="Mark Task Complete" data-confirm-btn="Mark Complete" data-confirm-class="btn-success" data-confirm-icon="bi-check-circle-fill" data-confirm-icon-bg="#dcfce7" data-confirm-icon-color="#16a34a">
       {% csrf_token %}
       <button type="submit" class="btn btn-success btn-sm" style="border-radius:30px;font-weight:700;padding:8px 18px"><i data-lucide="check-circle" style="width:14px;height:14px"></i> Mark Complete</button>
     </form>
     {% endif %}
-    {% endif %}
-    {% if task.status == 'completed' and user.can_manage_tasks %}
+    {% if task.status == 'completed' and user.has_task_override %}
     <form method="post" action="{% url 'tasks:archive' task.pk %}" class="d-inline" data-confirm="Are you sure you want to archive task <strong>{{ task.task_number }}</strong>?" data-confirm-title="Archive Task" data-confirm-btn="Archive" data-confirm-class="btn-secondary" data-confirm-icon="bi-archive-fill" data-confirm-icon-bg="#f1f5f9" data-confirm-icon-color="#475569">
       {% csrf_token %}
       <button type="submit" class="btn btn-secondary-custom btn-sm"><i data-lucide="archive" style="width:14px;height:14px"></i> Archive</button>
@@ -30,7 +30,7 @@
   </div>
 </div>
 
-{% if user.can_manage_tasks and task.assigned_officers.exists %}
+{% if user.has_task_override and task.assigned_officers.exists %}
 <!-- NUDGE MODAL -->
 <div class="modal fade" id="nudgeModal" tabindex="-1" aria-labelledby="nudgeModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
@@ -130,7 +130,7 @@
     </div>
 
     <!-- Progress Update -->
-    {% if user.can_manage_tasks or user in task.assigned_officers.all %}
+    {% if can_update_progress %}
     <div class="glass-card mb-3">
       <div class="card-header-custom"><h6><i data-lucide="gauge" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Update Progress</h6></div>
       <div class="p-4">
@@ -255,7 +255,7 @@
 {% endblock %}
 
 {% block extra_js %}
-{% if user.can_manage_tasks and task.assigned_officers.exists %}
+{% if user.has_task_override and task.assigned_officers.exists %}
 <script>
 document.addEventListener('DOMContentLoaded', function () {
   const nudgeModal   = new bootstrap.Modal(document.getElementById('nudgeModal'));

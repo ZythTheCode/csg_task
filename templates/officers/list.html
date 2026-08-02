@@ -15,7 +15,7 @@
 
 <div class="row g-3 mb-5">
   {% for officer in officers %}
-  <div class="col-md-4 col-lg-3">
+  <div class="col-12 col-sm-6 col-md-4 col-lg-3">
     <div class="glass-card h-100 text-center p-4">
       {% if officer.user.profile_picture %}
       <div class="mx-auto mb-3 shadow-sm border border-2 border-white" style="width:64px;height:64px;border-radius:20px;overflow:hidden">
@@ -60,7 +60,7 @@
     </h6>
   </div>
   <div class="table-responsive">
-    <table class="table-custom w-100" style="font-size:12.5px;table-layout:fixed">
+    <table class="table-custom w-100" style="font-size:12.5px;min-width:920px;table-layout:fixed">
       <thead>
         <tr>
           <th class="px-4 py-3" style="width:250px">Role</th>

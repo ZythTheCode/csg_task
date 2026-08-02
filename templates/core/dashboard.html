@@ -2,53 +2,65 @@
 {% load static %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center align-items-start gap-3 mb-4">
+  <div>
+    <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Dashboard Overview</h5>
+    <p class="text-muted mb-0" style="font-size:13px">Overview of your tasks and productivity</p>
+  </div>
+  <!-- Scope Switcher -->
+  <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+    <a href="?scope=my_tasks" class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks</a>
+    <a href="?scope=all" class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks</a>
+  </div>
+</div>
+
 <!-- Stat Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-3">
-    <div class="stat-card primary" id="stat-active">
+<div class="row g-2 g-sm-3 mb-4">
+  <div class="col-6 col-sm-6 col-md-3">
+    <a href="{% url 'tasks:list' %}?status=active" class="stat-card primary text-decoration-none" id="stat-active" title="View all tasks that are currently active (not completed)">
       <div class="stat-icon"><i data-lucide="clipboard-list"></i></div>
       <div class="stat-value" id="val-active">{{ active_tasks }}</div>
       <div class="stat-label">Active Tasks</div>
-    </div>
+    </a>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="stat-card success">
+  <div class="col-6 col-sm-6 col-md-3">
+    <a href="{% url 'tasks:list' %}?status=completed" class="stat-card success text-decoration-none" title="View all successfully completed tasks">
       <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
       <div class="stat-value" id="val-completed">{{ completed_tasks }}</div>
       <div class="stat-label">Completed Tasks</div>
-    </div>
+    </a>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="stat-card danger">
+  <div class="col-6 col-sm-6 col-md-3">
+    <a href="{% url 'tasks:list' %}?status=overdue" class="stat-card danger text-decoration-none" title="View tasks that have passed their deadline">
       <div class="stat-icon"><i data-lucide="alert-circle"></i></div>
       <div class="stat-value" id="val-overdue">{{ overdue_tasks }}</div>
       <div class="stat-label">Overdue Tasks</div>
-    </div>
+    </a>
   </div>
-  <div class="col-6 col-md-3">
-    <div class="stat-card warning">
+  <div class="col-6 col-sm-6 col-md-3">
+    <a href="{% url 'tasks:list' %}?due_this_week=true" class="stat-card warning text-decoration-none" title="View tasks that are due within the next 7 days">
       <div class="stat-icon"><i data-lucide="calendar"></i></div>
       <div class="stat-value" id="val-upcoming">{{ upcoming_tasks }}</div>
       <div class="stat-label">Due This Week</div>
-    </div>
+    </a>
   </div>
 </div>
 
 <!-- Charts Row 1 -->
 <div class="row g-3 mb-3">
-  <div class="col-md-4">
+  <div class="col-12 col-md-4">
     <div class="card h-100">
       <div class="card-header-custom"><h6><i data-lucide="pie-chart" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Status</h6></div>
       <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="statusChart"></canvas></div></div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-12 col-md-4">
     <div class="card h-100">
       <div class="card-header-custom"><h6><i data-lucide="bar-chart-2" class="me-2" style="width:18px;height:18px;color:var(--success)"></i>Monthly Completed</h6></div>
       <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="monthlyChart"></canvas></div></div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-12 col-md-4">
     <div class="card h-100">
       <div class="card-header-custom"><h6><i data-lucide="layers" class="me-2" style="width:18px;height:18px;color:var(--warning)"></i>Priority Distribution</h6></div>
       <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="priorityChart"></canvas></div></div>
@@ -58,13 +70,13 @@
 
 <!-- Charts Row 2 -->
 <div class="row g-3 mb-4">
-  <div class="col-md-7">
+  <div class="col-12 col-lg-7">
     <div class="card h-100">
       <div class="card-header-custom"><h6><i data-lucide="users" class="me-2" style="width:18px;height:18px;color:var(--info)"></i>Tasks Per Officer</h6></div>
       <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="officerChart"></canvas></div></div>
     </div>
   </div>
-  <div class="col-md-5">
+  <div class="col-12 col-lg-5">
     <div class="card h-100">
       <div class="card-header-custom"><h6><i data-lucide="trending-up" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Weekly Trend</h6></div>
       <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="weeklyChart"></canvas></div></div>
@@ -79,15 +91,33 @@
     <a href="{% url 'tasks:list' %}" class="btn-primary-custom" style="font-size:12px;padding:6px 16px">View All</a>
   </div>
   <div class="table-responsive">
-    <table class="table-custom w-100">
+    <table class="table-custom table-sortable w-100" style="min-width:800px">
       <thead>
         <tr>
-          <th>Task No.</th><th>Title</th><th>Status</th><th>Priority</th><th>Due Date</th><th>Progress</th><th>Action</th>
+          <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
+            <div class="d-flex align-items-center justify-content-between"><span>Task No.</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+            <div class="d-flex align-items-center justify-content-between"><span>Title</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
+            <div class="d-flex align-items-center justify-content-between"><span>Status</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
+            <div class="d-flex align-items-center justify-content-between"><span>Priority</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due-date">
+            <div class="d-flex align-items-center justify-content-between"><span>Due Date</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
+            <div class="d-flex align-items-center justify-content-between"><span>Progress</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:70px;text-align:right">Action</th>
         </tr>
       </thead>
       <tbody>
         {% for task in recent_tasks %}
-        <tr>
+        <tr data-task-number="{{ task.task_number }}" data-title="{{ task.title|lower }}" data-priority="{% if task.priority == 'urgent' %}1{% elif task.priority == 'high' %}2{% elif task.priority == 'medium' %}3{% else %}4{% endif %}" data-status="{% if task.status == 'not_started' %}1{% elif task.status == 'processing' %}2{% elif task.status == 'to_advisers' %}3{% elif task.status == 'accounting' %}4{% elif task.status == 'oca' %}5{% elif task.status == 'osas' %}6{% elif task.status == 'ppss' %}7{% elif task.status == 'supply' %}8{% elif task.status == 'completed' %}9{% else %}10{% endif %}" data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}" data-progress="{{ task.progress }}">
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
           <td>
             <div style="font-weight:700;font-size:13.5px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)">{{ task.title }}</div>
@@ -124,6 +154,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 const STATUS_COLOR_MAP = {
   'Not Started':  '#94A3B8',  // slate

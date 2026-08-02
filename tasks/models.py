@@ -14,7 +14,6 @@ class Task(models.Model):
         ('ppss', 'PPSS'),
         ('supply', 'Supply'),
         ('completed', 'Completed'),
-        ('overdue', 'Overdue'),
     ]
     PRIORITY_CHOICES = [
         ('low', 'Low'),
@@ -32,7 +31,6 @@ class Task(models.Model):
         'ppss': 'teal',
         'supply': 'orange',
         'completed': 'success',
-        'overdue': 'danger',
     }
     PRIORITY_COLORS = {
         'low': 'success',
@@ -87,7 +85,16 @@ class Task(models.Model):
             
         if not self.task_number:
             year = timezone.now().year
-            last = Task.objects.filter(task_number__startswith=f'CSG-{year}-').order_by('-task_number').first()
+            
+            # Determine org prefix
+            org_prefix = "CSG"
+            if self.organization:
+                import re
+                org_prefix = re.sub(r'[^A-Z0-9]', '', self.organization.name.upper())[:6]
+                if not org_prefix:
+                    org_prefix = "ORG"
+                    
+            last = Task.objects.filter(task_number__startswith=f'{org_prefix}-{year}-').order_by('-task_number').first()
             if last:
                 try:
                     seq = int(last.task_number.split('-')[-1]) + 1
@@ -95,15 +102,8 @@ class Task(models.Model):
                     seq = 1
             else:
                 seq = 1
-            self.task_number = f'CSG-{year}-{seq:04d}'
+            self.task_number = f'{org_prefix}-{year}-{seq:04d}'
         super().save(*args, **kwargs)
-        self.check_overdue()
-
-    def check_overdue(self):
-        """Called after save. Flips status to overdue if due_date is past and task is still active."""
-        if self.due_date and self.status not in ['completed', 'overdue']:
-            if self.due_date < timezone.now().date():
-                Task.objects.filter(pk=self.pk).update(status='overdue')
 
     @property
     def status_color(self):

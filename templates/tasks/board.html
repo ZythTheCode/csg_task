@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load task_filters %}
 {% block title %}Task Board{% endblock %}
 {% block content %}
 <div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
@@ -7,6 +8,12 @@
     <p class="text-muted mb-0" style="font-size:13px">Drag and drop tasks between stage boards to update status</p>
   </div>
   <div class="d-flex gap-2 align-items-center flex-wrap">
+    <!-- Scope Switcher -->
+    <div class="btn-group p-1 me-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+      <a href="?scope=my_tasks" class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks</a>
+      <a href="?scope=all" class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks</a>
+    </div>
+
     <!-- View Switcher -->
     <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px"><i data-lucide="list" class="me-1" style="width:14px;height:14px"></i> List</a>
@@ -15,7 +22,7 @@
 
     <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i data-lucide="plus" style="width:16px;height:16px"></i> New Task</a>
     <div class="dropdown">
-      <button class="btn btn-secondary-custom btn-sm dropdown-toggle" data-bs-toggle="dropdown">
+      <button class="btn btn-secondary-custom btn-sm dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="window">
         <i data-lucide="download" style="width:14px;height:14px"></i> Export
       </button>
       <ul class="dropdown-menu shadow-sm border-0" style="border-radius:16px;padding:8px">
@@ -30,6 +37,7 @@
 <div class="glass-card glass-card-filters mb-4">
   <div class="p-3">
     <form method="get" class="row g-2 align-items-center">
+      <input type="hidden" name="scope" value="{{ current_filters.scope }}">
       <div class="col-md-5 position-relative">
         <div class="input-group">
           <span class="input-group-text border-end-0" style="background:#fff;border-radius:12px 0 0 12px;border-color:var(--slate-200)"><i data-lucide="search" class="text-muted" style="width:16px;height:16px"></i></span>
@@ -47,7 +55,7 @@
       </div>
       <div class="col-md-2">
         <div class="dropdown">
-          <button class="btn btn-secondary-custom w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" style="font-size:13px;padding:9px 16px">
+          <button class="btn btn-secondary-custom w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-boundary="window" style="font-size:13px;padding:9px 16px">
             <span>Officer {% if current_filters.officer %}({{ current_filters.officer|length }}){% endif %}</span>
             <i data-lucide="chevron-down" style="width:14px;height:14px"></i>
           </button>
@@ -88,10 +96,14 @@
     </div>
     <div class="kanban-cards-list" data-status="{{ col.code }}">
       {% for task in col.tasks %}
-      <div class="kanban-card" draggable="{% if user.can_manage_tasks or user in task.assigned_officers.all %}true{% else %}false{% endif %}" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+      {% can_update_task_progress user task as update_perm %}
+      <div class="kanban-card" draggable="{% if update_perm %}true{% else %}false{% endif %}" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:11.5px">{{ task.task_number }}</span>
           <div class="d-flex align-items-center gap-1">
+            {% if task.is_overdue %}
+            <span class="badge bg-danger" style="font-size:9px;padding:2px 6px;letter-spacing:0.5px">OVERDUE</span>
+            {% endif %}
             <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{ task.get_priority_display }}</span>
             <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}" title="View Details" style="width:24px;height:24px">
               <i data-lucide="eye" style="width:12px;height:12px"></i>
@@ -296,20 +308,17 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   function initDraggableCards() {
-    {% if user.can_manage_tasks %}
     const cards = document.querySelectorAll('.kanban-card');
     cards.forEach(card => {
-      card.removeEventListener('dragstart', handleDragStart);
-      card.removeEventListener('dragend', handleDragEnd);
-
-      card.addEventListener('dragstart', handleDragStart);
-      card.addEventListener('dragend', handleDragEnd);
+      if (card.getAttribute('draggable') === 'true') {
+        card.removeEventListener('dragstart', handleDragStart);
+        card.removeEventListener('dragend', handleDragEnd);
+        card.addEventListener('dragstart', handleDragStart);
+        card.addEventListener('dragend', handleDragEnd);
+      } else {
+        card.style.cursor = 'default';
+      }
     });
-    {% else %}
-    document.querySelectorAll('.kanban-card').forEach(card => {
-      card.style.cursor = 'default';
-    });
-    {% endif %}
   }
 
   function handleDragStart(e) {
@@ -383,8 +392,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if (data.status === 'ok') {
           showToast(`Task ${taskNum} moved to ${data.new_status_display}`, 'success');
         } else {
-          showToast('Failed to update task status.', 'danger');
-          location.reload();
+          showToast(data.error || 'Failed to update task status.', 'danger');
+          setTimeout(() => location.reload(), 1500);
         }
       })
       .catch(err => {

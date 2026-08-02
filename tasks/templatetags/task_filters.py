@@ -43,3 +43,13 @@ def initials(value):
     if len(words) == 1:
         return text[:4].upper()
     return ''.join(w[0].upper() for w in words if w)
+
+
+@register.simple_tag
+def can_edit_task(user, task):
+    return user.can_edit_task(task)
+
+
+@register.simple_tag
+def can_update_task_progress(user, task):
+    return user.can_update_task_progress(task)

@@ -7,10 +7,22 @@
     <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Reports</h5>
     <p class="text-muted mb-0" style="font-size:13px">Generate and export task reports</p>
   </div>
-  <div class="d-flex gap-2">
+  <div class="d-flex gap-2 align-items-center">
+    <div class="scope-switcher me-2" style="background:#fff;border-radius:30px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:inline-flex">
+      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="window.location.href='?scope=my_tasks'" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i>My Tasks</button>
+      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="window.location.href='?scope=all'" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i>All Tasks</button>
+    </div>
     <a href="{% url 'reports:export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-danger btn-sm" style="border-radius:30px;font-weight:700;padding:8px 18px"><i data-lucide="file-text" class="me-1" style="width:14px;height:14px"></i>Export PDF</a>
     <a href="{% url 'reports:export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success btn-sm" style="border-radius:30px;font-weight:700;padding:8px 18px"><i data-lucide="file-spreadsheet" class="me-1" style="width:14px;height:14px"></i>Export Excel</a>
   </div>
+</div>
+
+<!-- Summary Cards -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?scope={{ scope }}" class="stat-card primary text-decoration-none" title="View all tasks"><div class="stat-icon"><i data-lucide="clipboard-list"></i></div><div class="stat-value">{{ summary.total }}</div><div class="stat-label">Total Tasks</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none" title="View all completed tasks"><div class="stat-icon"><i data-lucide="check-circle"></i></div><div class="stat-value">{{ summary.completed }}</div><div class="stat-label">Completed</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none" title="View all overdue tasks"><div class="stat-icon"><i data-lucide="alert-triangle"></i></div><div class="stat-value">{{ summary.overdue }}</div><div class="stat-label">Overdue</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=in_progress&scope={{ scope }}" class="stat-card warning text-decoration-none" title="View tasks currently in progress"><div class="stat-icon"><i data-lucide="clock"></i></div><div class="stat-value">{{ summary.in_progress }}</div><div class="stat-label">In Progress</div></a></div>
 </div>
 
 <!-- Filters -->
@@ -18,31 +30,54 @@
   <div class="card-header-custom"><h6><i data-lucide="filter" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Filters</h6></div>
   <div class="p-3">
     <form method="get" class="row g-2 align-items-center">
-      <div class="col-md-3">
+      <div class="col-12 col-sm-6 col-md-3">
         <select name="officer" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Officers</option>
           {% for o in officers %}<option value="{{ o.user.pk }}" {% if filters.officer == o.user.pk|stringformat:"s" %}selected{% endif %}>{{ o.user.get_full_name }}</option>{% endfor %}
         </select>
       </div>
-      <div class="col-md-2">
+      <div class="col-12 col-sm-6 col-md-2">
         <select name="status" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Status</option>
+          <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %} style="font-weight:700;color:var(--primary)">In Progress (Active)</option>
+          <option value="" disabled>──────────</option>
           {% for val, label in status_choices %}<option value="{{ val }}" {% if filters.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
       </div>
-      <div class="col-md-2">
+      <div class="col-12 col-sm-6 col-md-2">
         <select name="priority" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Priority</option>
           {% for val, label in priority_choices %}<option value="{{ val }}" {% if filters.priority == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
         </select>
       </div>
-      <div class="col-md-1">
-        <input type="number" name="month" value="{{ filters.month }}" class="form-control form-control-sm" placeholder="Month" min="1" max="12" style="font-size:13px">
+      <div class="col-12 col-sm-6 col-md-2">
+        <select name="month" class="form-select form-select-sm" style="font-size:13px">
+          <option value="">Month</option>
+          <option value="1" {% if filters.month == '1' %}selected{% endif %}>January</option>
+          <option value="2" {% if filters.month == '2' %}selected{% endif %}>February</option>
+          <option value="3" {% if filters.month == '3' %}selected{% endif %}>March</option>
+          <option value="4" {% if filters.month == '4' %}selected{% endif %}>April</option>
+          <option value="5" {% if filters.month == '5' %}selected{% endif %}>May</option>
+          <option value="6" {% if filters.month == '6' %}selected{% endif %}>June</option>
+          <option value="7" {% if filters.month == '7' %}selected{% endif %}>July</option>
+          <option value="8" {% if filters.month == '8' %}selected{% endif %}>August</option>
+          <option value="9" {% if filters.month == '9' %}selected{% endif %}>September</option>
+          <option value="10" {% if filters.month == '10' %}selected{% endif %}>October</option>
+          <option value="11" {% if filters.month == '11' %}selected{% endif %}>November</option>
+          <option value="12" {% if filters.month == '12' %}selected{% endif %}>December</option>
+        </select>
       </div>
-      <div class="col-md-2">
-        <input type="number" name="year" value="{{ filters.year }}" class="form-control form-control-sm" placeholder="Year" min="2020" max="2030" style="font-size:13px">
+      <div class="col-12 col-sm-6 col-md-1">
+        <select name="year" class="form-select form-select-sm" style="font-size:13px">
+          <option value="">Year</option>
+          <option value="2024" {% if filters.year == '2024' %}selected{% endif %}>2024</option>
+          <option value="2025" {% if filters.year == '2025' %}selected{% endif %}>2025</option>
+          <option value="2026" {% if filters.year == '2026' %}selected{% endif %}>2026</option>
+          <option value="2027" {% if filters.year == '2027' %}selected{% endif %}>2027</option>
+          <option value="2028" {% if filters.year == '2028' %}selected{% endif %}>2028</option>
+        </select>
       </div>
-      <div class="col-md-2 d-flex gap-1">
+      <div class="col-12 col-sm-6 col-md-2 d-flex gap-1">
         <button type="submit" class="btn btn-primary-custom btn-sm w-100" style="padding:6px">Apply</button>
         <a href="{% url 'reports:dashboard' %}" class="btn btn-secondary-custom btn-sm" style="padding:6px 12px">Clear</a>
       </div>
@@ -50,13 +85,6 @@
   </div>
 </div>
 
-<!-- Summary Cards -->
-<div class="row g-3 mb-4">
-  <div class="col-6 col-md-3"><div class="stat-card primary"><div class="stat-icon"><i data-lucide="clipboard-list"></i></div><div class="stat-value">{{ summary.total }}</div><div class="stat-label">Total Tasks</div></div></div>
-  <div class="col-6 col-md-3"><div class="stat-card success"><div class="stat-icon"><i data-lucide="check-circle"></i></div><div class="stat-value">{{ summary.completed }}</div><div class="stat-label">Completed</div></div></div>
-  <div class="col-6 col-md-3"><div class="stat-card danger"><div class="stat-icon"><i data-lucide="alert-triangle"></i></div><div class="stat-value">{{ summary.overdue }}</div><div class="stat-label">Overdue</div></div></div>
-  <div class="col-6 col-md-3"><div class="stat-card warning"><div class="stat-icon"><i data-lucide="clock"></i></div><div class="stat-value">{{ summary.in_progress }}</div><div class="stat-label">In Progress</div></div></div>
-</div>
 
 <!-- Results Table -->
 <div class="table-custom-container">
@@ -64,19 +92,43 @@
     <h6 class="mb-0 fw-bold"><i data-lucide="table" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Report Results <span class="badge bg-primary ms-2" style="border-radius:20px">{{ task_count }}</span></h6>
   </div>
   <div class="table-responsive" style="overflow-x:visible">
-    <table class="table-custom w-100" style="table-layout:auto">
-      <thead><tr><th>Task No.</th><th>Title</th><th>Status</th><th>Priority</th><th>Assigned To</th><th>Due Date</th><th>Progress</th></tr></thead>
+    <table class="table-custom table-sortable w-100" style="min-width:820px;table-layout:fixed">
+      <thead>
+        <tr>
+          <th style="width:105px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
+            <div class="d-flex align-items-center justify-content-between"><span>Task No.</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+            <div class="d-flex align-items-center justify-content-between"><span>Title</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
+            <div class="d-flex align-items-center justify-content-between"><span>Status</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
+            <div class="d-flex align-items-center justify-content-between"><span>Priority</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:140px">Assigned To</th>
+          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due-date">
+            <div class="d-flex align-items-center justify-content-between"><span>Due Date</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
+            <div class="d-flex align-items-center justify-content-between"><span>Progress</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+        </tr>
+      </thead>
       <tbody>
         {% for task in tasks %}
         <tr>
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
           <td style="font-weight:700;font-size:13.5px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)">{{ task.title }}</td>
-          <td><span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span></td>
+          <td>
+            <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
+          </td>
           <td><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
           <td>
             {% if task.assigned_officers.exists %}
             <div class="dropdown d-inline-block">
-              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer" title="Click to view officer names">
+              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="window" style="cursor:pointer" title="Click to view officer names">
                 {% for officer in task.sorted_assigned_officers|slice:":2" %}
                 <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">{{ officer.position_title|initials }}</span>
                 {% endfor %}
@@ -98,7 +150,18 @@
             <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
             {% endif %}
           </td>
-          <td style="font-size:12.5px">{{ task.due_date|date:"M d, Y"|default:"—" }}</td>
+          <td style="font-size:12.5px;white-space:nowrap">
+            {% if task.due_date %}
+            <div class="d-flex flex-column align-items-start" style="gap:2px">
+              <span {% if task.is_overdue %}style="color:var(--danger);font-weight:700"{% endif %}>
+                {{ task.due_date|date:"M d, Y" }}
+              </span>
+              {% if task.is_overdue %}
+              <span class="badge bg-danger text-white" style="font-size:9px;padding:3px 6px">OVERDUE</span>
+              {% endif %}
+            </div>
+            {% else %}—{% endif %}
+          </td>
           <td>
             <div class="d-flex align-items-center gap-1">
               <div class="progress-custom" style="width:70px;height:6px"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>

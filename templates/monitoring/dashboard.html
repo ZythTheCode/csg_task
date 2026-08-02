@@ -1,23 +1,24 @@
 {% extends 'base.html' %}
+{% load task_filters %}
 {% block title %}Monitoring{% endblock %}
 {% block content %}
 <!-- Stats -->
 <div class="row g-3 mb-4">
-  <div class="col-md-4">
+  <div class="col-12 col-sm-6 col-md-4">
     <div class="stat-card success">
       <div class="stat-icon"><i data-lucide="percent"></i></div>
       <div class="stat-value">{{ overall_completion_rate|floatformat:0 }}%</div>
       <div class="stat-label">Overall Completion Rate</div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-12 col-sm-6 col-md-4">
     <div class="stat-card primary">
       <div class="stat-icon"><i data-lucide="check-square"></i></div>
       <div class="stat-value">{{ completed_tasks }}/{{ total_tasks }}</div>
       <div class="stat-label">Tasks Completed</div>
     </div>
   </div>
-  <div class="col-md-4">
+  <div class="col-12 col-sm-6 col-md-4">
     <div class="stat-card danger">
       <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
       <div class="stat-value">{{ delayed_tasks|length }}</div>
@@ -32,13 +33,35 @@
     <h6><i data-lucide="award" class="me-2" style="width:18px;height:18px;color:var(--warning)"></i>Officer Productivity Ranking</h6>
   </div>
   <div class="table-responsive">
-    <table class="table-custom w-100">
+    <table class="table-custom table-sortable w-100" style="min-width:780px">
       <thead>
-        <tr><th>#</th><th>Officer</th><th>Total</th><th>Completed</th><th>Active</th><th>Overdue</th><th>Completion Rate</th></tr>
+        <tr>
+          <th style="width:40px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="rank">
+            <div class="d-flex align-items-center justify-content-between"><span>#</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="cursor:pointer;user-select:none" class="sortable-header" data-sort-key="officer">
+            <div class="d-flex align-items-center justify-content-between"><span>Officer</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:80px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="total">
+            <div class="d-flex align-items-center justify-content-between"><span>Total</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="completed">
+            <div class="d-flex align-items-center justify-content-between"><span>Completed</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:80px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="active">
+            <div class="d-flex align-items-center justify-content-between"><span>Active</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:85px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="overdue">
+            <div class="d-flex align-items-center justify-content-between"><span>Overdue</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:160px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="rate">
+            <div class="d-flex align-items-center justify-content-between"><span>Completion Rate</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+        </tr>
       </thead>
       <tbody>
         {% for item in officers_data %}
-        <tr>
+        <tr data-rank="{{ forloop.counter }}" data-officer="{{ item.officer.user.get_full_name|lower }}" data-total="{{ item.total }}" data-completed="{{ item.completed }}" data-active="{{ item.active }}" data-overdue="{{ item.overdue }}" data-rate="{{ item.completion_rate }}">
           <td>
             <div class="rank-badge {% if forloop.counter == 1 %}rank-1{% elif forloop.counter == 2 %}rank-2{% elif forloop.counter == 3 %}rank-3{% else %}rank-other{% endif %}">
               {{ forloop.counter }}
@@ -103,14 +126,58 @@
 <div class="table-custom-container mt-3">
   <div class="card-header-custom"><h6><i data-lucide="alert-circle" class="me-2" style="width:18px;height:18px;color:var(--danger)"></i>Overdue Tasks</h6></div>
   <div class="table-responsive">
-    <table class="table-custom w-100">
-      <thead><tr><th>Task No.</th><th>Title</th><th>Assigned To</th><th>Due Date</th><th>Status</th></tr></thead>
+    <table class="table-custom table-sortable w-100" style="min-width:750px">
+      <thead>
+        <tr>
+          <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
+            <div class="d-flex align-items-center justify-content-between"><span>Task No.</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+            <div class="d-flex align-items-center justify-content-between"><span>Title</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:140px">Assigned To</th>
+          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due-date">
+            <div class="d-flex align-items-center justify-content-between"><span>Due Date</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
+            <div class="d-flex align-items-center justify-content-between"><span>Status</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+          </th>
+        </tr>
+      </thead>
       <tbody>
         {% for task in delayed_tasks %}
-        <tr>
+        <tr data-task-number="{{ task.task_number }}" data-title="{{ task.title|lower }}" data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}" data-status="overdue">
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
           <td style="font-weight:700;font-size:13.5px;color:var(--slate-800)">{{ task.title|truncatechars:40 }}</td>
-          <td>{% for o in task.assigned_officers.all|slice:":2" %}<span class="officer-avatar me-1" style="width:26px;height:26px;font-size:10px">{{ o.first_name|first }}{{ o.last_name|first }}</span>{% endfor %}</td>
+          <td>
+            {% if task.assigned_officers.exists %}
+            <div class="dropdown d-inline-block">
+              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer" title="Click to view officer names">
+                {% for officer in task.sorted_assigned_officers|slice:":2" %}
+                <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">
+                  {{ officer.position_title|initials }}
+                </span>
+                {% endfor %}
+                {% if task.assigned_officers.count > 2 %}
+                <span class="badge bg-secondary text-white" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">
+                  +{{ task.assigned_officers.count|add:"-2" }}
+                </span>
+                {% endif %}
+              </div>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:12px;min-width:230px;border-radius:12px">
+                <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">Assigned Officers</li>
+                {% for officer in task.sorted_assigned_officers %}
+                <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:var(--pink-50);border-radius:6px">
+                  <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
+                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% else %}
+            <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
+            {% endif %}
+          </td>
           <td style="font-size:12.5px;color:var(--danger);font-weight:700">{{ task.due_date|date:"M d, Y" }}</td>
           <td>
             <span class="badge-status badge-overdue">Overdue</span>

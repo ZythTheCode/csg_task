@@ -15,24 +15,22 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         active_statuses = ['not_started', 'processing', 'to_advisers', 'accounting', 'oca', 'osas', 'ppss', 'supply']
 
-        # Update overdue statuses - only for the relevant organization
-        overdue_qs = Task.objects.filter(due_date__lt=today, status__in=active_statuses)
         if user.organization:
-            overdue_qs = overdue_qs.filter(organization=user.organization)
-        overdue_qs.update(status='overdue')
-
-        if user.can_manage_tasks:
-            if user.organization:
-                base_qs = Task.objects.filter(organization=user.organization, is_archived=False)
-            else:
-                base_qs = Task.objects.filter(is_archived=False)
+            base_qs = Task.objects.filter(organization=user.organization, is_archived=False)
         else:
-            base_qs = Task.objects.filter(assigned_officers=user, is_archived=False)
+            base_qs = Task.objects.filter(is_archived=False)
+
+        scope = self.request.GET.get('scope', 'all' if user.has_task_override else 'my_tasks')
+        if scope == 'my_tasks':
+            from django.db.models import Q
+            base_qs = base_qs.filter(Q(assigned_officers=user) | Q(created_by=user)).distinct()
+        
+        ctx['scope'] = scope
 
         ctx['page_title'] = 'Dashboard'
         ctx['active_tasks'] = base_qs.filter(status__in=active_statuses).count()
         ctx['completed_tasks'] = base_qs.filter(status='completed').count()
-        ctx['overdue_tasks'] = base_qs.filter(status='overdue').count()
+        ctx['overdue_tasks'] = base_qs.filter(due_date__lt=today, status__in=active_statuses).count()
         ctx['upcoming_tasks'] = base_qs.filter(
             due_date__gte=today,
             due_date__lte=today + timezone.timedelta(days=7),
@@ -47,10 +45,49 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         return ctx
 
 
+from django.contrib import messages
+from django.shortcuts import redirect
+from organizations.models import Organization
+
+
 class SettingsView(LoginRequiredMixin, TemplateView):
     template_name = 'core/settings.html'
+
+    def get_target_organization(self):
+        user = self.request.user
+        if user.organization:
+            return user.organization
+        if user.is_super_admin:
+            return Organization.objects.filter(name__icontains='CSG').first() or Organization.objects.first()
+        return None
+
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        if not (user.is_super_admin or user.is_president or user.is_org_admin):
+            messages.error(request, "Permission denied. Only organization presidents and admins can modify theme settings.")
+            return redirect('core:settings')
+
+        target_org = self.get_target_organization()
+        if not target_org:
+            messages.error(request, "No valid organization found to update theme.")
+            return redirect('core:settings')
+
+        selected_theme = request.POST.get('theme')
+        valid_themes = [t[0] for t in Organization.THEME_CHOICES]
+        if selected_theme in valid_themes:
+            target_org.theme = selected_theme
+            target_org.save()
+            messages.success(request, f"Theme successfully updated to '{dict(Organization.THEME_CHOICES).get(selected_theme)}' for {target_org.name}!")
+        else:
+            messages.error(request, "Invalid theme selection.")
+
+        return redirect('core:settings')
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = 'System Settings'
+        target_org = self.get_target_organization()
+        ctx['target_org'] = target_org
+        ctx['theme_choices'] = Organization.THEME_CHOICES
+        ctx['can_edit_settings'] = self.request.user.is_super_admin or self.request.user.is_president or self.request.user.is_org_admin
         return ctx

@@ -36,13 +36,14 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         ctx['tasks'] = tasks
         ctx['filters'] = filters
         ctx['task_count'] = tasks.count()
+        ctx['scope'] = filters['scope']
 
         # Summary stats
         ctx['summary'] = {
             'total': tasks.count(),
             'completed': tasks.filter(status='completed').count(),
-            'overdue': tasks.filter(status='overdue').count(),
-            'in_progress': tasks.filter(status='in_progress').count(),
+            'overdue': tasks.filter(due_date__lt=timezone.now().date()).exclude(status='completed').count(),
+            'in_progress': tasks.exclude(status__in=['not_started', 'completed']).count(),
         }
         return ctx
 
@@ -54,12 +55,18 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
             'year': req.GET.get('year', str(timezone.now().year)),
             'status': req.GET.get('status', ''),
             'priority': req.GET.get('priority', ''),
+            'scope': req.GET.get('scope', 'all' if req.user.has_task_override else 'my_tasks'),
         }
 
     def _get_filtered_tasks(self, filters):
         qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
         if self.request.user.organization:
             qs = qs.filter(organization=self.request.user.organization)
+            
+        if filters['scope'] == 'my_tasks':
+            from django.db.models import Q
+            qs = qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
+
         if filters['officer']:
             qs = qs.filter(assigned_officers__id=filters['officer'])
         if filters['year']:
@@ -67,7 +74,10 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         if filters['month']:
             qs = qs.filter(created_at__month=filters['month'])
         if filters['status']:
-            qs = qs.filter(status=filters['status'])
+            if filters['status'] == 'in_progress':
+                qs = qs.exclude(status__in=['not_started', 'completed'])
+            else:
+                qs = qs.filter(status=filters['status'])
         if filters['priority']:
             qs = qs.filter(priority=filters['priority'])
         return qs
@@ -86,20 +96,35 @@ class ExportReportPDFView(LoginRequiredMixin, View):
         month = request.GET.get('month', '')
         status = request.GET.get('status', '')
         priority = request.GET.get('priority', '')
+        task_ids = request.GET.get('task_ids', '')
+
+        scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
 
         qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
         if request.user.organization:
             qs = qs.filter(organization=request.user.organization)
-        if officer_id:
-            qs = qs.filter(assigned_officers__id=officer_id)
-        if year:
-            qs = qs.filter(created_at__year=year)
-        if month:
-            qs = qs.filter(created_at__month=month)
-        if status:
-            qs = qs.filter(status=status)
-        if priority:
-            qs = qs.filter(priority=priority)
+            
+        if task_ids:
+            # If task_ids are provided, we only export those specific tasks
+            qs = qs.filter(id__in=task_ids.split(','))
+        else:
+            if scope == 'my_tasks':
+                from django.db.models import Q
+                qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
+            # Otherwise apply the normal filters
+            if officer_id:
+                qs = qs.filter(assigned_officers__id=officer_id)
+            if year:
+                qs = qs.filter(created_at__year=year)
+            if month:
+                qs = qs.filter(created_at__month=month)
+            if status:
+                if status == 'in_progress':
+                    qs = qs.exclude(status__in=['not_started', 'completed'])
+                else:
+                    qs = qs.filter(status=status)
+            if priority:
+                qs = qs.filter(priority=priority)
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -115,7 +140,7 @@ class ExportReportPDFView(LoginRequiredMixin, View):
 
         data = [['Task No.', 'Title', 'Status', 'Priority', 'Assigned To', 'Due Date', 'Progress']]
         for t in qs:
-            officers = ', '.join([o.get_full_name() or o.username for o in t.assigned_officers.all()])
+            officers = ', '.join([f"{o.get_full_name() or o.username} ({o.position_initials})" for o in t.sorted_assigned_officers])
             data.append([
                 t.task_number,
                 Paragraph(t.title[:45], styles['Normal']),
@@ -160,20 +185,35 @@ class ExportReportExcelView(LoginRequiredMixin, View):
         month = request.GET.get('month', '')
         status = request.GET.get('status', '')
         priority = request.GET.get('priority', '')
+        task_ids = request.GET.get('task_ids', '')
+
+        scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
 
         qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
         if request.user.organization:
             qs = qs.filter(organization=request.user.organization)
-        if officer_id:
-            qs = qs.filter(assigned_officers__id=officer_id)
-        if year:
-            qs = qs.filter(created_at__year=year)
-        if month:
-            qs = qs.filter(created_at__month=month)
-        if status:
-            qs = qs.filter(status=status)
-        if priority:
-            qs = qs.filter(priority=priority)
+            
+        if task_ids:
+            # If task_ids are provided, we only export those specific tasks
+            qs = qs.filter(id__in=task_ids.split(','))
+        else:
+            if scope == 'my_tasks':
+                from django.db.models import Q
+                qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
+            # Otherwise apply the normal filters
+            if officer_id:
+                qs = qs.filter(assigned_officers__id=officer_id)
+            if year:
+                qs = qs.filter(created_at__year=year)
+            if month:
+                qs = qs.filter(created_at__month=month)
+            if status:
+                if status == 'in_progress':
+                    qs = qs.exclude(status__in=['not_started', 'completed'])
+                else:
+                    qs = qs.filter(status=status)
+            if priority:
+                qs = qs.filter(priority=priority)
 
         wb = openpyxl.Workbook()
         ws = wb.active
@@ -192,7 +232,7 @@ class ExportReportExcelView(LoginRequiredMixin, View):
             cell.alignment = Alignment(horizontal='center', vertical='center')
 
         for i, t in enumerate(qs, 2):
-            officers = ', '.join([o.get_full_name() or o.username for o in t.assigned_officers.all()])
+            officers = ', '.join([f"{o.get_full_name() or o.username} ({o.position_initials})" for o in t.sorted_assigned_officers])
             ws.append([
                 t.task_number, t.title, t.get_status_display(), t.get_priority_display(),
                 officers,

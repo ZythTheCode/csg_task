@@ -1,21 +1,283 @@
-{% extends 'base.html' %}{% block title %}Settings{% endblock %}{% block content %}
-<h5 class="mb-4 fw-bold" style="color:var(--primary)"><i class="bi bi-gear me-2"></i>System Settings</h5>
-<div class="row justify-content-center"><div class="col-md-8">
-<div class="card p-4">
-  <h6 class="fw-bold mb-3">General Information</h6>
-  <div class="row g-3">
-    <div class="col-md-6"><label class="form-label" style="font-size:13px">Organization Name</label><input class="form-control" value="CSG - Central Student Government" readonly></div>
-    <div class="col-md-6"><label class="form-label" style="font-size:13px">Academic Year</label><input class="form-control" value="2025-2026" readonly></div>
-    <div class="col-md-6"><label class="form-label" style="font-size:13px">Admin Email</label><input class="form-control" value="{{ user.email }}"></div>
-    <div class="col-md-6"><label class="form-label" style="font-size:13px">System Version</label><input class="form-control" value="1.0.0" readonly></div>
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Settings{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center align-items-start gap-3 mb-4">
+  <div>
+    <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px"><i class="bi bi-gear me-2 text-primary"></i>System & Dashboard Settings</h5>
+    <p class="text-muted mb-0" style="font-size:13px">Customize your organization's dashboard theme and system configuration</p>
   </div>
-  <hr>
-  <h6 class="fw-bold mb-3">Database</h6>
-  <p class="text-muted" style="font-size:13px"><i class="bi bi-database me-2"></i>PostgreSQL 15.4 · localhost:5432 / csg_db</p>
-  <hr>
-  <h6 class="fw-bold mb-3">Quick Links</h6>
-  <div class="d-flex gap-2 flex-wrap">
-    <a href="/admin/" class="btn btn-outline-primary btn-sm" style="border-radius:8px"><i class="bi bi-shield-lock me-1"></i>Django Admin</a>
-    <a href="{% url 'officers:position_list' %}" class="btn btn-outline-secondary btn-sm" style="border-radius:8px"><i class="bi bi-briefcase me-1"></i>Positions</a>
+</div>
+
+<div class="row g-4">
+  <!-- Organization Theme Customization Card -->
+  <div class="col-12 col-lg-8">
+    <div class="glass-card p-4 mb-4">
+      <div class="d-flex align-items-center justify-content-between mb-3">
+        <div>
+          <h6 class="fw-bold mb-1" style="color:var(--slate-800);font-size:16px">
+            <i class="bi bi-palette me-2 text-primary"></i>Organization Dashboard Theme
+          </h6>
+          <p class="text-muted mb-0" style="font-size:12.5px">
+            Select a color theme for <strong>{{ target_org.name|default:"CSG Organization" }}</strong>. This theme will reflect across all officers in your organization.
+          </p>
+        </div>
+        <span class="badge bg-light text-primary border px-3 py-2" style="border-radius:20px;font-size:12px;font-weight:700">
+          Current: {{ target_org.get_theme_display|default:"CSG Vibrant Pink" }}
+        </span>
+      </div>
+
+      {% if can_edit_settings %}
+      <form method="post" id="themeForm">
+        {% csrf_token %}
+        <div class="row g-3 mb-4">
+          <!-- Pink -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'pink' or not target_org.theme %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="pink" class="d-none" {% if target_org.theme == 'pink' or not target_org.theme %}checked{% endif %} onchange="previewTheme('pink')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #FF4FA3, #FF6FB5);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'pink' and target_org.theme %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Vibrant Pink</div>
+              <div class="text-muted text-center" style="font-size:10.5px">CSG Default</div>
+            </label>
+          </div>
+
+          <!-- Blue -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'blue' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="blue" class="d-none" {% if target_org.theme == 'blue' %}checked{% endif %} onchange="previewTheme('blue')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #2563EB, #60A5FA);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'blue' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Ocean Blue</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Professional Royal</div>
+            </label>
+          </div>
+
+          <!-- Emerald -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'emerald' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="emerald" class="d-none" {% if target_org.theme == 'emerald' %}checked{% endif %} onchange="previewTheme('emerald')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #10B981, #34D399);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'emerald' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Emerald Green</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Fresh Vibrant</div>
+            </label>
+          </div>
+
+          <!-- Purple -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'purple' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="purple" class="d-none" {% if target_org.theme == 'purple' %}checked{% endif %} onchange="previewTheme('purple')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #8B5CF6, #A78BFA);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'purple' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Royal Purple</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Deep Violet</div>
+            </label>
+          </div>
+
+          <!-- Amber -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'amber' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="amber" class="d-none" {% if target_org.theme == 'amber' %}checked{% endif %} onchange="previewTheme('amber')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #F59E0B, #FBBF24);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'amber' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Sunset Amber</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Warm Gold</div>
+            </label>
+          </div>
+
+          <!-- Teal -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'teal' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="teal" class="d-none" {% if target_org.theme == 'teal' %}checked{% endif %} onchange="previewTheme('teal')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #0D9488, #2DD4BF);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'teal' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Cyber Teal</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Modern Cyan</div>
+            </label>
+          </div>
+
+          <!-- Crimson -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'crimson' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="crimson" class="d-none" {% if target_org.theme == 'crimson' %}checked{% endif %} onchange="previewTheme('crimson')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #E11D48, #F43F5E);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'crimson' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Crimson Rose</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Ruby Red</div>
+            </label>
+          </div>
+
+          <!-- Dark -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'dark' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="dark" class="d-none" {% if target_org.theme == 'dark' %}checked{% endif %} onchange="previewTheme('dark')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #6366F1, #0F172A);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'dark' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Midnight Slate</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Sleek Dark Mode</div>
+            </label>
+          </div>
+
+          <!-- Indigo -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'indigo' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="indigo" class="d-none" {% if target_org.theme == 'indigo' %}checked{% endif %} onchange="previewTheme('indigo')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #6366F1, #818CF8);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'indigo' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Electric Indigo</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Neon Violet</div>
+            </label>
+          </div>
+
+          <!-- Coral -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'coral' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="coral" class="d-none" {% if target_org.theme == 'coral' %}checked{% endif %} onchange="previewTheme('coral')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #F97316, #FB923C);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'coral' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Coral Sunset</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Vibrant Orange</div>
+            </label>
+          </div>
+
+          <!-- Forest -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'forest' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="forest" class="d-none" {% if target_org.theme == 'forest' %}checked{% endif %} onchange="previewTheme('forest')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #059669, #10B981);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'forest' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Deep Forest</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Pine Green</div>
+            </label>
+          </div>
+
+          <!-- Nordic -->
+          <div class="col-6 col-sm-4 col-md-3">
+            <label class="theme-swatch-card {% if target_org.theme == 'nordic' %}active{% endif %}" style="cursor:pointer;display:block">
+              <input type="radio" name="theme" value="nordic" class="d-none" {% if target_org.theme == 'nordic' %}checked{% endif %} onchange="previewTheme('nordic')">
+              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #06B6D4, #38BDF8);height:64px;display:flex;align-items:center;justify-content:center">
+                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'nordic' %}style="display:none"{% endif %}></i>
+              </div>
+              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Nordic Frost</div>
+              <div class="text-muted text-center" style="font-size:10.5px">Ice Cyan</div>
+            </label>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-end">
+          <button type="submit" class="btn-primary-custom px-4 py-2">
+            <i class="bi bi-palette-fill me-2"></i>Save Theme Settings
+          </button>
+        </div>
+      </form>
+      {% else %}
+      <div class="alert alert-info border-0 rounded-3" style="font-size:13px">
+        <i class="bi bi-info-circle me-2"></i>Theme settings can only be modified by your Organization President or Administrator.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- General Organization Information -->
+    <div class="glass-card p-4">
+      <h6 class="fw-bold mb-3" style="color:var(--slate-800);font-size:15px"><i class="bi bi-building me-2 text-primary"></i>Organization Information</h6>
+      <div class="row g-3">
+        <div class="col-12 col-md-6">
+          <label class="form-label text-muted" style="font-size:12px;font-weight:600">Organization Name</label>
+          <input class="form-control" value="{{ target_org.name|default:'CSG - Central Student Government' }}" readonly style="font-size:13px">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label text-muted" style="font-size:12px;font-weight:600">Academic Year</label>
+          <input class="form-control" value="2025-2026" readonly style="font-size:13px">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label text-muted" style="font-size:12px;font-weight:600">Current User Email</label>
+          <input class="form-control" value="{{ user.email }}" readonly style="font-size:13px">
+        </div>
+        <div class="col-12 col-md-6">
+          <label class="form-label text-muted" style="font-size:12px;font-weight:600">System Version</label>
+          <input class="form-control" value="v1.4.0 (Production)" readonly style="font-size:13px">
+        </div>
+      </div>
+    </div>
   </div>
-</div></div></div>{% endblock %}
+
+  <!-- System Info & Shortcuts -->
+  <div class="col-12 col-lg-4">
+    <div class="glass-card p-4 mb-4">
+      <h6 class="fw-bold mb-3" style="color:var(--slate-800);font-size:15px"><i class="bi bi-database me-2 text-primary"></i>System Architecture</h6>
+      <div class="d-flex align-items-center gap-3 p-3 rounded-3 mb-3" style="background:var(--pink-50)">
+        <i class="bi bi-server text-primary fs-3"></i>
+        <div>
+          <div class="fw-bold" style="font-size:13px;color:var(--slate-800)">Django & PostgreSQL</div>
+          <small class="text-muted" style="font-size:11px">Production Multi-Tenant Engine</small>
+        </div>
+      </div>
+      <p class="text-muted mb-0" style="font-size:12px;line-height:1.5">
+        Each organization operates with strict data isolation. Task workflows, officer titles, and visual theme settings are scoped per organization.
+      </p>
+    </div>
+
+    <div class="glass-card p-4">
+      <h6 class="fw-bold mb-3" style="color:var(--slate-800);font-size:15px"><i class="bi bi-link-45deg me-2 text-primary"></i>Quick Shortcuts</h6>
+      <div class="d-flex flex-column gap-2">
+        {% if user.is_super_admin %}
+        <a href="/admin/" class="btn btn-outline-custom text-start" style="font-size:12.5px"><i class="bi bi-shield-lock me-2 text-primary"></i>Django Administration</a>
+        <a href="{% url 'pending_organizations' %}" class="btn btn-outline-custom text-start" style="font-size:12.5px"><i class="bi bi-building me-2 text-primary"></i>Manage Organizations</a>
+        {% endif %}
+        <a href="{% url 'officers:position_list' %}" class="btn btn-outline-custom text-start" style="font-size:12.5px"><i class="bi bi-briefcase me-2 text-primary"></i>Manage Positions</a>
+        <a href="{% url 'accounts:profile' %}" class="btn btn-outline-custom text-start" style="font-size:12.5px"><i class="bi bi-person-gear me-2 text-primary"></i>Account Profile Settings</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style>
+.theme-swatch-card {
+  border: 2px solid transparent;
+  border-radius: 16px;
+  padding: 8px;
+  transition: all 0.2s ease;
+}
+.theme-swatch-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+}
+.theme-swatch-card.active {
+  border-color: var(--primary);
+  background: var(--pink-50);
+}
+</style>
+
+<script>
+function previewTheme(themeName) {
+  document.documentElement.setAttribute('data-theme', themeName);
+  document.querySelectorAll('.theme-swatch-card').forEach(card => {
+    card.classList.remove('active');
+    const check = card.querySelector('.check-icon');
+    if (check) check.style.display = 'none';
+  });
+  const selectedInput = document.querySelector(`input[name="theme"][value="${themeName}"]`);
+  if (selectedInput) {
+    const parentCard = selectedInput.closest('.theme-swatch-card');
+    if (parentCard) {
+      parentCard.classList.add('active');
+      const check = parentCard.querySelector('.check-icon');
+      if (check) check.style.display = 'block';
+    }
+  }
+}
+</script>
+{% endblock %}

@@ -28,15 +28,12 @@ class TaskListView(LoginRequiredMixin, ListView):
         else:
             qs = Task.objects.filter(is_archived=False)
 
-        if not self.request.user.can_manage_tasks:
+        scope = self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks')
+        if scope == 'my_tasks':
             qs = qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
 
-        # Update overdue
+        # Overdue handling is now purely visual/dynamic
         today = timezone.now().date()
-        Task.objects.filter(
-            due_date__lt=today,
-            status__in=['not_started', 'processing', 'to_advisers', 'accounting', 'oca', 'osas', 'ppss', 'supply']
-        ).update(status='overdue')
 
         # Search
         q = self.request.GET.get('q', '')
@@ -46,7 +43,19 @@ class TaskListView(LoginRequiredMixin, ListView):
         # Filters
         status = self.request.GET.get('status', '')
         if status:
-            qs = qs.filter(status=status)
+            if status == 'active':
+                qs = qs.exclude(status='completed')
+            elif status == 'overdue':
+                qs = qs.filter(due_date__lt=today).exclude(status='completed')
+            elif status == 'in_progress':
+                qs = qs.exclude(status__in=['not_started', 'completed'])
+            else:
+                qs = qs.filter(status=status)
+
+        due_this_week = self.request.GET.get('due_this_week', '')
+        if due_this_week == 'true':
+            end_of_week = today + timezone.timedelta(days=7)
+            qs = qs.filter(due_date__gte=today, due_date__lte=end_of_week).exclude(status='completed')
 
         priority = self.request.GET.get('priority', '')
         if priority:
@@ -129,6 +138,7 @@ class TaskListView(LoginRequiredMixin, ListView):
             'priority': self.request.GET.get('priority', ''),
             'officer': self.request.GET.getlist('officer'),
             'sort': self.request.GET.get('sort', '-created_at'),
+            'scope': self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks'),
         }
         return ctx
 
@@ -138,14 +148,6 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
     template_name = 'tasks/detail.html'
     context_object_name = 'task'
 
-    def get_object(self, queryset=None):
-        task = super().get_object(queryset)
-        if not self.request.user.can_manage_tasks:
-            if not (task.assigned_officers.filter(id=self.request.user.id).exists() or task.created_by == self.request.user):
-                from django.core.exceptions import PermissionDenied
-                raise PermissionDenied("You do not have permission to view this task.")
-        return task
-
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = f'Task: {self.object.task_number}'
@@ -153,6 +155,8 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         ctx['attachment_form'] = AttachmentForm()
         ctx['progress_form'] = TaskProgressForm(instance=self.object)
         ctx['history'] = self.object.history.select_related('changed_by')[:20]
+        ctx['can_edit_task'] = self.request.user.can_edit_task(self.object)
+        ctx['can_update_progress'] = self.request.user.can_update_task_progress(self.object)
         return ctx
 
 
@@ -216,8 +220,9 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         return kwargs
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.can_manage_tasks:
-            messages.error(request, 'You do not have permission to edit tasks.')
+        task = self.get_object()
+        if not request.user.can_edit_task(task):
+            messages.error(request, 'You do not have permission to edit this task.')
             return redirect('tasks:list')
         return super().dispatch(request, *args, **kwargs)
 
@@ -257,8 +262,9 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('tasks:list')
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.can_manage_tasks:
-            messages.error(request, 'Permission denied.')
+        task = self.get_object()
+        if not request.user.can_edit_task(task):
+            messages.error(request, 'You do not have permission to delete this task.')
             return redirect('tasks:list')
         return super().dispatch(request, *args, **kwargs)
 
@@ -274,8 +280,8 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
 
 class TaskBulkDeleteView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        if not request.user.can_manage_tasks:
-            messages.error(request, 'Permission denied.')
+        if not request.user.has_task_override:
+            messages.error(request, 'Permission denied. Bulk deletion requires administrative override.')
             return redirect('tasks:list')
 
         task_ids = request.POST.getlist('task_ids')
@@ -301,7 +307,8 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         else:
             base_qs = Task.objects.filter(is_archived=False)
 
-        if not self.request.user.can_manage_tasks:
+        scope = self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks')
+        if scope == 'my_tasks':
             base_qs = base_qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
 
         q = self.request.GET.get('q', '')
@@ -335,16 +342,15 @@ class TaskBoardView(LoginRequiredMixin, ListView):
             ctx['officers_list'] = User.objects.filter(is_active=True, organization=self.request.user.organization).order_by('first_name', 'last_name')
         else:
             ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).order_by('organization__name', 'first_name', 'last_name')
-        ctx['current_filters'] = {'q': q, 'priority': priority, 'officer': officers}
+        ctx['current_filters'] = {'q': q, 'priority': priority, 'officer': officers, 'scope': scope}
         return ctx
 
 
 class TaskMoveStatusView(LoginRequiredMixin, View):
     def post(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
-        is_assigned = task.assigned_officers.filter(id=request.user.id).exists()
-        if not (request.user.can_manage_tasks or is_assigned):
-            return JsonResponse({'error': 'Permission denied. Only Super Admin or assigned officers can modify task status.'}, status=403)
+        if not request.user.can_update_task_progress(task):
+            return JsonResponse({'error': 'Permission denied. You are not authorized to move this task.'}, status=403)
         new_status = request.POST.get('status')
         valid_statuses = [code for code, label in Task.STATUS_CHOICES]
 
@@ -358,6 +364,9 @@ class TaskMoveStatusView(LoginRequiredMixin, View):
                 if not task.completion_date:
                     task.completion_date = timezone.now().date()
                 task.progress = 100
+            elif old_status == 'completed' and new_status != 'completed':
+                if task.progress == 100:
+                    task.progress = 99
             task.save()
 
             TaskHistory.objects.create(
@@ -435,7 +444,7 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
             'attachments': attachments,
             'comments': comments,
             'detail_url': f'/tasks/{task.pk}/',
-            'edit_url': f'/tasks/{task.pk}/edit/' if request.user.can_manage_tasks else None,
+            'edit_url': f'/tasks/{task.pk}/edit/' if request.user.can_edit_task(task) else None,
         }
 
         return JsonResponse(data)
@@ -444,12 +453,20 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
 class UpdateProgressView(LoginRequiredMixin, View):
     def post(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
-        is_assigned = task.assigned_officers.filter(id=request.user.id).exists()
-        if not (request.user.can_manage_tasks or is_assigned):
-            messages.error(request, 'Permission denied. Only Super Admin or assigned officers can modify task progress.')
+        if not request.user.can_update_task_progress(task):
+            messages.error(request, 'Permission denied. You are not authorized to update progress for this task.')
             return redirect('tasks:detail', pk=pk)
         progress = int(request.POST.get('progress', task.progress))
         status = request.POST.get('status', task.status)
+        
+        # Link completed status <-> 100% progress
+        if status == 'completed' and task.status != 'completed':
+            progress = 100
+        elif progress == 100 and task.progress != 100:
+            status = 'completed'
+        elif status != 'completed' and task.status == 'completed' and progress == 100:
+            # If changing out of completed but didn't touch progress slider, bump it down slightly
+            progress = 99
         old_progress = task.progress
         old_status = task.status
         task.progress = progress
@@ -484,8 +501,8 @@ class UpdateProgressView(LoginRequiredMixin, View):
 class MarkCompleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
-        if not request.user.can_manage_tasks:
-            messages.error(request, 'Permission denied.')
+        if not request.user.can_update_task_progress(task):
+            messages.error(request, 'Permission denied. You are not authorized to mark this task complete.')
             return redirect('tasks:detail', pk=pk)
         task.status = 'completed'
         task.completion_date = timezone.now().date()
@@ -509,7 +526,7 @@ class MarkCompleteView(LoginRequiredMixin, View):
 
 class ArchiveTaskView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        if not request.user.can_manage_tasks:
+        if not request.user.has_task_override:
             messages.error(request, 'Permission denied. Only Super Admin can archive tasks.')
             return redirect('tasks:list')
         task = get_object_or_404(Task, pk=pk)

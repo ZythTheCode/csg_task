@@ -1,6 +1,6 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="{{ user.organization.theme|default:'pink' }}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +9,8 @@
 <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-<script src="https://unpkg.com/lucide@latest"></script>
 <link rel="stylesheet" href="{% static 'css/style.css' %}">
+<script src="{% static 'js/lucide.min.js' %}"></script>
 {% block extra_css %}{% endblock %}
 </head>
 <body>
@@ -84,7 +84,7 @@
     <a href="{% url 'accounts:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" title="Profile">
       <i data-lucide="user"></i> <span class="sidebar-link-text">Profile</span>
     </a>
-    {% if user.is_super_admin %}
+    {% if user.is_super_admin or user.is_president or user.is_org_admin %}
     <a href="{% url 'core:settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" title="Settings">
       <i data-lucide="settings"></i> <span class="sidebar-link-text">Settings</span>
     </a>
@@ -126,7 +126,7 @@
         {% endif %}
       </a>
       <div class="dropdown">
-        <div class="topbar-avatar" data-bs-toggle="dropdown" style="cursor:pointer">
+        <div class="topbar-avatar" data-bs-toggle="dropdown" data-bs-boundary="window" style="cursor:pointer">
           {% if user.profile_picture %}
           <img src="{{ user.profile_picture.url }}" alt="avatar">
           {% else %}
@@ -193,122 +193,110 @@
 {% include 'tasks/_modal_detail.html' %}
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 {% block extra_js %}{% endblock %}
+<script src="{% static 'js/table-sort.js' %}" defer></script>
 <script>
-if (window.lucide) {
-  lucide.createIcons();
-}
-
-function toggleSidebarMin() {
-  const isMin = document.body.classList.toggle('sidebar-minimized');
-  localStorage.setItem('csg_sidebar_minimized', isMin ? 'true' : 'false');
-}
-function toggleSidebarMobile() {
-  document.getElementById('sidebar').classList.toggle('open');
-  document.getElementById('sidebarOverlay').classList.toggle('show');
-}
-function toggleSidebar() {
-  toggleSidebarMobile();
-}
-function closeSidebar() {
-  document.getElementById('sidebar').classList.remove('open');
-  document.getElementById('sidebarOverlay').classList.remove('show');
-}
+// Sidebar state restore runs immediately (before first paint) to avoid flash
 if (localStorage.getItem('csg_sidebar_minimized') === 'true') {
   document.body.classList.add('sidebar-minimized');
 }
-// Smooth page transition navigation
-document.addEventListener('click', function(e) {
-  const link = e.target.closest('a');
-  if (!link) return;
-  const href = link.getAttribute('href');
-  if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-bs-dismiss') || link.classList.contains('no-transition')) {
-    return;
-  }
-  if (link.hostname === window.location.hostname && href !== window.location.href) {
-    e.preventDefault();
-    document.body.classList.add('page-transitioning');
-    setTimeout(function() {
-      window.location.href = href;
-    }, 180);
-  }
-});
 
-// Auto-dismiss alerts
-setTimeout(() => { document.querySelectorAll('.alert').forEach(a => { try { bootstrap.Alert.getOrCreateInstance(a).close(); } catch(e){} }); }, 4000);
+// Render Lucide icons (available synchronously from local static file)
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
 
-// Global Confirmation Modal Logic
-let pendingActionCallback = null;
+  // Sidebar toggle functions
+  window.toggleSidebarMin = function() {
+    const isMin = document.body.classList.toggle('sidebar-minimized');
+    localStorage.setItem('csg_sidebar_minimized', isMin ? 'true' : 'false');
+  };
+  window.toggleSidebarMobile = function() {
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('sidebarOverlay').classList.toggle('show');
+  };
+  window.toggleSidebar = function() { window.toggleSidebarMobile(); };
+  window.closeSidebar = function() {
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('show');
+  };
 
-function showConfirmModal(options = {}) {
-  const title = options.title || 'Confirm Action';
-  const subtitle = options.subtitle || 'Please review before proceeding';
-  const message = options.message || 'Are you sure you want to proceed?';
-  const icon = options.icon || 'bi-exclamation-triangle-fill';
-  const btnText = options.btnText || 'Confirm';
-  const btnClass = options.btnClass || 'btn-danger';
-  const iconBg = options.iconBg || '#fee2e2';
-  const iconColor = options.iconColor || '#dc2626';
+  // Smooth page transition navigation
+  document.addEventListener('click', function(e) {
+    const link = e.target.closest('a');
+    if (!link) return;
+    const href = link.getAttribute('href');
+    if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-bs-dismiss') || link.classList.contains('no-transition')) return;
+    if (link.hostname === window.location.hostname && href !== window.location.href) {
+      e.preventDefault();
+      document.body.classList.add('page-transitioning');
+      setTimeout(function() { window.location.href = href; }, 180);
+    }
+  });
 
-  document.getElementById('globalConfirmModalLabel').textContent = title;
-  document.getElementById('confirmModalSubtitle').textContent = subtitle;
-  document.getElementById('confirmModalBody').innerHTML = message;
+  // Auto-dismiss alerts after 4s
+  setTimeout(() => {
+    document.querySelectorAll('.alert').forEach(a => { try { bootstrap.Alert.getOrCreateInstance(a).close(); } catch(e){} });
+  }, 4000);
 
-  const iconEl = document.getElementById('confirmModalIcon');
-  iconEl.className = 'bi ' + icon;
+  // Global Confirmation Modal Logic
+  let pendingActionCallback = null;
 
-  const iconContainer = document.getElementById('confirmModalIconContainer');
-  iconContainer.style.backgroundColor = iconBg;
-  iconContainer.style.color = iconColor;
+  window.showConfirmModal = function(options = {}) {
+    const title = options.title || 'Confirm Action';
+    const subtitle = options.subtitle || 'Please review before proceeding';
+    const message = options.message || 'Are you sure you want to proceed?';
+    const icon = options.icon || 'bi-exclamation-triangle-fill';
+    const btnText = options.btnText || 'Confirm';
+    const btnClass = options.btnClass || 'btn-danger';
+    const iconBg = options.iconBg || '#fee2e2';
+    const iconColor = options.iconColor || '#dc2626';
 
-  const btn = document.getElementById('confirmModalBtn');
-  btn.textContent = btnText;
-  btn.className = 'btn px-4 ' + btnClass;
+    document.getElementById('globalConfirmModalLabel').textContent = title;
+    document.getElementById('confirmModalSubtitle').textContent = subtitle;
+    document.getElementById('confirmModalBody').innerHTML = message;
 
-  pendingActionCallback = options.onConfirm || null;
+    const iconEl = document.getElementById('confirmModalIcon');
+    iconEl.className = 'bi ' + icon;
 
-  const modalEl = document.getElementById('globalConfirmModal');
-  const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
-  modal.show();
-}
+    const iconContainer = document.getElementById('confirmModalIconContainer');
+    iconContainer.style.backgroundColor = iconBg;
+    iconContainer.style.color = iconColor;
 
-document.getElementById('confirmModalBtn').addEventListener('click', function() {
-  const modalEl = document.getElementById('globalConfirmModal');
-  const modal = bootstrap.Modal.getInstance(modalEl);
-  if (modal) modal.hide();
-  if (typeof pendingActionCallback === 'function') {
-    pendingActionCallback();
-  }
-});
+    const btn = document.getElementById('confirmModalBtn');
+    btn.textContent = btnText;
+    btn.className = 'btn px-4 ' + btnClass;
 
-// Intercept forms or elements with data-confirm
-document.addEventListener('submit', function(e) {
-  const form = e.target;
-  if (form.hasAttribute('data-confirm')) {
-    e.preventDefault();
-    const title = form.getAttribute('data-confirm-title') || 'Confirm Action';
-    const message = form.getAttribute('data-confirm-message') || form.getAttribute('data-confirm') || 'Are you sure you want to perform this action?';
-    const btnText = form.getAttribute('data-confirm-btn') || 'Confirm';
-    const btnClass = form.getAttribute('data-confirm-class') || 'btn-danger';
-    const icon = form.getAttribute('data-confirm-icon') || 'bi-exclamation-triangle-fill';
-    const iconBg = form.getAttribute('data-confirm-icon-bg') || '#fee2e2';
-    const iconColor = form.getAttribute('data-confirm-icon-color') || '#dc2626';
+    pendingActionCallback = options.onConfirm || null;
 
-    showConfirmModal({
-      title: title,
-      message: message,
-      btnText: btnText,
-      btnClass: btnClass,
-      icon: icon,
-      iconBg: iconBg,
-      iconColor: iconColor,
-      onConfirm: function() {
-        form.removeAttribute('data-confirm');
-        form.submit();
-      }
-    });
-  }
+    const modalEl = document.getElementById('globalConfirmModal');
+    const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
+    modal.show();
+  };
+
+  document.getElementById('confirmModalBtn').addEventListener('click', function() {
+    const modalEl = document.getElementById('globalConfirmModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
+    if (typeof pendingActionCallback === 'function') pendingActionCallback();
+  });
+
+  // Intercept forms with data-confirm
+  document.addEventListener('submit', function(e) {
+    const form = e.target;
+    if (form.hasAttribute('data-confirm')) {
+      e.preventDefault();
+      window.showConfirmModal({
+        title: form.getAttribute('data-confirm-title') || 'Confirm Action',
+        message: form.getAttribute('data-confirm-message') || form.getAttribute('data-confirm') || 'Are you sure?',
+        btnText: form.getAttribute('data-confirm-btn') || 'Confirm',
+        btnClass: form.getAttribute('data-confirm-class') || 'btn-danger',
+        icon: form.getAttribute('data-confirm-icon') || 'bi-exclamation-triangle-fill',
+        iconBg: form.getAttribute('data-confirm-icon-bg') || '#fee2e2',
+        iconColor: form.getAttribute('data-confirm-icon-color') || '#dc2626',
+        onConfirm: function() { form.removeAttribute('data-confirm'); form.submit(); }
+      });
+    }
+  });
 });
 </script>
 

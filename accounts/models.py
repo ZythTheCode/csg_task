@@ -56,12 +56,33 @@ class User(AbstractUser):
         return self.role == 'executive'
 
     @property
+    def has_task_override(self):
+        return self.role in ['super_admin', 'org_admin', 'president']
+
+    @property
     def can_manage_tasks(self):
-        return self.role in ['super_admin', 'org_admin']
+        # Used for broad legacy checks (e.g. archiving tasks, bulk delete, etc.)
+        return self.has_task_override
 
     @property
     def can_view_reports(self):
-        return self.role in ['super_admin', 'org_admin', 'president']
+        return self.is_authenticated
+
+    def can_edit_task(self, task):
+        if self.has_task_override:
+            return True
+        if task.created_by_id == self.id:
+            return True
+        if task.assigned_officers.filter(id=self.id).exists():
+            return True
+        return False
+
+    def can_update_task_progress(self, task):
+        if self.has_task_override:
+            return True
+        if task.assigned_officers.filter(id=self.id).exists():
+            return True
+        return False
 
     @property
     def can_manage_officers(self):

@@ -1,9 +1,81 @@
-[
+﻿[
+{
+  "model": "sessions.session",
+  "pk": "0e4va6jhfeetzmxaf727jhs8t3uvbtcb",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGlmxd51sKOlzBmv9wwFkS3FSIe5OIqWA9s3MewvL25rt1uJi5yCuQonL7-bYP2M5QHhwuVfpa1mX2clDkSdtcqohvm6n-3eQueW9JoUEGBE5cSCPfVQeIicDfWcGcnpE4AA6jGgGVp1PxOQB9shoJhafL9e-N3E:1wpOn6:OB245lPxAIf8pCSU9raoIyxEAp7Sf_ahDOqWCNdyTj0",
+    "expire_date": "2026-08-13T11:19:08.268Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "9bea9p4il7fb56ag8hz87446gdhk97bi",
+  "fields": {
+    "session_data": ".eJxVjMEOwiAQBf-FsyFAKQsevfcbyLKAVA0kpT0Z_9026UGvb2bem3nc1uK3nhY_R3ZlA7v8bgHpmeoB4gPrvXFqdV3mwA-Fn7TzqcX0up3u30HBXvZaDsIlMBCcJqczQlYEFJxyAYQhCVmLnENMWVmLEEdndBoHK3eJQGj2-QLkajf0:1wnxOK:JkzgqsTcelyXOPlNTHrX0NkXqI1aXV2IlMlgi7aWYco",
+    "expire_date": "2026-08-09T11:51:36.841Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "e5ke1fhvos5qy2ftuvzkvvfpsgqbdcqw",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGlmxd51sKOlzBmv9wwFkS3FSIe5OIqWA9s3MewvL25rt1uJi5yCuQonL7-bYP2M5QHhwuVfpa1mX2clDkSdtcqohvm6n-3eQueW9JoUEGBE5cSCPfVQeIicDfWcGcnpE4AA6jGgGVp1PxOQB9shoJhafL9e-N3E:1wqV2O:n5zsVY58tSTE9H8Zn6JUvH2XY1_fK3VWY6V2VoT2NEI",
+    "expire_date": "2026-08-16T12:11:28.894Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "f3a8qe7mtshsyg2k69200fi249u9xx6e",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGlmxd51sKOlzBmv9wwFkS3FSIe5OIqWA9s3MewvL25rt1uJi5yCuQonL7-bYP2M5QHhwuVfpa1mX2clDkSdtcqohvm6n-3eQueW9JoUEGBE5cSCPfVQeIicDfWcGcnpE4AA6jGgGVp1PxOQB9shoJhafL9e-N3E:1wqT4h:RmuXJTSMDDPVJD1OZfc7JTInGA9NpmurHHPmu8QJopY",
+    "expire_date": "2026-08-16T10:05:43.805Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "idbndmfs16qs69a0bzuqf8hnbkizgw5s",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGlmxd51sKOlzBmv9wwFkS3FSIe5OIqWA9s3MewvL25rt1uJi5yCuQonL7-bYP2M5QHhwuVfpa1mX2clDkSdtcqohvm6n-3eQueW9JoUEGBE5cSCPfVQeIicDfWcGcnpE4AA6jGgGVp1PxOQB9shoJhafL9e-N3E:1wqUGc:L9V9Q3GqxWxdA1thZnA2pQZv_OMopF0ugMHU0qNVU3A",
+    "expire_date": "2026-08-16T11:22:06.108Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "mwyvno1o1729rsds3yksgdot87k3qkjd",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pCRUmBcuu8ZmpkBbNVAUtqV8e7apAvd_vfef6mRtnUat5aWcY7qoow6_W5M8khlB_FO5Va11LIuM-td0QdteqgxPa-H-3cwUZu-tQUmcKlP1mFGZPDeoxXjHAQCjIQhG5PjOXLH0oUAHlwnOaNwz2LV-wPTiDfj:1wqTC6:Gm0Tugb8IS2r5R6hBU2kVVsLavtNjv_bUjjnSr5bROo",
+    "expire_date": "2026-08-16T10:13:22.808Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "nejn231zjil1yi8cvn1yadkllaafqloe",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGlmxd51sKOlzBmv9wwFkS3FSIe5OIqWA9s3MewvL25rt1uJi5yCuQonL7-bYP2M5QHhwuVfpa1mX2clDkSdtcqohvm6n-3eQueW9JoUEGBE5cSCPfVQeIicDfWcGcnpE4AA6jGgGVp1PxOQB9shoJhafL9e-N3E:1wntyz:W2WFqtL5A_ud4XDMmsOFfsjg8LD8WvzSOmhas5-Kn94",
+    "expire_date": "2026-08-09T08:13:13.363Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "nxcombs2m6wggaf9h23012pphreep8ay",
+  "fields": {
+    "session_data": ".eJxVjDsOwjAQBe_iGlmxd51sKOlzBmv9wwFkS3FSIe5OIqWA9s3MewvL25rt1uJi5yCuQonL7-bYP2M5QHhwuVfpa1mX2clDkSdtcqohvm6n-3eQueW9JoUEGBE5cSCPfVQeIicDfWcGcnpE4AA6jGgGVp1PxOQB9shoJhafL9e-N3E:1wnuIR:_d5axXEjxhFzEgRnxQTZqPxMV_JGpQxdkmkeLE6PbaY",
+    "expire_date": "2026-08-09T08:33:19.402Z"
+  }
+},
+{
+  "model": "sessions.session",
+  "pk": "ol5p017olyhkoklvhy420bksyx1zgrt2",
+  "fields": {
+    "session_data": ".eJxVjEEOwiAQRe_C2pCRUmBcuu8ZmpkBbNVAUtqV8e7apAvd_vfef6mRtnUat5aWcY7qoow6_W5M8khlB_FO5Va11LIuM-td0QdteqgxPa-H-3cwUZu-tQUmcKlP1mFGZPDeoxXjHAQCjIQhG5PjOXLH0oUAHlwnOaNwz2LV-wPTiDfj:1wqTPB:izDKGpg4h6ds_s1kcjZu333WbpgUjOIW0U38j6YoGAM",
+    "expire_date": "2026-08-16T10:26:53.533Z"
+  }
+},
 {
   "model": "accounts.user",
   "fields": {
     "password": "pbkdf2_sha256$600000$3cJzygjgLOQcLSZ6b0Z7jZ$h1ENopoVJX1fbLk6dPDZsZKSTk7Wi0wCe/RKgG3HUI4=",
-    "last_login": "2026-07-30T11:19:08.264Z",
+    "last_login": "2026-08-02T12:11:28.893Z",
     "is_superuser": false,
     "username": "admin",
     "first_name": "Admin",
@@ -25,7 +97,7 @@
   "model": "accounts.user",
   "fields": {
     "password": "pbkdf2_sha256$600000$Fnclb3CI7xjb6bdbbMWQh9$Hdhq7yRkryunVfh4mf2fSD7dt9yX+LkRnY6ncfaU4sA=",
-    "last_login": "2026-07-28T14:43:01.847Z",
+    "last_login": "2026-08-02T10:26:53.538Z",
     "is_superuser": false,
     "username": "president",
     "first_name": "Zyron Asty",
@@ -36,28 +108,6 @@
     "role": "president",
     "organization": 2,
     "profile_picture": "",
-    "phone": "",
-    "bio": "",
-    "is_active": true,
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "accounts.user",
-  "fields": {
-    "password": "pbkdf2_sha256$600000$gNBknDU9Zk5Hsht30TUcfv$A7yrJaIMp5DAOorWbhzWYhwEMy25GfXxpUx2GjQxTqQ=",
-    "last_login": "2026-07-26T11:51:36.838Z",
-    "is_superuser": false,
-    "username": "vp_juan",
-    "first_name": "Boris",
-    "last_name": "Alano",
-    "email": "juan@csg.edu.ph",
-    "is_staff": false,
-    "date_joined": "2026-07-23T16:48:42.592Z",
-    "role": "executive",
-    "organization": 2,
-    "profile_picture": "profile_pics/ChatGPT_Image_Jun_10_2026_12_07_39_PM.png",
     "phone": "",
     "bio": "",
     "is_active": true,
@@ -113,7 +163,7 @@
   "model": "accounts.user",
   "fields": {
     "password": "pbkdf2_sha256$600000$jRItvt4ScmWL7aPfAvoYe4$Zul7TVvrgNaFBhrdTJRrfY1GM/I8OXZ+fQrql7uolOM=",
-    "last_login": null,
+    "last_login": "2026-08-02T12:04:40.054Z",
     "is_superuser": false,
     "username": "auditor_lea",
     "first_name": "Lea",
@@ -332,30 +382,8 @@
 {
   "model": "accounts.user",
   "fields": {
-    "password": "pbkdf2_sha256$600000$bKDFWpfkErlszWlYnALxlT$bE9/hnw0JAPkko+lU1fupztxHgsJE8Dt2Q/1wYzJyPw=",
-    "last_login": null,
-    "is_superuser": false,
-    "username": "hsalem",
-    "first_name": "Hamidah",
-    "last_name": "Salem",
-    "email": "salem.hamidah.0289@gmail.com",
-    "is_staff": false,
-    "date_joined": "2026-07-26T11:38:47.082Z",
-    "role": "super_admin",
-    "organization": 1,
-    "profile_picture": "profile_pics/ChatGPT_Image_Jun_10_2026_12_07_39_PM_URTJzXo.png",
-    "phone": "",
-    "bio": "",
-    "is_active": true,
-    "groups": [],
-    "user_permissions": []
-  }
-},
-{
-  "model": "accounts.user",
-  "fields": {
     "password": "pbkdf2_sha256$600000$lxR78ismBTnVlXUjMgXIlj$XJ6OE0HiHzjUglDBDN8tqwhgUfXxXL0ISgd6O4n+cEo=",
-    "last_login": "2026-07-30T11:16:00.452Z",
+    "last_login": "2026-08-02T12:11:14.208Z",
     "is_superuser": false,
     "username": "codeadmin",
     "first_name": "Bian Avan",
@@ -374,11 +402,56 @@
   }
 },
 {
+  "model": "accounts.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$gnw311zvk2T6LbDKU2ugsr$/img3qFx8hMKGjJrlB2nbx4hIvZM8+NzKWl6tJeWUsc=",
+    "last_login": "2026-08-02T10:04:59.694Z",
+    "is_superuser": false,
+    "username": "acesadmin",
+    "first_name": "John",
+    "last_name": "Doe",
+    "email": "mmauricemontano16@gmail.com",
+    "is_staff": false,
+    "date_joined": "2026-07-30T23:10:58.432Z",
+    "role": "org_admin",
+    "organization": 3,
+    "profile_picture": "",
+    "phone": "",
+    "bio": "",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
+  "model": "accounts.user",
+  "fields": {
+    "password": "pbkdf2_sha256$600000$gMc3kWcGPMWlTmtLn6plrL$fgvsBISgOilskPLAzZmW3B1pzmR3slVDSDKOOr9ibu4=",
+    "last_login": null,
+    "is_superuser": false,
+    "username": "balano",
+    "first_name": "Boris",
+    "last_name": "Alano",
+    "email": "vp@gmail.com",
+    "is_staff": false,
+    "date_joined": "2026-07-31T00:22:30.040Z",
+    "role": "executive",
+    "organization": 2,
+    "profile_picture": "",
+    "phone": "",
+    "bio": "",
+    "is_active": true,
+    "groups": [],
+    "user_permissions": []
+  }
+},
+{
   "model": "officers.position",
   "pk": 1,
   "fields": {
     "organization": 2,
     "title": "President",
+    "initials": "PRES",
     "description": "",
     "created_at": "2026-07-23T16:48:42.112Z"
   }
@@ -389,6 +462,7 @@
   "fields": {
     "organization": 2,
     "title": "Vice President",
+    "initials": "VP",
     "description": "",
     "created_at": "2026-07-23T16:48:42.114Z"
   }
@@ -399,6 +473,7 @@
   "fields": {
     "organization": 2,
     "title": "Secretary",
+    "initials": "SEC",
     "description": "",
     "created_at": "2026-07-23T16:48:42.116Z"
   }
@@ -409,6 +484,7 @@
   "fields": {
     "organization": 2,
     "title": "Treasurer",
+    "initials": "TREAS",
     "description": "",
     "created_at": "2026-07-23T16:48:42.117Z"
   }
@@ -419,6 +495,7 @@
   "fields": {
     "organization": 2,
     "title": "Auditor",
+    "initials": "AUD",
     "description": "",
     "created_at": "2026-07-23T16:48:42.117Z"
   }
@@ -429,6 +506,7 @@
   "fields": {
     "organization": 2,
     "title": "Business Manager",
+    "initials": "BM",
     "description": "",
     "created_at": "2026-07-23T16:48:42.119Z"
   }
@@ -439,6 +517,7 @@
   "fields": {
     "organization": 2,
     "title": "Assistant Treasurer",
+    "initials": "ATREAS",
     "description": "",
     "created_at": "2026-07-23T16:48:42.122Z"
   }
@@ -449,6 +528,7 @@
   "fields": {
     "organization": 2,
     "title": "P.R.O.",
+    "initials": "PRO",
     "description": "",
     "created_at": "2026-07-26T06:11:55.866Z"
   }
@@ -459,6 +539,7 @@
   "fields": {
     "organization": 2,
     "title": "Executive Assistant",
+    "initials": "EA",
     "description": "",
     "created_at": "2026-07-26T06:11:55.870Z"
   }
@@ -469,6 +550,7 @@
   "fields": {
     "organization": 2,
     "title": "Events Manager",
+    "initials": "EM",
     "description": "",
     "created_at": "2026-07-26T06:11:55.875Z"
   }
@@ -479,6 +561,7 @@
   "fields": {
     "organization": 2,
     "title": "Graphics and Media",
+    "initials": "GM",
     "description": "",
     "created_at": "2026-07-26T06:11:55.877Z"
   }
@@ -489,6 +572,7 @@
   "fields": {
     "organization": 2,
     "title": "P.V.",
+    "initials": "PV",
     "description": "",
     "created_at": "2026-07-26T06:11:55.880Z"
   }
@@ -499,6 +583,7 @@
   "fields": {
     "organization": 2,
     "title": "Assistant Secretary",
+    "initials": "ASEC",
     "description": "",
     "created_at": "2026-07-26T08:36:17.937Z"
   }
@@ -509,18 +594,9 @@
   "fields": {
     "organization": 2,
     "title": "Test",
+    "initials": "",
     "description": "",
     "created_at": "2026-07-26T09:25:57.400Z"
-  }
-},
-{
-  "model": "officers.position",
-  "pk": 20,
-  "fields": {
-    "organization": 2,
-    "title": "Abdulqader",
-    "description": "",
-    "created_at": "2026-07-26T11:37:18.891Z"
   }
 },
 {
@@ -528,9 +604,43 @@
   "pk": 21,
   "fields": {
     "organization": 1,
-    "title": "President",
+    "title": "Chief Technology Officer",
+    "initials": "CTO",
     "description": "",
     "created_at": "2026-07-28T14:48:04.227Z"
+  }
+},
+{
+  "model": "officers.position",
+  "pk": 22,
+  "fields": {
+    "organization": 1,
+    "title": "Vice President",
+    "initials": "VP",
+    "description": "",
+    "created_at": "2026-07-30T22:56:49.661Z"
+  }
+},
+{
+  "model": "officers.position",
+  "pk": 23,
+  "fields": {
+    "organization": 3,
+    "title": "President",
+    "initials": "PRES",
+    "description": "",
+    "created_at": "2026-07-30T23:10:58.914Z"
+  }
+},
+{
+  "model": "officers.position",
+  "pk": 24,
+  "fields": {
+    "organization": 2,
+    "title": "Executive Officer",
+    "initials": "EO",
+    "description": "",
+    "created_at": "2026-07-31T00:19:58.437Z"
   }
 },
 {
@@ -543,20 +653,7 @@
     "position": 1,
     "student_id": "2024-0001",
     "created_at": "2026-07-23T16:48:42.590Z",
-    "updated_at": "2026-07-26T07:49:07.082Z"
-  }
-},
-{
-  "model": "officers.officer",
-  "pk": 2,
-  "fields": {
-    "user": [
-      "vp_juan"
-    ],
-    "position": 2,
-    "student_id": "2024-0002",
-    "created_at": "2026-07-23T16:48:42.818Z",
-    "updated_at": "2026-07-26T11:36:40.457Z"
+    "updated_at": "2026-07-31T00:19:58.509Z"
   }
 },
 {
@@ -569,7 +666,7 @@
     "position": 3,
     "student_id": "2024-0003",
     "created_at": "2026-07-23T16:48:43.038Z",
-    "updated_at": "2026-07-26T07:50:05.693Z"
+    "updated_at": "2026-07-31T00:19:58.514Z"
   }
 },
 {
@@ -582,7 +679,7 @@
     "position": 4,
     "student_id": "2024-0004",
     "created_at": "2026-07-23T16:48:43.269Z",
-    "updated_at": "2026-07-26T06:12:18.429Z"
+    "updated_at": "2026-07-31T00:19:58.515Z"
   }
 },
 {
@@ -595,7 +692,7 @@
     "position": 5,
     "student_id": "2024-0005",
     "created_at": "2026-07-23T16:48:43.505Z",
-    "updated_at": "2026-07-26T06:12:18.433Z"
+    "updated_at": "2026-07-31T00:19:58.517Z"
   }
 },
 {
@@ -608,7 +705,7 @@
     "position": 13,
     "student_id": "2024-0006",
     "created_at": "2026-07-23T16:48:43.739Z",
-    "updated_at": "2026-07-26T06:12:18.436Z"
+    "updated_at": "2026-07-31T00:19:58.518Z"
   }
 },
 {
@@ -621,7 +718,7 @@
     "position": 7,
     "student_id": "2024-0007",
     "created_at": "2026-07-23T16:48:43.965Z",
-    "updated_at": "2026-07-26T06:12:18.439Z"
+    "updated_at": "2026-07-31T00:19:58.520Z"
   }
 },
 {
@@ -634,7 +731,7 @@
     "position": 14,
     "student_id": "2024-0008",
     "created_at": "2026-07-23T16:48:44.192Z",
-    "updated_at": "2026-07-26T06:12:18.444Z"
+    "updated_at": "2026-07-31T00:19:58.522Z"
   }
 },
 {
@@ -647,7 +744,7 @@
     "position": 18,
     "student_id": "2024-0009",
     "created_at": "2026-07-23T16:48:44.420Z",
-    "updated_at": "2026-07-26T08:36:26.983Z"
+    "updated_at": "2026-07-31T00:19:58.523Z"
   }
 },
 {
@@ -660,7 +757,7 @@
     "position": 10,
     "student_id": "2024-0010",
     "created_at": "2026-07-23T16:48:44.781Z",
-    "updated_at": "2026-07-26T06:12:18.452Z"
+    "updated_at": "2026-07-31T00:19:58.525Z"
   }
 },
 {
@@ -670,10 +767,10 @@
     "user": [
       "em_david"
     ],
-    "position": 15,
+    "position": null,
     "student_id": "2024-0011",
     "created_at": "2026-07-26T06:12:18.758Z",
-    "updated_at": "2026-07-26T06:12:18.758Z"
+    "updated_at": "2026-07-31T00:19:58.529Z"
   }
 },
 {
@@ -683,10 +780,10 @@
     "user": [
       "gm_sophia"
     ],
-    "position": 16,
+    "position": null,
     "student_id": "2024-0012",
     "created_at": "2026-07-26T06:12:19.134Z",
-    "updated_at": "2026-07-26T06:12:19.134Z"
+    "updated_at": "2026-07-31T00:19:58.531Z"
   }
 },
 {
@@ -696,23 +793,10 @@
     "user": [
       "pv_alex"
     ],
-    "position": 17,
+    "position": null,
     "student_id": "2024-0013",
     "created_at": "2026-07-26T06:12:19.426Z",
-    "updated_at": "2026-07-26T06:12:19.426Z"
-  }
-},
-{
-  "model": "officers.officer",
-  "pk": 18,
-  "fields": {
-    "user": [
-      "hsalem"
-    ],
-    "position": 20,
-    "student_id": "292929292",
-    "created_at": "2026-07-26T11:38:47.650Z",
-    "updated_at": "2026-07-26T11:38:47.650Z"
+    "updated_at": "2026-07-31T00:19:58.533Z"
   }
 },
 {
@@ -725,7 +809,33 @@
     "position": 21,
     "student_id": "2024102365",
     "created_at": "2026-07-28T14:48:04.229Z",
-    "updated_at": "2026-07-28T14:48:04.229Z"
+    "updated_at": "2026-07-31T00:19:58.534Z"
+  }
+},
+{
+  "model": "officers.officer",
+  "pk": 20,
+  "fields": {
+    "user": [
+      "acesadmin"
+    ],
+    "position": 23,
+    "student_id": "202210267",
+    "created_at": "2026-07-30T23:10:58.917Z",
+    "updated_at": "2026-07-31T00:19:58.536Z"
+  }
+},
+{
+  "model": "officers.officer",
+  "pk": 21,
+  "fields": {
+    "user": [
+      "balano"
+    ],
+    "position": 2,
+    "student_id": "21313",
+    "created_at": "2026-07-31T00:22:30.491Z",
+    "updated_at": "2026-07-31T00:22:48.147Z"
   }
 },
 {
@@ -746,7 +856,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-23T16:48:44.894Z",
-    "updated_at": "2026-07-23T16:48:44.894Z"
+    "updated_at": "2026-07-31T00:19:58.631Z"
   }
 },
 {
@@ -767,7 +877,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-23T16:48:44.899Z",
-    "updated_at": "2026-07-26T06:43:22.154Z"
+    "updated_at": "2026-08-02T10:16:10.950Z"
   }
 },
 {
@@ -788,7 +898,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-23T16:48:44.905Z",
-    "updated_at": "2026-07-26T09:20:33.757Z"
+    "updated_at": "2026-07-31T00:19:58.622Z"
   }
 },
 {
@@ -809,7 +919,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:43:57.767Z",
-    "updated_at": "2026-07-26T06:44:09.226Z"
+    "updated_at": "2026-08-02T11:35:19.204Z"
   }
 },
 {
@@ -830,7 +940,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.900Z",
-    "updated_at": "2026-07-30T10:11:32.031Z"
+    "updated_at": "2026-07-31T00:19:58.614Z"
   }
 },
 {
@@ -851,7 +961,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.926Z",
-    "updated_at": "2026-07-30T10:50:10.184Z"
+    "updated_at": "2026-07-31T00:19:58.611Z"
   }
 },
 {
@@ -862,7 +972,7 @@
     "title": "OSAS Facility Request Endorsement",
     "description": "Submit formal facility reservation for the upcoming University Student Summit.",
     "priority": "medium",
-    "status": "osas",
+    "status": "overdue",
     "due_date": "2026-07-31",
     "completion_date": null,
     "progress": 40,
@@ -872,7 +982,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.930Z",
-    "updated_at": "2026-07-26T11:24:49.441Z"
+    "updated_at": "2026-08-02T11:36:38.388Z"
   }
 },
 {
@@ -893,7 +1003,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.936Z",
-    "updated_at": "2026-07-26T06:48:41.936Z"
+    "updated_at": "2026-08-02T11:36:38.387Z"
   }
 },
 {
@@ -904,7 +1014,7 @@
     "title": "PPSS Sound System Procurement",
     "description": "Coordinate with Physical Plant & Site Services for AV equipment setup.",
     "priority": "high",
-    "status": "ppss",
+    "status": "overdue",
     "due_date": "2026-08-01",
     "completion_date": null,
     "progress": 50,
@@ -914,7 +1024,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.940Z",
-    "updated_at": "2026-07-26T06:48:41.940Z"
+    "updated_at": "2026-08-02T11:36:38.386Z"
   }
 },
 {
@@ -935,7 +1045,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.946Z",
-    "updated_at": "2026-07-26T06:48:41.946Z"
+    "updated_at": "2026-07-31T00:19:58.592Z"
   }
 },
 {
@@ -956,7 +1066,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.953Z",
-    "updated_at": "2026-07-30T10:09:39.296Z"
+    "updated_at": "2026-07-31T00:19:58.587Z"
   }
 },
 {
@@ -977,7 +1087,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.959Z",
-    "updated_at": "2026-07-30T10:11:30.817Z"
+    "updated_at": "2026-07-31T00:19:58.583Z"
   }
 },
 {
@@ -998,7 +1108,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.965Z",
-    "updated_at": "2026-07-30T10:09:59.291Z"
+    "updated_at": "2026-07-31T00:19:58.581Z"
   }
 },
 {
@@ -1009,7 +1119,7 @@
     "title": "Mid-Year Constitutional Review Assembly",
     "description": "Conduct mid-year review of council resolutions and bylaws.",
     "priority": "urgent",
-    "status": "overdue",
+    "status": "completed",
     "due_date": "2026-07-24",
     "completion_date": "2026-07-26",
     "progress": 100,
@@ -1019,28 +1129,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-26T06:48:41.969Z",
-    "updated_at": "2026-07-26T11:29:20.838Z"
-  }
-},
-{
-  "model": "tasks.task",
-  "pk": 37,
-  "fields": {
-    "task_number": "CSG-2026-0027",
-    "title": "from vp",
-    "description": "fdsfae",
-    "priority": "medium",
-    "status": "to_advisers",
-    "due_date": "2026-07-31",
-    "completion_date": null,
-    "progress": 18,
-    "organization": 2,
-    "created_by": [
-      "vp_juan"
-    ],
-    "is_archived": false,
-    "created_at": "2026-07-26T11:50:36.113Z",
-    "updated_at": "2026-07-30T10:11:25.652Z"
+    "updated_at": "2026-08-02T11:36:38.383Z"
   }
 },
 {
@@ -1051,7 +1140,7 @@
     "title": "CO:DE Hackathon 2026 Preparation",
     "description": "Organize sponsorship and challenge tracks for the upcoming hackathon.",
     "priority": "high",
-    "status": "in_progress",
+    "status": "not_started",
     "due_date": null,
     "completion_date": null,
     "progress": 45,
@@ -1061,7 +1150,7 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-30T11:06:55.028Z",
-    "updated_at": "2026-07-30T11:06:55.028Z"
+    "updated_at": "2026-07-31T00:19:58.560Z"
   }
 },
 {
@@ -1082,7 +1171,28 @@
     ],
     "is_archived": false,
     "created_at": "2026-07-30T11:06:55.036Z",
-    "updated_at": "2026-07-30T11:06:55.036Z"
+    "updated_at": "2026-07-31T00:19:58.553Z"
+  }
+},
+{
+  "model": "tasks.task",
+  "pk": 40,
+  "fields": {
+    "task_number": "CSG-2026-0027",
+    "title": "123",
+    "description": "123",
+    "priority": "urgent",
+    "status": "not_started",
+    "due_date": "2026-08-03",
+    "completion_date": null,
+    "progress": 0,
+    "organization": 3,
+    "created_by": [
+      "acesadmin"
+    ],
+    "is_archived": false,
+    "created_at": "2026-08-02T10:05:20.443Z",
+    "updated_at": "2026-08-02T10:05:20.443Z"
   }
 },
 {
@@ -1136,76 +1246,6 @@
       "president"
     ],
     "assigned_at": "2026-07-23T16:48:44.907Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
-  "pk": 62,
-  "fields": {
-    "task": 26,
-    "officer": [
-      "vp_juan"
-    ],
-    "assigned_at": "2026-07-26T06:44:09.231Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
-  "pk": 63,
-  "fields": {
-    "task": 26,
-    "officer": [
-      "sec_anna"
-    ],
-    "assigned_at": "2026-07-26T06:44:09.232Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
-  "pk": 64,
-  "fields": {
-    "task": 26,
-    "officer": [
-      "treas_ben"
-    ],
-    "assigned_at": "2026-07-26T06:44:09.233Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
-  "pk": 65,
-  "fields": {
-    "task": 26,
-    "officer": [
-      "auditor_lea"
-    ],
-    "assigned_at": "2026-07-26T06:44:09.234Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
-  "pk": 66,
-  "fields": {
-    "task": 26,
-    "officer": [
-      "president"
-    ],
-    "assigned_at": "2026-07-26T06:44:09.235Z",
     "assigned_by": [
       "admin"
     ]
@@ -1465,48 +1505,6 @@
 },
 {
   "model": "tasks.taskassignment",
-  "pk": 101,
-  "fields": {
-    "task": 37,
-    "officer": [
-      "atreas_mike"
-    ],
-    "assigned_at": "2026-07-30T09:40:50.608Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
-  "pk": 102,
-  "fields": {
-    "task": 37,
-    "officer": [
-      "asec_jen"
-    ],
-    "assigned_at": "2026-07-30T09:40:50.620Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
-  "pk": 104,
-  "fields": {
-    "task": 37,
-    "officer": [
-      "vp_juan"
-    ],
-    "assigned_at": "2026-07-30T09:40:50.621Z",
-    "assigned_by": [
-      "admin"
-    ]
-  }
-},
-{
-  "model": "tasks.taskassignment",
   "pk": 105,
   "fields": {
     "task": 38,
@@ -1539,6 +1537,74 @@
     ],
     "assigned_at": "2026-07-30T11:06:55.038Z",
     "assigned_by": null
+  }
+},
+{
+  "model": "tasks.taskassignment",
+  "pk": 108,
+  "fields": {
+    "task": 40,
+    "officer": [
+      "acesadmin"
+    ],
+    "assigned_at": "2026-08-02T10:05:20.469Z",
+    "assigned_by": null
+  }
+},
+{
+  "model": "tasks.taskassignment",
+  "pk": 113,
+  "fields": {
+    "task": 26,
+    "officer": [
+      "treas_ben"
+    ],
+    "assigned_at": "2026-08-02T11:35:19.216Z",
+    "assigned_by": [
+      "auditor_lea"
+    ]
+  }
+},
+{
+  "model": "tasks.taskassignment",
+  "pk": 114,
+  "fields": {
+    "task": 26,
+    "officer": [
+      "sec_anna"
+    ],
+    "assigned_at": "2026-08-02T11:35:19.219Z",
+    "assigned_by": [
+      "auditor_lea"
+    ]
+  }
+},
+{
+  "model": "tasks.taskassignment",
+  "pk": 115,
+  "fields": {
+    "task": 26,
+    "officer": [
+      "auditor_lea"
+    ],
+    "assigned_at": "2026-08-02T11:35:19.220Z",
+    "assigned_by": [
+      "auditor_lea"
+    ]
+  }
+},
+{
+  "model": "tasks.taskassignment",
+  "pk": 116,
+  "fields": {
+    "task": 26,
+    "officer": [
+      "president"
+    ],
+    "assigned_at": "2026-08-02T11:35:19.222Z",
+    "assigned_by": [
+      "auditor_lea"
+    ]
   }
 },
 {
@@ -2339,48 +2405,6 @@
 },
 {
   "model": "tasks.taskhistory",
-  "pk": 44,
-  "fields": {
-    "task": 37,
-    "changed_by": [
-      "vp_juan"
-    ],
-    "field_changed": "Created",
-    "old_value": "",
-    "new_value": "Task created",
-    "timestamp": "2026-07-26T11:50:36.131Z"
-  }
-},
-{
-  "model": "tasks.taskhistory",
-  "pk": 45,
-  "fields": {
-    "task": 37,
-    "changed_by": [
-      "admin"
-    ],
-    "field_changed": "Progress",
-    "old_value": "0",
-    "new_value": "18",
-    "timestamp": "2026-07-26T11:51:07.350Z"
-  }
-},
-{
-  "model": "tasks.taskhistory",
-  "pk": 46,
-  "fields": {
-    "task": 37,
-    "changed_by": [
-      "admin"
-    ],
-    "field_changed": "Status",
-    "old_value": "Not Started",
-    "new_value": "Processing",
-    "timestamp": "2026-07-28T11:45:34.834Z"
-  }
-},
-{
-  "model": "tasks.taskhistory",
   "pk": 47,
   "fields": {
     "task": 28,
@@ -2391,20 +2415,6 @@
     "old_value": "Not Started",
     "new_value": "Processing",
     "timestamp": "2026-07-28T11:45:37.359Z"
-  }
-},
-{
-  "model": "tasks.taskhistory",
-  "pk": 48,
-  "fields": {
-    "task": 37,
-    "changed_by": [
-      "admin"
-    ],
-    "field_changed": "Nudge",
-    "old_value": "",
-    "new_value": "Nudge sent to: Michael Ramos, Jennifer Bautista, test test, Boris Alano",
-    "timestamp": "2026-07-28T12:53:12.538Z"
   }
 },
 {
@@ -2437,20 +2447,6 @@
 },
 {
   "model": "tasks.taskhistory",
-  "pk": 51,
-  "fields": {
-    "task": 37,
-    "changed_by": [
-      "admin"
-    ],
-    "field_changed": "Status",
-    "old_value": "Processing",
-    "new_value": "To Advisers",
-    "timestamp": "2026-07-30T10:11:20.154Z"
-  }
-},
-{
-  "model": "tasks.taskhistory",
   "pk": 52,
   "fields": {
     "task": 34,
@@ -2461,34 +2457,6 @@
     "old_value": "To Advisers",
     "new_value": "Processing",
     "timestamp": "2026-07-30T10:11:22.910Z"
-  }
-},
-{
-  "model": "tasks.taskhistory",
-  "pk": 53,
-  "fields": {
-    "task": 37,
-    "changed_by": [
-      "admin"
-    ],
-    "field_changed": "Status",
-    "old_value": "To Advisers",
-    "new_value": "Accounting",
-    "timestamp": "2026-07-30T10:11:24.586Z"
-  }
-},
-{
-  "model": "tasks.taskhistory",
-  "pk": 54,
-  "fields": {
-    "task": 37,
-    "changed_by": [
-      "admin"
-    ],
-    "field_changed": "Status",
-    "old_value": "Accounting",
-    "new_value": "To Advisers",
-    "timestamp": "2026-07-30T10:11:25.656Z"
   }
 },
 {
@@ -2548,6 +2516,118 @@
   }
 },
 {
+  "model": "tasks.taskhistory",
+  "pk": 59,
+  "fields": {
+    "task": 38,
+    "changed_by": [
+      "codeadmin"
+    ],
+    "field_changed": "Status",
+    "old_value": "in_progress",
+    "new_value": "not_started",
+    "timestamp": "2026-07-30T22:57:47.853Z"
+  }
+},
+{
+  "model": "tasks.taskhistory",
+  "pk": 60,
+  "fields": {
+    "task": 40,
+    "changed_by": [
+      "acesadmin"
+    ],
+    "field_changed": "Created",
+    "old_value": "",
+    "new_value": "Task created",
+    "timestamp": "2026-08-02T10:05:20.501Z"
+  }
+},
+{
+  "model": "tasks.taskhistory",
+  "pk": 61,
+  "fields": {
+    "task": 26,
+    "changed_by": [
+      "president"
+    ],
+    "field_changed": "Status",
+    "old_value": "overdue",
+    "new_value": "to_advisers",
+    "timestamp": "2026-08-02T10:13:35.540Z"
+  }
+},
+{
+  "model": "tasks.taskhistory",
+  "pk": 62,
+  "fields": {
+    "task": 14,
+    "changed_by": [
+      "admin"
+    ],
+    "field_changed": "Status",
+    "old_value": "Not Started",
+    "new_value": "Processing",
+    "timestamp": "2026-08-02T10:16:08.681Z"
+  }
+},
+{
+  "model": "tasks.taskhistory",
+  "pk": 63,
+  "fields": {
+    "task": 14,
+    "changed_by": [
+      "admin"
+    ],
+    "field_changed": "Status",
+    "old_value": "Processing",
+    "new_value": "Not Started",
+    "timestamp": "2026-08-02T10:16:10.953Z"
+  }
+},
+{
+  "model": "tasks.taskhistory",
+  "pk": 64,
+  "fields": {
+    "task": 29,
+    "changed_by": [
+      "admin"
+    ],
+    "field_changed": "Status",
+    "old_value": "overdue",
+    "new_value": "to_advisers",
+    "timestamp": "2026-08-02T11:02:51.779Z"
+  }
+},
+{
+  "model": "tasks.taskhistory",
+  "pk": 65,
+  "fields": {
+    "task": 26,
+    "changed_by": [
+      "auditor_lea"
+    ],
+    "field_changed": "Status",
+    "old_value": "overdue",
+    "new_value": "not_started",
+    "timestamp": "2026-08-02T11:21:07.140Z"
+  }
+},
+{
+  "model": "tasks.taskhistory",
+  "pk": 66,
+  "fields": {
+    "task": 26,
+    "changed_by": [
+      "auditor_lea"
+    ],
+    "field_changed": "Status",
+    "old_value": "overdue",
+    "new_value": "not_started",
+    "timestamp": "2026-08-02T11:35:19.211Z"
+  }
+},
+{
   "model": "notifications.notification",
   "pk": 1,
   "fields": {
@@ -2560,21 +2640,6 @@
     "is_read": false,
     "related_task": null,
     "created_at": "2026-07-23T16:48:44.950Z"
-  }
-},
-{
-  "model": "notifications.notification",
-  "pk": 2,
-  "fields": {
-    "recipient": [
-      "vp_juan"
-    ],
-    "title": "Welcome to CSG Task System",
-    "message": "You have been added to the CSG Task Management System. Check your assigned tasks.",
-    "notification_type": "system",
-    "is_read": true,
-    "related_task": null,
-    "created_at": "2026-07-23T16:48:44.953Z"
   }
 },
 {
@@ -2620,21 +2685,6 @@
     "is_read": false,
     "related_task": null,
     "created_at": "2026-07-23T16:48:44.958Z"
-  }
-},
-{
-  "model": "notifications.notification",
-  "pk": 6,
-  "fields": {
-    "recipient": [
-      "vp_juan"
-    ],
-    "title": "New Task Assigned",
-    "message": "You have been assigned to task: Cook Ilocos Empanada",
-    "notification_type": "task_assigned",
-    "is_read": true,
-    "related_task": 26,
-    "created_at": "2026-07-26T06:43:57.779Z"
   }
 },
 {
@@ -2704,7 +2754,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2719,7 +2769,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2734,7 +2784,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026. Note: hhh",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2749,7 +2799,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026. Note: hhh",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2764,7 +2814,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2779,7 +2829,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2794,7 +2844,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2809,7 +2859,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2824,7 +2874,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2839,7 +2889,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2854,7 +2904,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2869,7 +2919,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2884,7 +2934,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2899,7 +2949,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2914,7 +2964,7 @@
     "recipient": [
       "em_david"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026. Note: Magsipag naman kayo yah",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2929,7 +2979,7 @@
     "recipient": [
       "treas_ben"
     ],
-    "title": "🔔 Nudge: CSG-2026-0026",
+    "title": "≡ƒöö Nudge: CSG-2026-0026",
     "message": "Admin CSG sent you a nudge for task \"Mid-Year Constitutional Review Assembly\" [CSG-2026-0026]. Current progress: 100%. Due: July 24, 2026. Note: Magsipag naman kayo yah",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2944,7 +2994,7 @@
     "recipient": [
       "asec_jen"
     ],
-    "title": "🔔 Nudge: CSG-2026-0019",
+    "title": "≡ƒöö Nudge: CSG-2026-0019",
     "message": "Admin CSG sent you a nudge for task \"OSAS Facility Request Endorsement\" [CSG-2026-0019]. Current progress: 40%. Due: July 31, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2959,7 +3009,7 @@
     "recipient": [
       "pro_chris"
     ],
-    "title": "🔔 Nudge: CSG-2026-0019",
+    "title": "≡ƒöö Nudge: CSG-2026-0019",
     "message": "Admin CSG sent you a nudge for task \"OSAS Facility Request Endorsement\" [CSG-2026-0019]. Current progress: 40%. Due: July 31, 2026.",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2974,7 +3024,7 @@
     "recipient": [
       "asec_jen"
     ],
-    "title": "🔔 Nudge: CSG-2026-0019",
+    "title": "≡ƒöö Nudge: CSG-2026-0019",
     "message": "Admin CSG sent you a nudge for task \"OSAS Facility Request Endorsement\" [CSG-2026-0019]. Current progress: 40%. Due: July 31, 2026. Note: OYY ANOFNAFEUNF",
     "notification_type": "task_updated",
     "is_read": false,
@@ -2989,7 +3039,7 @@
     "recipient": [
       "pro_chris"
     ],
-    "title": "🔔 Nudge: CSG-2026-0019",
+    "title": "≡ƒöö Nudge: CSG-2026-0019",
     "message": "Admin CSG sent you a nudge for task \"OSAS Facility Request Endorsement\" [CSG-2026-0019]. Current progress: 40%. Due: July 31, 2026. Note: OYY ANOFNAFEUNF",
     "notification_type": "task_updated",
     "is_read": false,
@@ -3008,7 +3058,7 @@
     "message": "You have been assigned to task: from vp",
     "notification_type": "task_assigned",
     "is_read": false,
-    "related_task": 37,
+    "related_task": null,
     "created_at": "2026-07-26T11:50:36.125Z"
   }
 },
@@ -3023,23 +3073,8 @@
     "message": "You have been assigned to task: from vp",
     "notification_type": "task_assigned",
     "is_read": false,
-    "related_task": 37,
+    "related_task": null,
     "created_at": "2026-07-26T11:50:36.128Z"
-  }
-},
-{
-  "model": "notifications.notification",
-  "pk": 45,
-  "fields": {
-    "recipient": [
-      "vp_juan"
-    ],
-    "title": "New Task Assigned",
-    "message": "You have been assigned to task: from vp",
-    "notification_type": "task_assigned",
-    "is_read": false,
-    "related_task": 37,
-    "created_at": "2026-07-26T11:50:36.130Z"
   }
 },
 {
@@ -3049,11 +3084,11 @@
     "recipient": [
       "atreas_mike"
     ],
-    "title": "🔔 Nudge: CSG-2026-0027",
+    "title": "≡ƒöö Nudge: CSG-2026-0027",
     "message": "Admin CSG sent you a nudge for task \"from vp\" [CSG-2026-0027]. Current progress: 18%. Due: No due date set.",
     "notification_type": "task_updated",
     "is_read": false,
-    "related_task": 37,
+    "related_task": null,
     "created_at": "2026-07-28T12:52:57.323Z"
   }
 },
@@ -3064,27 +3099,27 @@
     "recipient": [
       "asec_jen"
     ],
-    "title": "🔔 Nudge: CSG-2026-0027",
+    "title": "≡ƒöö Nudge: CSG-2026-0027",
     "message": "Admin CSG sent you a nudge for task \"from vp\" [CSG-2026-0027]. Current progress: 18%. Due: No due date set.",
     "notification_type": "task_updated",
     "is_read": false,
-    "related_task": 37,
+    "related_task": null,
     "created_at": "2026-07-28T12:53:01.358Z"
   }
 },
 {
   "model": "notifications.notification",
-  "pk": 49,
+  "pk": 50,
   "fields": {
     "recipient": [
-      "vp_juan"
+      "acesadmin"
     ],
-    "title": "🔔 Nudge: CSG-2026-0027",
-    "message": "Admin CSG sent you a nudge for task \"from vp\" [CSG-2026-0027]. Current progress: 18%. Due: No due date set.",
-    "notification_type": "task_updated",
+    "title": "New Task Assigned",
+    "message": "You have been assigned to task: 123",
+    "notification_type": "task_assigned",
     "is_read": false,
-    "related_task": 37,
-    "created_at": "2026-07-28T12:53:08.747Z"
+    "related_task": 40,
+    "created_at": "2026-08-02T10:05:20.485Z"
   }
 },
 {
@@ -3092,10 +3127,11 @@
   "pk": 1,
   "fields": {
     "name": "CO:DE",
-    "description": "dfajslfkejflk ljfael jfaelfj eoifjwof eiw",
+    "description": "Computer Developers and Engineers Society",
     "status": "approved",
+    "theme": "blue",
     "created_at": "2026-07-28T14:48:03.819Z",
-    "updated_at": "2026-07-28T15:13:03.367Z",
+    "updated_at": "2026-08-02T12:11:21.750Z",
     "marked_for_deletion_at": null
   }
 },
@@ -3106,9 +3142,819 @@
     "name": "CSG",
     "description": "Central Student Government Main Organization",
     "status": "approved",
+    "theme": "crimson",
     "created_at": "2026-07-30T11:06:54.991Z",
-    "updated_at": "2026-07-30T11:06:54.991Z",
+    "updated_at": "2026-08-02T12:48:50.293Z",
     "marked_for_deletion_at": null
+  }
+},
+{
+  "model": "organizations.organization",
+  "pk": 3,
+  "fields": {
+    "name": "ACES",
+    "description": "Association of Civil Engineering Students",
+    "status": "approved",
+    "theme": "pink",
+    "created_at": "2026-07-30T23:10:58.425Z",
+    "updated_at": "2026-07-31T00:19:58.387Z",
+    "marked_for_deletion_at": null
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 1,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-07-30T23:08:36.675Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 2,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN_FAILED",
+    "description": "Failed login attempt.",
+    "resource_type": "",
+    "resource_id": "",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "failed",
+    "timestamp": "2026-07-30T23:23:40.836Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 3,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-07-30T23:23:47.992Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 4,
+  "fields": {
+    "user": [
+      "codeadmin"
+    ],
+    "organization": 1,
+    "action": "USER_LOGOUT",
+    "description": "User 'codeadmin' logged out.",
+    "resource_type": "User",
+    "resource_id": "19",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-07-30T23:27:20.860Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 5,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN_FAILED",
+    "description": "Failed login attempt.",
+    "resource_type": "",
+    "resource_id": "",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "failed",
+    "timestamp": "2026-07-30T23:28:05.446Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 6,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "OFFICER_DELETE",
+    "description": "Deleted officer account 'Boris Alano'",
+    "resource_type": "Officer",
+    "resource_id": "3",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-07-31T00:21:52.173Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 7,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:04:51.917Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 8,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'acesadmin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "20",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:04:59.672Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 9,
+  "fields": {
+    "user": [
+      "acesadmin"
+    ],
+    "organization": 3,
+    "action": "TASK_CREATE",
+    "description": "Created task CSG-2026-0027: '123'",
+    "resource_type": "Task",
+    "resource_id": "40",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:05:20.504Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 10,
+  "fields": {
+    "user": [
+      "acesadmin"
+    ],
+    "organization": 3,
+    "action": "USER_LOGOUT",
+    "description": "User 'acesadmin' logged out.",
+    "resource_type": "User",
+    "resource_id": "20",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:05:38.949Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 11,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:05:43.792Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 12,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:05:43.793Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 13,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:05:54.219Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 14,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'codeadmin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "19",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:06:00.400Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 15,
+  "fields": {
+    "user": [
+      "codeadmin"
+    ],
+    "organization": 1,
+    "action": "USER_LOGOUT",
+    "description": "User 'codeadmin' logged out.",
+    "resource_type": "User",
+    "resource_id": "19",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:06:07.261Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 16,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:06:17.903Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 17,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:13:19.016Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 18,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'president' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "2",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:13:22.795Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 19,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'president' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "2",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:13:22.814Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 20,
+  "fields": {
+    "user": [
+      "president"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'president' logged out.",
+    "resource_type": "User",
+    "resource_id": "2",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:15:52.080Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 21,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:15:56.639Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 22,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:26:48.170Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 23,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'president' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "2",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:26:53.520Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 24,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'president' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "2",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:26:53.530Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 25,
+  "fields": {
+    "user": [
+      "president"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'president' logged out.",
+    "resource_type": "User",
+    "resource_id": "2",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:27:07.554Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 26,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:27:12.628Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 27,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:27:31.564Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 28,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'auditor_lea' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:27:37.669Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 29,
+  "fields": {
+    "user": [
+      "auditor_lea"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'auditor_lea' logged out.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:46:39.082Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 30,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T10:46:44.360Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 31,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:20:33.246Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 32,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'auditor_lea' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:20:44.452Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 33,
+  "fields": {
+    "user": [
+      "auditor_lea"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'auditor_lea' logged out.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:22:00.252Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 34,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:22:06.098Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 35,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:22:06.115Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 36,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:34:09.605Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 37,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'auditor_lea' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:34:19.087Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 38,
+  "fields": {
+    "user": [
+      "auditor_lea"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'auditor_lea' logged out.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:56:23.374Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 39,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T11:56:28.643Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 40,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:04:29.877Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 41,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'auditor_lea' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:04:40.043Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 42,
+  "fields": {
+    "user": [
+      "auditor_lea"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'auditor_lea' logged out.",
+    "resource_type": "User",
+    "resource_id": "6",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:04:43.254Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 43,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:04:49.445Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 44,
+  "fields": {
+    "user": [
+      "admin"
+    ],
+    "organization": 2,
+    "action": "USER_LOGOUT",
+    "description": "User 'admin' logged out.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:11:07.454Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 45,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'codeadmin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "19",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:11:14.199Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 46,
+  "fields": {
+    "user": [
+      "codeadmin"
+    ],
+    "organization": 1,
+    "action": "USER_LOGOUT",
+    "description": "User 'codeadmin' logged out.",
+    "resource_type": "User",
+    "resource_id": "19",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:11:24.714Z"
+  }
+},
+{
+  "model": "core.activitylog",
+  "pk": 47,
+  "fields": {
+    "user": null,
+    "organization": null,
+    "action": "USER_LOGIN",
+    "description": "User 'admin' logged in successfully.",
+    "resource_type": "User",
+    "resource_id": "1",
+    "ip_address": "127.0.0.1",
+    "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/150.0.0.0 Safari/537.36",
+    "status": "success",
+    "timestamp": "2026-08-02T12:11:28.885Z"
   }
 }
 ]
