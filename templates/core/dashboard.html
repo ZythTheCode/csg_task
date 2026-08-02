@@ -188,6 +188,10 @@ async function loadCharts() {
     const res = await fetch('/api/dashboard/charts/');
     const d = await res.json();
 
+    const isDarkMode = document.documentElement.getAttribute('data-mode') === 'dark';
+    const textColor = isDarkMode ? '#CBD5E1' : '#475569';
+    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(249, 168, 212, 0.15)';
+
     const statusColors   = d.status_distribution.labels.map(l => STATUS_COLOR_MAP[l] || '#94A3B8');
     const priorityColors = d.priority_distribution.labels.map(l => PRIORITY_COLOR_MAP[l] || '#94A3B8');
     const officerColors  = d.tasks_per_officer.labels.map((_, i) => OFFICER_PALETTE[i % OFFICER_PALETTE.length]);
@@ -196,35 +200,35 @@ async function loadCharts() {
     new Chart(document.getElementById('statusChart'), {
       type: 'doughnut',
       data: { labels: d.status_distribution.labels, datasets: [{ data: d.status_distribution.data, backgroundColor: statusColors, borderWidth: 0, hoverOffset: 8 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } }, cutout: '70%' }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } }, cutout: '70%' }
     });
 
     // Monthly Bar
     new Chart(document.getElementById('monthlyChart'), {
       type: 'bar',
       data: { labels: d.monthly_completed.labels, datasets: [{ label: 'Completed', data: d.monthly_completed.data, backgroundColor: 'rgba(255, 79, 163, 0.85)', borderRadius: 8, borderSkipped: false }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(249, 168, 212, 0.15)' }, ticks: { font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
     });
 
     // Priority Pie
     new Chart(document.getElementById('priorityChart'), {
       type: 'pie',
       data: { labels: d.priority_distribution.labels, datasets: [{ data: d.priority_distribution.data, backgroundColor: priorityColors, borderWidth: 0 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } } }
     });
 
     // Officer Horizontal Bar
     new Chart(document.getElementById('officerChart'), {
       type: 'bar',
       data: { labels: d.tasks_per_officer.labels, datasets: [{ label: 'Tasks', data: d.tasks_per_officer.data, backgroundColor: officerColors, borderRadius: 8 }] },
-      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: 'rgba(249, 168, 212, 0.15)' }, ticks: { font: { size: 11, family: 'Plus Jakarta Sans' } } }, y: { grid: { display: false }, ticks: { font: { size: 11, family: 'Plus Jakarta Sans' } } } } }
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } } } }
     });
 
     // Weekly Line
     new Chart(document.getElementById('weeklyChart'), {
       type: 'line',
       data: { labels: d.weekly_trend.labels, datasets: [{ label: 'Completed', data: d.weekly_trend.data, borderColor: '#FF4FA3', backgroundColor: 'rgba(255, 79, 163, 0.12)', tension: 0.4, fill: true, pointBackgroundColor: '#FF4FA3', pointRadius: 5, pointHoverRadius: 7, borderWidth: 3 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(249, 168, 212, 0.15)' }, ticks: { font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
+      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
     });
   } catch(e) { console.error('Chart load error:', e); }
 }

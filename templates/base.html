@@ -322,6 +322,7 @@ document.addEventListener('DOMContentLoaded', function() {
     html.setAttribute('data-mode', newMode);
     localStorage.setItem('csg_dark_mode', newMode);
     updateDarkModeIcon(newMode);
+    if (typeof loadCharts === 'function') loadCharts();
     
     fetch("{% url 'accounts:toggle_dark_mode' %}", {
       method: 'POST',

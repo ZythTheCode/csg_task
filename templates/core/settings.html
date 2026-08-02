@@ -116,17 +116,6 @@
             </label>
           </div>
 
-          <!-- Dark -->
-          <div class="col-6 col-sm-4 col-md-3">
-            <label class="theme-swatch-card {% if target_org.theme == 'dark' %}active{% endif %}" style="cursor:pointer;display:block">
-              <input type="radio" name="theme" value="dark" class="d-none" {% if target_org.theme == 'dark' %}checked{% endif %} onchange="previewTheme('dark')">
-              <div class="swatch-preview p-3 rounded-3 mb-2 shadow-sm text-white" style="background:linear-gradient(135deg, #6366F1, #0F172A);height:64px;display:flex;align-items:center;justify-content:center">
-                <i class="bi bi-check-circle-fill text-white fs-5 check-icon" {% if target_org.theme != 'dark' %}style="display:none"{% endif %}></i>
-              </div>
-              <div class="fw-bold text-center" style="font-size:12.5px;color:var(--slate-800)">Midnight Slate</div>
-              <div class="text-muted text-center" style="font-size:10.5px">Sleek Dark Mode</div>
-            </label>
-          </div>
 
           <!-- Indigo -->
           <div class="col-6 col-sm-4 col-md-3">

@@ -132,19 +132,6 @@
   --sidebar-border: rgba(254, 205, 211, 0.3);
 }
 
-[data-theme="dark"] {
-  --primary: #6366F1; --primary-light: #818CF8; --primary-dark: #4F46E5;
-  --pink-50: #1E293B; --pink-100: #334155; --pink-200: #475569; --pink-300: #64748B; --pink-600: #818CF8; --pink-700: #A5B4FC;
-  --slate-800: #F8FAFC; --slate-700: #F1F5F9; --slate-600: #E2E8F0; --slate-500: #94A3B8; --slate-400: #94A3B8;
-  --sidebar-active-bg: linear-gradient(135deg, #6366F1, #818CF8);
-  --page-bg: linear-gradient(135deg, #090D16 0%, #0F172A 50%, #0B1120 100%);
-  --sidebar-bg: rgba(15, 23, 42, 0.95);
-  --sidebar-border: rgba(51, 65, 85, 0.6);
-  --sidebar-text: #CBD5E1;
-  --sidebar-hover: rgba(51, 65, 85, 0.5);
-  color: #F8FAFC;
-}
-
 /* ══════════════════════════════════════
    GLOBAL DARK MODE ([data-mode="dark"]) OVERRIDES
 ══════════════════════════════════════ */
@@ -1550,22 +1537,22 @@ body.page-transitioning .page-content {
   background-color: rgba(252, 231, 243, 1) !important;
 }
 
-/* ── Midnight Slate: Row highlighting overrides ── */
-[data-theme="dark"] .table-custom tbody tr:nth-child(even) {
+/* ── Dark Mode: Row highlighting & visited overrides ── */
+[data-mode="dark"] .table-custom tbody tr:nth-child(even) {
   background: rgba(51, 65, 85, 0.2) !important;
 }
-[data-theme="dark"] .table-custom tbody tr:hover,
-[data-theme="dark"] .table tbody tr:hover {
-  background: rgba(99, 102, 241, 0.12) !important;
+[data-mode="dark"] .table-custom tbody tr:hover,
+[data-mode="dark"] .table tbody tr:hover {
+  background: rgba(71, 85, 105, 0.35) !important;
 }
-[data-theme="dark"] .table-custom tbody tr.task-row-visited {
-  background-color: rgba(99, 102, 241, 0.15) !important;
-  box-shadow: inset 4px 0 0 #818CF8;
+[data-mode="dark"] .table-custom tbody tr.task-row-visited {
+  background-color: rgba(148, 163, 184, 0.15) !important;
+  box-shadow: inset 4px 0 0 var(--primary-light);
 }
-[data-theme="dark"] .table-custom tbody tr.task-row-visited:hover {
-  background-color: rgba(99, 102, 241, 0.25) !important;
+[data-mode="dark"] .table-custom tbody tr.task-row-visited:hover {
+  background-color: rgba(148, 163, 184, 0.25) !important;
 }
-[data-theme="dark"] .table-custom tbody td {
+[data-mode="dark"] .table-custom tbody td {
   color: #E2E8F0 !important;
   border-bottom-color: rgba(51, 65, 85, 0.4) !important;
 }

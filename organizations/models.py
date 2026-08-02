@@ -16,7 +16,6 @@ class Organization(models.Model):
         ('amber', 'Sunset Amber'),
         ('teal', 'Cyber Teal'),
         ('crimson', 'Crimson Rose'),
-        ('dark', 'Midnight Slate'),
         ('indigo', 'Electric Indigo'),
         ('coral', 'Coral Sunset'),
         ('forest', 'Deep Forest'),
