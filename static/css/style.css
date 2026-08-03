@@ -1425,6 +1425,31 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .kanban-card.dragging { opacity: 0.45; transform: scale(0.96); }
 
+/* Disabled / Read-Only Kanban Cards (Not assigned to officer) */
+.kanban-card.kanban-card-disabled {
+  cursor: not-allowed !important;
+  background-color: rgba(248, 250, 252, 0.85);
+  border-color: rgba(226, 232, 240, 0.9);
+  opacity: 0.88;
+}
+.kanban-card.kanban-card-disabled:hover {
+  transform: none !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.04) !important;
+}
+.kanban-card.kanban-card-disabled * {
+  cursor: not-allowed !important;
+}
+.kanban-card.kanban-card-disabled .task-title-link,
+.kanban-card.kanban-card-disabled .view-task-btn,
+.kanban-card.kanban-card-disabled .dropdown-toggle {
+  cursor: pointer !important;
+}
+
+[data-mode="dark"] .kanban-card.kanban-card-disabled {
+  background-color: rgba(30, 41, 59, 0.45) !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
 /* ══════════════════════════════════════
    LOGIN PAGE
 ══════════════════════════════════════ */

@@ -97,9 +97,14 @@
     <div class="kanban-cards-list" data-status="{{ col.code }}">
       {% for task in col.tasks %}
       {% can_update_task_progress user task as update_perm %}
-      <div class="kanban-card" draggable="{% if update_perm %}true{% else %}false{% endif %}" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+      <div class="kanban-card {% if not update_perm %}kanban-card-disabled{% endif %}" draggable="{% if update_perm %}true{% else %}false{% endif %}" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
         <div class="d-flex justify-content-between align-items-center mb-2">
-          <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:11.5px">{{ task.task_number }}</span>
+          <div class="d-flex align-items-center gap-1">
+            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:11.5px">{{ task.task_number }}</span>
+            {% if not update_perm %}
+            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle d-inline-flex align-items-center gap-1" style="font-size:9.5px;padding:2px 7px;border-radius:10px;font-weight:700" title="Not assigned to you (Read Only - Cannot move stage)"><i data-lucide="lock" style="width:10px;height:10px"></i> Read Only</span>
+            {% endif %}
+          </div>
           <div class="d-flex align-items-center gap-1">
             <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{ task.get_priority_display }}</span>
             <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}" title="View Details" style="width:24px;height:24px">
@@ -320,12 +325,16 @@ document.addEventListener('DOMContentLoaded', function() {
         card.addEventListener('dragstart', handleDragStart);
         card.addEventListener('dragend', handleDragEnd);
       } else {
-        card.style.cursor = 'default';
+        card.style.cursor = 'not-allowed';
       }
     });
   }
 
   function handleDragStart(e) {
+    if (this.getAttribute('draggable') !== 'true') {
+      e.preventDefault();
+      return false;
+    }
     draggedCard = this;
     this.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
@@ -341,6 +350,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const dropzones = document.querySelectorAll('.kanban-cards-list');
   dropzones.forEach(zone => {
     zone.addEventListener('dragover', function(e) {
+      if (!draggedCard || draggedCard.getAttribute('draggable') !== 'true') return;
       e.preventDefault();
       e.dataTransfer.dropEffect = 'move';
       this.classList.add('drag-over');
@@ -353,7 +363,7 @@ document.addEventListener('DOMContentLoaded', function() {
     zone.addEventListener('drop', function(e) {
       e.preventDefault();
       this.classList.remove('drag-over');
-      if (!draggedCard) return;
+      if (!draggedCard || draggedCard.getAttribute('draggable') !== 'true') return;
 
       const targetZone = this;
       const newStatus = targetZone.getAttribute('data-status');
