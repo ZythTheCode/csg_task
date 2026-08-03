@@ -24,15 +24,21 @@ class Command(BaseCommand):
         ]
         org_map = {}
         for o_info in orgs_data:
-            org, created = Organization.objects.get_or_create(
-                name=o_info['name'],
-                defaults={'abbreviation': o_info.get('abbreviation', ''), 'description': o_info['description'], 'status': o_info['status']}
-            )
-            if not created:
-                org.abbreviation = o_info.get('abbreviation', '')
-                org.description = o_info['description']
+            org = Organization.objects.filter(abbreviation=o_info['abbreviation']).first() or \
+                  Organization.objects.filter(name__iexact=o_info['name']).first()
+            if not org:
+                org = Organization.objects.create(
+                    name=o_info['name'],
+                    abbreviation=o_info['abbreviation'],
+                    description=o_info['description'],
+                    status=o_info['status']
+                )
+            else:
+                if not org.abbreviation:
+                    org.abbreviation = o_info['abbreviation']
                 org.status = o_info['status']
                 org.save()
+            org_map[o_info['abbreviation']] = org
             org_map[o_info['name']] = org
             self.stdout.write(f'  [+] Organization: {org.name} ({org.abbreviation}) [{org.status}]')
 
