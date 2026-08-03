@@ -1676,16 +1676,21 @@ body.page-transitioning .page-content {
   transform: scale(1.15) rotate(-5deg);
 }
 
-/* ── Facebook-Style Circular Mask for Cropper.js ── */
-.cropper-view-box,
-.cropper-face {
+/* ── Cropper.js Masking & Custom Styles ── */
+.cropper-circular .cropper-view-box,
+.cropper-circular .cropper-face {
   border-radius: 50% !important;
+}
+
+.cropper-square .cropper-view-box,
+.cropper-square .cropper-face {
+  border-radius: 16px !important;
 }
 
 .cropper-view-box {
   outline: 2px solid var(--primary, #ec4899) !important;
   outline-color: var(--primary, #ec4899) !important;
-  box-shadow: 0 0 0 4000px rgba(15, 23, 42, 0.75) !important;
+  box-shadow: 0 0 0 4000px rgba(15, 23, 42, 0.78) !important;
 }
 
 .cropper-modal {

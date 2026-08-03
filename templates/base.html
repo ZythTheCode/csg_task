@@ -408,7 +408,7 @@ document.addEventListener('DOMContentLoaded', function() {
   updateDarkModeIcon(initialMode);
 });
 
-/* ── Global Profile Photo Cropper Logic (Facebook-Style) ── */
+/* ── Global Profile Photo & Logo Cropper Logic ── */
 let currentCropper = null;
 let currentFileInput = null;
 let currentPreviewImgId = null;
@@ -424,6 +424,21 @@ window.handleProfilePhotoSelect = function(input, previewImgId, fallbackDivId) {
     currentPreviewImgId = previewImgId;
     currentFallbackDivId = fallbackDivId;
     rawSelectedFile = file;
+
+    const titleEl = document.getElementById('cropPhotoModalTitle');
+    const descEl = document.getElementById('cropPhotoModalDesc');
+    const wrapperEl = document.getElementById('cropperContainerWrapper');
+
+    const isLogo = (previewImgId === 'orgLogoPreview');
+    if (isLogo) {
+      if (titleEl) titleEl.innerHTML = '<i class="bi bi-crop text-primary"></i> Crop &amp; Align Organization Logo';
+      if (descEl) descEl.textContent = 'Drag to position your organization logo inside the frame. Scroll or use controls to zoom.';
+      if (wrapperEl) wrapperEl.className = 'cropper-wrapper cropper-square mx-auto position-relative overflow-hidden shadow-sm';
+    } else {
+      if (titleEl) titleEl.innerHTML = '<i class="bi bi-crop text-primary"></i> Crop &amp; Align Profile Photo';
+      if (descEl) descEl.textContent = 'Drag to position your photo inside the circular frame. Scroll or use controls to zoom.';
+      if (wrapperEl) wrapperEl.className = 'cropper-wrapper cropper-circular mx-auto position-relative overflow-hidden shadow-sm';
+    }
 
     const reader = new FileReader();
     reader.onload = function(e) {
@@ -445,9 +460,9 @@ window.handleProfilePhotoSelect = function(input, previewImgId, fallbackDivId) {
           aspectRatio: 1,
           viewMode: 1,
           dragMode: 'move',
-          autoCropArea: 0.9,
+          autoCropArea: 0.95,
           restore: false,
-          guides: false,
+          guides: true,
           center: true,
           highlight: false,
           cropBoxMovable: true,
@@ -483,18 +498,22 @@ window.applyImageCrop = function() {
   if (!currentCropper) return;
 
   const canvas = currentCropper.getCroppedCanvas({
-    width: 400,
-    height: 400,
+    width: 500,
+    height: 500,
     imageSmoothingEnabled: true,
     imageSmoothingQuality: 'high',
   });
 
   if (canvas) {
+    const isPng = rawSelectedFile && (rawSelectedFile.type === 'image/png' || rawSelectedFile.type === 'image/webp' || rawSelectedFile.type === 'image/svg+xml');
+    const mimeType = isPng ? 'image/png' : 'image/jpeg';
+    const quality = isPng ? undefined : 0.92;
+
     canvas.toBlob(function(blob) {
       if (!blob) return;
 
-      const croppedFile = new File([blob], rawSelectedFile ? rawSelectedFile.name : 'profile_photo.jpg', {
-        type: 'image/jpeg',
+      const croppedFile = new File([blob], rawSelectedFile ? rawSelectedFile.name : (isPng ? 'logo.png' : 'photo.jpg'), {
+        type: mimeType,
         lastModified: Date.now()
       });
 
@@ -510,9 +529,11 @@ window.applyImageCrop = function() {
       const croppedUrl = URL.createObjectURL(blob);
       if (previewImg) {
         previewImg.src = croppedUrl;
+        previewImg.style.display = 'block';
         previewImg.classList.remove('d-none');
       }
       if (fallbackDiv) {
+        fallbackDiv.style.display = 'none';
         fallbackDiv.classList.add('d-none');
       }
 
@@ -524,27 +545,27 @@ window.applyImageCrop = function() {
         currentCropper.destroy();
         currentCropper = null;
       }
-    }, 'image/jpeg', 0.92);
+    }, mimeType, quality);
   }
 };
 </script>
 
-<!-- Global Facebook-Style Profile Photo Cropper Modal -->
-<div class="modal fade" id="cropPhotoModal" tabindex="-1" aria-labelledby="cropPhotoModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-  <div class="modal-dialog modal-dialog-centered modal-lg">
+<!-- Global Facebook-Style Profile Photo & Logo Cropper Modal -->
+<div class="modal fade" id="cropPhotoModal" tabindex="-1" aria-labelledby="cropPhotoModalTitle" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 580px;">
     <div class="modal-content border-0 shadow-lg" style="border-radius:20px; overflow:hidden;">
       <div class="modal-header py-3 px-4" style="background:var(--pink-50); border-bottom:1px solid rgba(0,0,0,0.08)">
-        <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-0" id="cropPhotoModalLabel" style="font-size:15px">
-          <i class="bi bi-crop text-primary"></i> Crop &amp; Align Profile Photo
+        <h6 class="modal-title fw-bold text-dark d-flex align-items-center gap-2 mb-0" id="cropPhotoModalTitle" style="font-size:15px">
+          <i class="bi bi-crop text-primary"></i> Crop &amp; Align Photo
         </h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" onclick="cancelImageCrop()"></button>
       </div>
       <div class="modal-body p-4 text-center" style="background:var(--page-bg, #f8fafc)">
-        <p class="text-muted mb-3" style="font-size:13px">
-          Drag to position your photo inside the circular frame. Scroll or use controls to zoom.
+        <p class="text-muted mb-3" id="cropPhotoModalDesc" style="font-size:13px">
+          Drag to position your photo inside the frame. Scroll or use controls to zoom.
         </p>
-        <div style="max-height: 420px; width: 100%; overflow: hidden; border-radius: 14px; background: #0f172a; display: flex; align-items: center; justify-content: center; padding: 10px;">
-          <img id="cropperImageTarget" src="" alt="To Crop" style="max-width: 100%; max-height: 400px; display: block;">
+        <div id="cropperContainerWrapper" class="cropper-wrapper cropper-circular mx-auto position-relative overflow-hidden shadow-sm" style="width: 100%; max-width: 480px; height: 360px; border-radius: 16px; background: #0f172a; display: flex; align-items: center; justify-content: center; padding: 10px;">
+          <img id="cropperImageTarget" src="" alt="To Crop" style="max-width: 100%; max-height: 100%; display: block;">
         </div>
 
         <div class="d-flex align-items-center justify-content-center gap-2 mt-3 flex-wrap">
