@@ -91,28 +91,28 @@
     <a href="{% url 'tasks:list' %}" class="btn-primary-custom" style="font-size:12px;padding:6px 16px">View All</a>
   </div>
   <div class="table-responsive">
-    <table class="table-custom table-sortable w-100" style="min-width:800px">
+    <table class="table-custom table-sortable w-100" style="min-width:850px;table-layout:fixed">
       <thead>
         <tr>
-          <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
+          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
             <div class="d-inline-flex align-items-center gap-1"><span>Task No.</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
-          <th style="cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+          <th style="width:240px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
             <div class="d-inline-flex align-items-center gap-1"><span>Title</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
-          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
+          <th style="width:105px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
             <div class="d-inline-flex align-items-center gap-1"><span>Status</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
-          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
+          <th style="width:90px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
             <div class="d-inline-flex align-items-center gap-1"><span>Priority</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
-          <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due-date">
+          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due-date">
             <div class="d-inline-flex align-items-center gap-1"><span>Due Date</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
-          <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
+          <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
             <div class="d-inline-flex align-items-center gap-1"><span>Progress</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
-          <th style="width:70px;text-align:right">Action</th>
+          <th style="width:75px;text-align:right">Action</th>
         </tr>
       </thead>
       <tbody>
