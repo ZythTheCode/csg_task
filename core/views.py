@@ -74,6 +74,31 @@ class SettingsView(LoginRequiredMixin, TemplateView):
 
         updated_anything = False
 
+        # Handle Organization Profile Details (Name, Abbreviation, Description)
+        if 'update_details' in request.POST or request.POST.get('action') == 'update_details':
+            new_name = request.POST.get('org_name', '').strip()
+            new_abbr = request.POST.get('org_abbreviation', '').strip()
+            new_desc = request.POST.get('org_description', '').strip()
+
+            if new_name and new_name != target_org.name:
+                if Organization.objects.filter(name__iexact=new_name).exclude(pk=target_org.pk).exists():
+                    messages.error(request, f"An organization named '{new_name}' already exists.")
+                else:
+                    target_org.name = new_name
+                    updated_anything = True
+
+            if new_abbr != target_org.abbreviation:
+                target_org.abbreviation = new_abbr
+                updated_anything = True
+
+            if new_desc != target_org.description:
+                target_org.description = new_desc
+                updated_anything = True
+
+            if updated_anything:
+                target_org.save()
+                messages.success(request, f"Organization details updated successfully for {target_org.name}!")
+
         # Handle Organization Logo removal
         if request.POST.get('action') == 'remove_logo' or 'remove_logo' in request.POST:
             if target_org.logo:
@@ -95,7 +120,7 @@ class SettingsView(LoginRequiredMixin, TemplateView):
         if selected_theme:
             valid_themes = [t[0] for t in Organization.THEME_CHOICES]
             if selected_theme in valid_themes:
-                if target_org.theme != selected_theme or not updated_anything:
+                if target_org.theme != selected_theme:
                     target_org.theme = selected_theme
                     target_org.save()
                     messages.success(request, f"Theme successfully updated to '{dict(Organization.THEME_CHOICES).get(selected_theme)}' for {target_org.name}!")

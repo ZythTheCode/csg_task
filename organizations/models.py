@@ -29,6 +29,7 @@ class Organization(models.Model):
     ]
 
     name = models.CharField(max_length=255, unique=True)
+    abbreviation = models.CharField(max_length=20, blank=True, default='')
     description = models.TextField(blank=True)
     logo = models.ImageField(upload_to='org_logos/', blank=True, null=True)
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='pending', db_index=True)
@@ -37,7 +38,21 @@ class Organization(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     marked_for_deletion_at = models.DateTimeField(null=True, blank=True)
 
+    @property
+    def short_name(self):
+        if self.abbreviation:
+            return self.abbreviation
+        return self.name[:3].upper() if self.name else "CSG"
+
+    @property
+    def display_name(self):
+        if self.abbreviation and self.abbreviation.upper() not in self.name.upper():
+            return f"{self.name} ({self.abbreviation})"
+        return self.name
+
     def __str__(self):
+        if self.abbreviation:
+            return f"{self.name} ({self.abbreviation})"
         return self.name
 
     class Meta:

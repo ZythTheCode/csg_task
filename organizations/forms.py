@@ -12,7 +12,7 @@ class OrganizationRegistrationForm(forms.ModelForm):
 
     class Meta:
         model = Organization
-        fields = ['name', 'description']
+        fields = ['name', 'abbreviation', 'description']
 
     def clean_admin_username(self):
         username = self.cleaned_data.get('admin_username')

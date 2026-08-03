@@ -120,6 +120,8 @@ def organization_detail_json(request, org_id):
     return JsonResponse({
         'id': org.id,
         'name': org.name,
+        'abbreviation': org.abbreviation or '',
+        'display_name': org.display_name,
         'description': org.description or 'No description provided.',
         'status': org.get_status_display(),
         'created_at': org.created_at.strftime('%b %d, %Y'),

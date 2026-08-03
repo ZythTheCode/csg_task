@@ -18,22 +18,23 @@ class Command(BaseCommand):
 
         # ── ORGANIZATIONS ─────────────────────────
         orgs_data = [
-            {'name': 'CSG', 'description': 'Central Student Government Main Organization', 'status': 'approved'},
-            {'name': 'CO:DE', 'description': 'Computer Developers and Engineers Society', 'status': 'approved'},
-            {'name': 'ACES', 'description': 'Association of Civil Engineering Students', 'status': 'approved'},
+            {'name': 'CSG', 'abbreviation': 'CSG', 'description': 'Central Student Government Main Organization', 'status': 'approved'},
+            {'name': 'CO:DE', 'abbreviation': 'CO:DE', 'description': 'Computer Developers and Engineers Society', 'status': 'approved'},
+            {'name': 'ACES', 'abbreviation': 'ACES', 'description': 'Association of Civil Engineering Students', 'status': 'approved'},
         ]
         org_map = {}
         for o_info in orgs_data:
             org, created = Organization.objects.get_or_create(
                 name=o_info['name'],
-                defaults={'description': o_info['description'], 'status': o_info['status']}
+                defaults={'abbreviation': o_info.get('abbreviation', ''), 'description': o_info['description'], 'status': o_info['status']}
             )
             if not created:
+                org.abbreviation = o_info.get('abbreviation', '')
                 org.description = o_info['description']
                 org.status = o_info['status']
                 org.save()
             org_map[o_info['name']] = org
-            self.stdout.write(f'  [+] Organization: {org.name} ({org.status})')
+            self.stdout.write(f'  [+] Organization: {org.name} ({org.abbreviation}) [{org.status}]')
 
         csg_org = org_map.get('CSG')
         code_org = org_map.get('CO:DE')
