@@ -1045,7 +1045,7 @@ body {
   -webkit-backdrop-filter: blur(14px);
   border-radius: var(--card-radius);
   border: 1px solid rgba(255, 255, 255, 0.9);
-  overflow: visible !important;
+  overflow: hidden;
   box-shadow: var(--shadow-sm);
   width: 100%;
   position: relative;
@@ -1057,11 +1057,7 @@ body {
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   border-radius: var(--card-radius);
-}
-@media (min-width: 992px) {
-  .table-responsive {
-    overflow-x: visible !important;
-  }
+  max-width: 100%;
 }
 
 .table-custom {
