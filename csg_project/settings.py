@@ -102,16 +102,26 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
 # Cloudinary persistent media storage for production cloud deployments (e.g. Render)
-CLOUDINARY_STORAGE = {
-    'CLOUD_NAME': config('CLOUDINARY_CLOUD_NAME', default=''),
-    'API_KEY': config('CLOUDINARY_API_KEY', default=''),
-    'API_SECRET': config('CLOUDINARY_API_SECRET', default=''),
-}
+import cloudinary
 
-if config('CLOUDINARY_URL', default='') or config('CLOUDINARY_CLOUD_NAME', default=''):
-    INSTALLED_APPS.insert(0, 'cloudinary_storage')
-    INSTALLED_APPS.append('cloudinary')
-    DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+CLOUDINARY_URL_ENV = config('CLOUDINARY_URL', default='').strip()
+CLOUDINARY_CLOUD_NAME_ENV = config('CLOUDINARY_CLOUD_NAME', default='').strip()
+
+if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
+    if CLOUDINARY_URL_ENV:
+        cloudinary.config(cloudinary_url=CLOUDINARY_URL_ENV, secure=True)
+    elif CLOUDINARY_CLOUD_NAME_ENV:
+        cloudinary.config(
+            cloud_name=CLOUDINARY_CLOUD_NAME_ENV,
+            api_key=config('CLOUDINARY_API_KEY', default='').strip(),
+            api_secret=config('CLOUDINARY_API_SECRET', default='').strip(),
+            secure=True
+        )
+    
+    if cloudinary.config().cloud_name:
+        INSTALLED_APPS.insert(0, 'cloudinary_storage')
+        INSTALLED_APPS.append('cloudinary')
+        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
