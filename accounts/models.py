@@ -1,5 +1,15 @@
+import os
+import uuid
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+
+def user_profile_picture_path(instance, filename):
+    ext = os.path.splitext(filename)[1].lower()
+    if not ext or len(ext) > 6:
+        ext = '.jpg'
+    user_id = instance.username or instance.pk or 'user'
+    short_uuid = uuid.uuid4().hex[:8]
+    return f"profile_pics/user_{user_id}_{short_uuid}{ext}"
 
 
 class User(AbstractUser):
@@ -18,7 +28,7 @@ class User(AbstractUser):
         blank=True,
         related_name='users'
     )
-    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
+    profile_picture = models.ImageField(upload_to=user_profile_picture_path, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True)
     bio = models.TextField(blank=True)
     dark_mode = models.BooleanField(default=False)

@@ -1,4 +1,14 @@
+import os
+import uuid
 from django.db import models
+
+def organization_logo_path(instance, filename):
+    ext = os.path.splitext(filename)[1].lower()
+    if not ext or len(ext) > 6:
+        ext = '.png'
+    org_id = instance.abbreviation or instance.pk or 'org'
+    short_uuid = uuid.uuid4().hex[:8]
+    return f"org_logos/org_{org_id}_{short_uuid}{ext}"
 
 class Organization(models.Model):
     STATUS_CHOICES = [
@@ -31,7 +41,7 @@ class Organization(models.Model):
     name = models.CharField(max_length=255, unique=True)
     abbreviation = models.CharField(max_length=20, blank=True, default='')
     description = models.TextField(blank=True)
-    logo = models.ImageField(upload_to='org_logos/', blank=True, null=True)
+    logo = models.ImageField(upload_to=organization_logo_path, blank=True, null=True)
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='pending', db_index=True)
     theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='pink')
     created_at = models.DateTimeField(auto_now_add=True)

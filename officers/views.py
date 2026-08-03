@@ -97,6 +97,20 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
         kwargs['user'] = self.request.user
         return kwargs
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.POST.get('action') == 'remove_photo':
+            if self.object.user and self.object.user.profile_picture:
+                user_name = self.object.user.get_full_name()
+                self.object.user.profile_picture.delete(save=False)
+                self.object.user.profile_picture = None
+                self.object.user.save(update_fields=['profile_picture'])
+                from core.services.audit import log_activity
+                log_activity(request, 'OFFICER_PHOTO_REMOVE', f"Removed profile photo for officer '{user_name}'.", resource_type='Officer', resource_id=self.object.pk)
+                messages.success(request, f"Profile picture for '{user_name}' removed successfully.")
+            return redirect('officers:detail', pk=self.object.pk)
+        return super().post(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = f'Edit Officer: {self.object.user.get_full_name()}'

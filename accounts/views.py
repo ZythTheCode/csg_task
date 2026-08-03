@@ -70,6 +70,19 @@ class ProfileEditView(LoginRequiredMixin, UpdateView):
     def get_object(self):
         return self.request.user
 
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        if request.POST.get('action') == 'remove_photo':
+            if self.object.profile_picture:
+                self.object.profile_picture.delete(save=False)
+                self.object.profile_picture = None
+                self.object.save(update_fields=['profile_picture'])
+                from core.services.audit import log_activity
+                log_activity(request, 'PROFILE_PHOTO_REMOVE', "Removed profile photo and reverted to default avatar.", resource_type='User', resource_id=self.object.pk)
+                messages.success(request, 'Profile picture removed successfully.')
+            return redirect('accounts:profile')
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
         messages.success(self.request, 'Profile updated successfully.')
         return super().form_valid(form)

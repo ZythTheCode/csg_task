@@ -522,7 +522,9 @@ window.applyImageCrop = function() {
     canvas.toBlob(function(blob) {
       if (!blob) return;
 
-      const croppedFile = new File([blob], rawSelectedFile ? rawSelectedFile.name : (isPng ? 'logo.png' : 'photo.jpg'), {
+      const isLogo = (currentPreviewImgId === 'orgLogoPreview');
+      const cleanFileName = isLogo ? `logo_${Date.now()}.png` : `photo_${Date.now()}.jpg`;
+      const croppedFile = new File([blob], cleanFileName, {
         type: mimeType,
         lastModified: Date.now()
       });
