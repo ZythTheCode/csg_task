@@ -48,8 +48,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    # Auto-marks tasks as overdue when due_date has passed
-    'tasks.middleware.OverdueTaskMiddleware',
 ]
 
 ROOT_URLCONF = 'csg_project.urls'
