@@ -159,7 +159,14 @@
 
   <div class="sidebar-footer">
     <div class="d-flex align-items-center gap-2">
-      <div class="officer-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
+      <div class="officer-avatar position-relative" style="overflow:hidden">
+        {% if user.profile_picture %}
+        <img src="{{ user.profile_picture.url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
+        <span class="avatar-fallback" style="display:none">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
+        {% else %}
+        {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+        {% endif %}
+      </div>
       <div>
         <div class="user-name" title="{{ user.get_full_name }}">{{ user.get_full_name|truncatechars:20 }}</div>
         <div class="user-role">{{ user.get_role_display }}</div>
@@ -491,6 +498,9 @@ window.cancelImageCrop = function() {
   if (currentCropper) {
     currentCropper.destroy();
     currentCropper = null;
+  }
+  if (currentFileInput) {
+    currentFileInput.value = '';
   }
 };
 

@@ -1698,10 +1698,21 @@ body.page-transitioning .page-content {
   opacity: 0.85 !important;
 }
 
-.cropper-dashed,
-.cropper-point,
+.cropper-dashed {
+  border-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.cropper-point {
+  background-color: var(--primary, #ec4899) !important;
+  width: 8px !important;
+  height: 8px !important;
+  opacity: 0.9 !important;
+  border-radius: 50% !important;
+}
+
 .cropper-line {
-  display: none !important;
+  background-color: var(--primary, #ec4899) !important;
+  opacity: 0.3 !important;
 }
 
 

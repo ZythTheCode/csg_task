@@ -86,7 +86,7 @@
             <input type="file" name="logo" id="orgLogoInput" accept="image/*" class="d-none" onchange="handleProfilePhotoSelect(this, 'orgLogoPreview', 'orgLogoFallback')">
 
             {% if target_org.logo %}
-            <button type="submit" name="action" value="remove_logo" class="btn btn-outline-danger btn-sm px-3 py-2" style="font-size:13px;border-radius:20px" onclick="return confirm('Are you sure you want to remove the organization logo?')">
+            <button type="button" class="btn btn-outline-danger btn-sm px-3 py-2" style="font-size:13px;border-radius:20px" data-bs-toggle="modal" data-bs-target="#removeLogoModal">
               <i class="bi bi-trash me-1"></i> Remove Logo
             </button>
             {% endif %}
@@ -436,4 +436,38 @@ function previewTheme(themeName) {
   }
 }
 </script>
+
+<!-- Remove Organization Logo Modal -->
+<div class="modal fade" id="removeLogoModal" tabindex="-1" aria-labelledby="removeLogoModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:440px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden">
+      <div class="modal-header py-3 px-4" style="background:#FFF1F2;border-bottom:1px solid #FECDD3">
+        <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2 mb-0" id="removeLogoModalTitle" style="font-size:15px">
+          <i class="bi bi-exclamation-triangle-fill"></i> Remove Organization Logo
+        </h6>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-4 text-center">
+        <div class="mb-3">
+          <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle p-3" style="width:64px;height:64px">
+            <i class="bi bi-trash3-fill" style="font-size:28px"></i>
+          </div>
+        </div>
+        <h6 class="fw-bold mb-2 text-dark">Are you sure you want to remove the logo?</h6>
+        <p class="text-muted mb-0" style="font-size:13px;line-height:1.5">
+          This will delete the custom organization logo for <strong>{{ target_org.name }}</strong> and reset your brand header to display organization initials.
+        </p>
+      </div>
+      <div class="modal-footer py-3 px-4 bg-light border-top-0 d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary-custom btn-sm px-4" data-bs-dismiss="modal" style="border-radius:30px;font-weight:600">Cancel</button>
+        <form method="post" class="d-inline">
+          {% csrf_token %}
+          <button type="submit" name="action" value="remove_logo" class="btn btn-danger btn-sm px-4" style="border-radius:30px;font-weight:600">
+            <i class="bi bi-trash me-1"></i> Yes, Remove Logo
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}

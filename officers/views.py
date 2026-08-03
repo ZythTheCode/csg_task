@@ -145,7 +145,7 @@ class PositionListView(LoginRequiredMixin, ListView):
     context_object_name = 'positions'
 
     def get_queryset(self):
-        qs = Position.objects.all()
+        qs = Position.objects.select_related('officer__user')
         if self.request.user.organization:
             qs = qs.filter(organization=self.request.user.organization)
         return qs
