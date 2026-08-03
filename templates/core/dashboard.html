@@ -230,7 +230,10 @@ async function loadCharts() {
       data: { labels: d.weekly_trend.labels, datasets: [{ label: 'Completed', data: d.weekly_trend.data, borderColor: '#FF4FA3', backgroundColor: 'rgba(255, 79, 163, 0.12)', tension: 0.4, fill: true, pointBackgroundColor: '#FF4FA3', pointRadius: 5, pointHoverRadius: 7, borderWidth: 3 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
     });
-  function setScope(scopeVal) {
+  } catch(e) { console.error('Chart load error:', e); }
+}
+
+function setScope(scopeVal) {
   const url = new URL(window.location.href);
   url.searchParams.set('scope', scopeVal);
   window.location.href = url.toString();
