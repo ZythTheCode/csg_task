@@ -120,52 +120,52 @@
   {% csrf_token %}
   <div class="table-custom-container">
     <div class="table-responsive">
-      <table class="table-custom table-sortable w-100" id="taskTable" style="min-width:980px;table-layout:fixed">
+      <table class="table-custom table-sortable w-100" id="taskTable" style="table-layout:fixed;width:100%">
         <thead>
           <tr>
             {% if user.can_manage_tasks %}
-            <th style="width:35px;text-align:center">
+            <th style="width:32px;text-align:center">
               <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
             </th>
             {% endif %}
-            <th style="width:110px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
+            <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
               <div class="d-inline-flex align-items-center gap-1">
                 <span>Task No.</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:250px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+            <th style="width:220px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
               <div class="d-inline-flex align-items-center gap-1">
                 <span>Title</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:140px">Assigned To</th>
-            <th style="width:90px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
+            <th style="width:120px">Assigned To</th>
+            <th style="width:80px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
               <div class="d-inline-flex align-items-center gap-1">
                 <span>Priority</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:105px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
+            <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
               <div class="d-inline-flex align-items-center gap-1">
                 <span>Status</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:100px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due_date">
+            <th style="width:90px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due_date">
               <div class="d-inline-flex align-items-center gap-1">
                 <span>Due Date</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
+            <th style="width:85px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
               <div class="d-inline-flex align-items-center gap-1">
                 <span>Progress</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:90px;text-align:right" class="pe-3">Actions</th>
+            <th style="width:100px;text-align:right" class="pe-4">Actions</th>
           </tr>
         </thead>
         <tbody>
@@ -240,7 +240,7 @@
                 <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
               </div>
             </td>
-            <td style="white-space:nowrap;text-align:right">
+            <td style="white-space:nowrap;text-align:right" class="pe-4">
               <div class="d-inline-flex gap-1">
                 {% can_edit_task user task as edit_perm %}
                 <button type="button" class="btn-sm-icon view-task-btn" data-task-id="{{ task.pk }}" title="View Task"><i data-lucide="eye" style="width:14px;height:14px"></i></button>
