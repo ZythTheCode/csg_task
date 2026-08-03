@@ -84,7 +84,7 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
         return qs
 
     def get_success_url(self):
-        return reverse_lazy('officers:detail', kwargs={'pk': self.object.pk})
+        return reverse_lazy('officers:list')
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_officers:
@@ -108,7 +108,7 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
                 from core.services.audit import log_activity
                 log_activity(request, 'OFFICER_PHOTO_REMOVE', f"Removed profile photo for officer '{user_name}'.", resource_type='Officer', resource_id=self.object.pk)
                 messages.success(request, f"Profile picture for '{user_name}' removed successfully.")
-            return redirect('officers:detail', pk=self.object.pk)
+            return redirect('officers:list')
         return super().post(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):

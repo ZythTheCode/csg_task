@@ -533,6 +533,7 @@ window.applyImageCrop = function() {
       dataTransfer.items.add(croppedFile);
       if (currentFileInput) {
         currentFileInput.files = dataTransfer.files;
+        currentFileInput.dispatchEvent(new Event('change', { bubbles: true }));
       }
 
       const previewImg = document.getElementById(currentPreviewImgId);
