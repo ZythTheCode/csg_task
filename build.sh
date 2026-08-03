@@ -4,7 +4,7 @@ set -o errexit
 
 pip install -r requirements.txt
 
-python manage.py collectstatic --no-input
+python manage.py collectstatic --no-input --clear
 python manage.py migrate
 
 # Seed initial data only if SEED_DATA environment variable is set to "true"
