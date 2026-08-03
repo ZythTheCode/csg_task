@@ -134,7 +134,7 @@
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
-            <th style="width:165px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+            <th style="min-width:180px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
               <div class="d-flex align-items-center justify-content-between">
                 <span>Title</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
@@ -186,7 +186,7 @@
               <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span>
             </td>
             <td>
-              <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="font-weight:700;font-size:13px;max-width:145px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800);text-decoration:none;display:inline-block" title="{{ task.title }}">{{ task.title }}</a>
+              <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="font-weight:700;font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800);text-decoration:none;display:block" title="{{ task.title }}">{{ task.title }}</a>
               <div style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
             </td>
             <td>

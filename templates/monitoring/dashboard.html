@@ -148,7 +148,7 @@
         {% for task in delayed_tasks %}
         <tr data-task-number="{{ task.task_number }}" data-title="{{ task.title|lower }}" data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}" data-status="overdue">
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
-          <td style="font-weight:700;font-size:13.5px;color:var(--slate-800)" title="{{ task.title }}">{{ task.title|truncatechars:40 }}</td>
+          <td style="font-weight:700;font-size:13.5px;color:var(--slate-800)" title="{{ task.title }}"><span style="display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ task.title }}</span></td>
           <td>
             {% if task.assigned_officers.exists %}
             <div class="dropdown d-inline-block">

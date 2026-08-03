@@ -120,7 +120,7 @@
         <tr data-task-number="{{ task.task_number }}" data-title="{{ task.title|lower }}" data-priority="{% if task.priority == 'urgent' %}1{% elif task.priority == 'high' %}2{% elif task.priority == 'medium' %}3{% else %}4{% endif %}" data-status="{% if task.status == 'not_started' %}1{% elif task.status == 'processing' %}2{% elif task.status == 'to_advisers' %}3{% elif task.status == 'accounting' %}4{% elif task.status == 'oca' %}5{% elif task.status == 'osas' %}6{% elif task.status == 'ppss' %}7{% elif task.status == 'supply' %}8{% elif task.status == 'completed' %}9{% else %}10{% endif %}" data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}" data-progress="{{ task.progress }}">
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
           <td>
-            <div style="font-weight:700;font-size:13.5px;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)" title="{{ task.title }}">{{ task.title }}</div>
+            <div style="font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)" title="{{ task.title }}">{{ task.title }}</div>
           </td>
           <td style="white-space:nowrap">
             <span class="badge-status badge-{{ task.status }}">
