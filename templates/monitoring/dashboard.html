@@ -106,7 +106,7 @@
         {% for task in upcoming_deadlines %}
         <div class="d-flex align-items-start justify-content-between mb-3 pb-3" style="border-bottom:1px solid rgba(249, 168, 212, 0.15)">
           <div>
-            <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ task.title|truncatechars:65 }}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)" title="{{ task.title }}">{{ task.title|truncatechars:65 }}</div>
           </div>
           <div class="text-end">
             <div style="font-size:12px;font-weight:700;color:var(--warning)">{{ task.due_date|date:"M d" }}</div>
@@ -148,7 +148,7 @@
         {% for task in delayed_tasks %}
         <tr data-task-number="{{ task.task_number }}" data-title="{{ task.title|lower }}" data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}" data-status="overdue">
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
-          <td style="font-weight:700;font-size:13.5px;color:var(--slate-800)">{{ task.title|truncatechars:40 }}</td>
+          <td style="font-weight:700;font-size:13.5px;color:var(--slate-800)" title="{{ task.title }}">{{ task.title|truncatechars:40 }}</td>
           <td>
             {% if task.assigned_officers.exists %}
             <div class="dropdown d-inline-block">
@@ -178,9 +178,18 @@
             <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
             {% endif %}
           </td>
-          <td style="font-size:12.5px;color:var(--danger);font-weight:700">{{ task.due_date|date:"M d, Y" }}</td>
+          <td style="font-size:12.5px;white-space:nowrap">
+            {% if task.due_date %}
+            <div class="d-flex flex-column align-items-start" style="gap:2px">
+              <span style="color:var(--danger);font-weight:700">
+                {{ task.due_date|date:"M d, Y" }}
+              </span>
+              <span class="badge bg-danger text-white" style="font-size:9px;padding:3px 6px">Overdue</span>
+            </div>
+            {% else %}—{% endif %}
+          </td>
           <td>
-            <span class="badge-status badge-overdue">Overdue</span>
+            <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
           </td>
         </tr>
         {% endfor %}

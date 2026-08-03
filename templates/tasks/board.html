@@ -102,7 +102,7 @@
           <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:11.5px">{{ task.task_number }}</span>
           <div class="d-flex align-items-center gap-1">
             {% if task.is_overdue %}
-            <span class="badge bg-danger" style="font-size:9px;padding:2px 6px;letter-spacing:0.5px">OVERDUE</span>
+            <span class="badge bg-danger" style="font-size:9px;padding:2px 6px;letter-spacing:0.5px">Overdue</span>
             {% endif %}
             <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{ task.get_priority_display }}</span>
             <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}" title="View Details" style="width:24px;height:24px">
@@ -111,7 +111,7 @@
           </div>
         </div>
         <h6 class="fw-bold mb-2" style="font-size:13.5px;line-height:1.4">
-          <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="text-decoration:none;color:var(--slate-800)">{{ task.title }}</a>
+          <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="text-decoration:none;color:var(--slate-800)" title="{{ task.title }}">{{ task.title }}</a>
         </h6>
         <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
           {% if task.assigned_officers.exists %}

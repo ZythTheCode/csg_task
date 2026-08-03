@@ -97,8 +97,8 @@
       </button>
     </div>
     <div class="sidebar-brand-text" title="{{ user.organization.name|default:'CSG System' }}">
-      <h6 class="text-truncate" style="max-width:145px">{{ user.organization.abbreviation|default:user.organization.name|default:"CSG System" }}</h6>
-      <small class="text-truncate" style="max-width:145px">{{ user.organization.name|default:"Task Management" }}</small>
+      <h6 class="text-truncate" style="max-width:145px" title="{{ user.organization.name|default:user.organization.abbreviation|default:'CSG System' }}">{{ user.organization.abbreviation|default:user.organization.name|default:"CSG System" }}</h6>
+      <small class="text-truncate" style="max-width:145px" title="{{ user.organization.name|default:'Task Management' }}">{{ user.organization.name|default:"Task Management" }}</small>
     </div>
     <button type="button" class="sidebar-collapse-btn d-none d-lg-flex ms-auto" onclick="toggleSidebarMin()" title="Collapse Sidebar">
       <i data-lucide="chevron-left" style="width:16px;height:16px"></i>
@@ -160,7 +160,7 @@
     <div class="d-flex align-items-center gap-2">
       <div class="officer-avatar">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</div>
       <div>
-        <div class="user-name">{{ user.get_full_name|truncatechars:20 }}</div>
+        <div class="user-name" title="{{ user.get_full_name }}">{{ user.get_full_name|truncatechars:20 }}</div>
         <div class="user-role">{{ user.get_role_display }}</div>
       </div>
       <a href="{% url 'accounts:logout' %}" class="ms-auto topbar-icon-btn" title="Logout">
