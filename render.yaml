@@ -22,3 +22,10 @@ services:
         generateValue: true
       - key: WEB_CONCURRENCY
         value: 4
+      - key: CLOUDINARY_URL
+        sync: false
+    disk:
+      name: csg_media
+      mountPath: /opt/render/project/src/media
+      sizeGB: 1
+

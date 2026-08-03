@@ -9,8 +9,8 @@
   </div>
   <div class="d-flex flex-wrap gap-2 align-items-center w-100 w-md-auto">
     <div class="scope-switcher me-md-2 me-0" style="background:#fff;border-radius:30px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:inline-flex">
-      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="window.location.href='?scope=my_tasks'" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i>My Tasks</button>
-      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="window.location.href='?scope=all'" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i>All Tasks</button>
+      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="setScope('my_tasks')" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i>My Tasks</button>
+      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="setScope('all')" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i>All Tasks</button>
     </div>
     <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0 ms-auto">
       <a href="{% url 'reports:export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-danger btn-sm flex-fill" style="border-radius:30px;font-weight:700;padding:8px 18px;white-space:nowrap"><i data-lucide="file-text" class="me-1" style="width:14px;height:14px"></i>Export PDF</a>
@@ -32,6 +32,7 @@
   <div class="card-header-custom"><h6><i data-lucide="filter" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Filters</h6></div>
   <div class="p-3">
     <form method="get" class="row g-2 align-items-end">
+      <input type="hidden" name="scope" value="{{ scope }}">
       <div class="col-12 col-sm-6 col-lg-3">
         <label class="form-label mb-1 text-muted" style="font-size:11px;font-weight:700;text-transform:uppercase">Officer</label>
         <select name="officer" class="form-select form-select-sm" style="font-size:13px">
@@ -187,6 +188,11 @@
 
 {% block extra_js %}
 <script>
+window.setScope = function(scopeVal) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('scope', scopeVal);
+  window.location.href = url.toString();
+};
 if (window.lucide) lucide.createIcons();
 </script>
 {% endblock %}

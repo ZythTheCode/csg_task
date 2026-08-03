@@ -9,36 +9,36 @@
   </div>
   <!-- Scope Switcher -->
   <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
-    <a href="?scope=my_tasks" class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks</a>
-    <a href="?scope=all" class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks</a>
+    <button type="button" onclick="setScope('my_tasks')" class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks</button>
+    <button type="button" onclick="setScope('all')" class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks</button>
   </div>
 </div>
 
 <!-- Stat Cards -->
 <div class="row g-2 g-sm-3 mb-4">
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?status=active" class="stat-card primary text-decoration-none" id="stat-active" title="View all tasks that are currently active (not completed)">
+    <a href="{% url 'tasks:list' %}?status=active&scope={{ scope }}" class="stat-card primary text-decoration-none" id="stat-active" title="View all tasks that are currently active (not completed)">
       <div class="stat-icon"><i data-lucide="clipboard-list"></i></div>
       <div class="stat-value" id="val-active">{{ active_tasks }}</div>
       <div class="stat-label">Active Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?status=completed" class="stat-card success text-decoration-none" title="View all successfully completed tasks">
+    <a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none" title="View all successfully completed tasks">
       <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
       <div class="stat-value" id="val-completed">{{ completed_tasks }}</div>
       <div class="stat-label">Completed Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?status=overdue" class="stat-card danger text-decoration-none" title="View tasks that have passed their deadline">
+    <a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none" title="View tasks that have passed their deadline">
       <div class="stat-icon"><i data-lucide="alert-circle"></i></div>
       <div class="stat-value" id="val-overdue">{{ overdue_tasks }}</div>
       <div class="stat-label">Overdue Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?due_this_week=true" class="stat-card warning text-decoration-none" title="View tasks that are due within the next 7 days">
+    <a href="{% url 'tasks:list' %}?due_this_week=true&scope={{ scope }}" class="stat-card warning text-decoration-none" title="View tasks that are due within the next 7 days">
       <div class="stat-icon"><i data-lucide="calendar"></i></div>
       <div class="stat-value" id="val-upcoming">{{ upcoming_tasks }}</div>
       <div class="stat-label">Due This Week</div>
@@ -230,8 +230,12 @@ async function loadCharts() {
       data: { labels: d.weekly_trend.labels, datasets: [{ label: 'Completed', data: d.weekly_trend.data, borderColor: '#FF4FA3', backgroundColor: 'rgba(255, 79, 163, 0.12)', tension: 0.4, fill: true, pointBackgroundColor: '#FF4FA3', pointRadius: 5, pointHoverRadius: 7, borderWidth: 3 }] },
       options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
     });
-  } catch(e) { console.error('Chart load error:', e); }
+  function setScope(scopeVal) {
+  const url = new URL(window.location.href);
+  url.searchParams.set('scope', scopeVal);
+  window.location.href = url.toString();
 }
+
 loadCharts();
 </script>
 {% endblock %}

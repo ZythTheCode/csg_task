@@ -572,6 +572,42 @@ class DeleteAttachmentView(LoginRequiredMixin, View):
         return redirect('tasks:detail', pk=task_pk)
 
 
+def _get_filtered_tasks_for_export(request):
+    if request.user.organization:
+        qs = Task.objects.filter(is_archived=False, organization=request.user.organization)
+    else:
+        qs = Task.objects.filter(is_archived=False)
+
+    scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
+    if scope == 'my_tasks':
+        qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
+
+    q = request.GET.get('q', '')
+    if q:
+        qs = qs.filter(Q(title__icontains=q) | Q(task_number__icontains=q) | Q(description__icontains=q))
+
+    status = request.GET.get('status', '')
+    if status:
+        if status == 'active':
+            qs = qs.exclude(status='completed')
+        elif status == 'overdue':
+            qs = qs.filter(due_date__lt=timezone.now().date()).exclude(status='completed')
+        elif status == 'in_progress':
+            qs = qs.exclude(status__in=['not_started', 'completed'])
+        else:
+            qs = qs.filter(status=status)
+
+    priority = request.GET.get('priority', '')
+    if priority:
+        qs = qs.filter(priority=priority)
+
+    officers = request.GET.getlist('officer')
+    if officers:
+        qs = qs.filter(assigned_officers__id__in=officers).distinct()
+
+    return qs.select_related('created_by').prefetch_related('assigned_officers')
+
+
 class ExportTasksPDFView(LoginRequiredMixin, View):
     def get(self, request):
         from reportlab.lib.pagesizes import A4, landscape
@@ -580,19 +616,7 @@ class ExportTasksPDFView(LoginRequiredMixin, View):
         from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
         from reportlab.lib.units import inch
 
-        user = request.user
-        if user.can_manage_tasks:
-            tasks = Task.objects.filter(is_archived=False).select_related('created_by')
-        else:
-            tasks = Task.objects.filter(assigned_officers=user, is_archived=False).select_related('created_by')
-
-        # Apply filters
-        status = request.GET.get('status', '')
-        if status:
-            tasks = tasks.filter(status=status)
-        priority = request.GET.get('priority', '')
-        if priority:
-            tasks = tasks.filter(priority=priority)
+        tasks = _get_filtered_tasks_for_export(request)
 
         buffer = io.BytesIO()
         doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=0.5*inch, bottomMargin=0.5*inch)
@@ -642,11 +666,7 @@ class ExportTasksExcelView(LoginRequiredMixin, View):
         from openpyxl.styles import Font, PatternFill, Alignment
         from openpyxl.utils import get_column_letter
 
-        user = request.user
-        if user.can_manage_tasks:
-            tasks = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
-        else:
-            tasks = Task.objects.filter(assigned_officers=user, is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
+        tasks = _get_filtered_tasks_for_export(request)
 
         wb = openpyxl.Workbook()
         ws = wb.active
