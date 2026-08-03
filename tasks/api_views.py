@@ -24,14 +24,13 @@ class DashboardStatsAPIView(APIView):
             base_qs = base_qs.filter(organization=user.organization)
 
         return Response({
-            'active': base_qs.filter(status__in=['pending', 'not_started', 'in_progress', 'waiting_approval']).count(),
+            'active': base_qs.exclude(status='completed').count(),
             'completed': base_qs.filter(status='completed').count(),
-            'overdue': base_qs.filter(status='overdue').count(),
+            'overdue': base_qs.filter(due_date__lt=today).exclude(status='completed').count(),
             'upcoming': base_qs.filter(
                 due_date__gte=today,
-                due_date__lte=today + datetime.timedelta(days=7),
-                status__in=['pending', 'not_started', 'in_progress']
-            ).count(),
+                due_date__lte=today + datetime.timedelta(days=7)
+            ).exclude(status='completed').count(),
         })
 
 

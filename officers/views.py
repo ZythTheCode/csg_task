@@ -44,7 +44,7 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
         ctx['assigned_tasks'] = Task.objects.filter(assigned_officers=officer_user, is_archived=False)[:10]
         ctx['total_tasks'] = Task.objects.filter(assigned_officers=officer_user).count()
         ctx['completed_tasks'] = Task.objects.filter(assigned_officers=officer_user, status='completed').count()
-        ctx['active_tasks'] = Task.objects.filter(assigned_officers=officer_user, status__in=['in_progress', 'pending', 'not_started']).count()
+        ctx['active_tasks'] = Task.objects.filter(assigned_officers=officer_user).exclude(status='completed').count()
         return ctx
 
 
