@@ -36,7 +36,7 @@ class DashboardView(LoginRequiredMixin, TemplateView):
             due_date__lte=today + timezone.timedelta(days=7),
             status__in=active_statuses
         ).count()
-        ctx['recent_tasks'] = base_qs.select_related('created_by').prefetch_related('assigned_officers')[:10]
+        ctx['recent_tasks'] = base_qs.select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:10]
         
         if user.organization:
             ctx['total_officers'] = Officer.objects.filter(user__organization=user.organization).count()

@@ -41,7 +41,7 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
         from tasks.models import Task
         officer_user = self.object.user
         ctx['page_title'] = f'Officer: {officer_user.get_full_name()}'
-        ctx['assigned_tasks'] = Task.objects.filter(assigned_officers=officer_user, is_archived=False)[:10]
+        ctx['assigned_tasks'] = Task.objects.filter(assigned_officers=officer_user, is_archived=False).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:10]
         ctx['total_tasks'] = Task.objects.filter(assigned_officers=officer_user).count()
         ctx['completed_tasks'] = Task.objects.filter(assigned_officers=officer_user, status='completed').count()
         ctx['active_tasks'] = Task.objects.filter(assigned_officers=officer_user).exclude(status='completed').count()

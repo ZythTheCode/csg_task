@@ -129,38 +129,38 @@
             </th>
             {% endif %}
             <th style="width:95px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
-              <div class="d-flex align-items-center justify-content-between">
+              <div class="d-inline-flex align-items-center gap-1">
                 <span>Task No.</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
             <th style="min-width:180px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
-              <div class="d-flex align-items-center justify-content-between">
+              <div class="d-inline-flex align-items-center gap-1">
                 <span>Title</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
             <th style="width:110px">Assigned To</th>
             <th style="width:75px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
-              <div class="d-flex align-items-center justify-content-between">
+              <div class="d-inline-flex align-items-center gap-1">
                 <span>Priority</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
             <th style="width:92px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
-              <div class="d-flex align-items-center justify-content-between">
+              <div class="d-inline-flex align-items-center gap-1">
                 <span>Status</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
             <th style="width:85px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due_date">
-              <div class="d-flex align-items-center justify-content-between">
+              <div class="d-inline-flex align-items-center gap-1">
                 <span>Due Date</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
             </th>
             <th style="width:85px;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
-              <div class="d-flex align-items-center justify-content-between">
+              <div class="d-inline-flex align-items-center gap-1">
                 <span>Progress</span>
                 <span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span>
               </div>
@@ -192,7 +192,7 @@
             <td>
               {% if task.assigned_officers.exists %}
               <div class="dropdown d-inline-block">
-                <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="window" style="cursor:pointer" title="Click to view officer names">
+                <div class="d-flex align-items-center gap-1 flex-nowrap" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="window" style="cursor:pointer" title="Click to view officer names">
                   {% for officer in task.sorted_assigned_officers|slice:":2" %}
                   <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">
                     {{ officer.position_title|initials }}

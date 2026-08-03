@@ -24,14 +24,19 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
         else:
             tasks_base_qs = Task.objects.all()
 
-        # Officer productivity
+        officers_qs = officers_qs.annotate(
+            total_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__is_archived=False)),
+            completed_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__status='completed', user__assigned_tasks__is_archived=False)),
+            active_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__is_archived=False) & ~Q(user__assigned_tasks__status='completed')),
+            overdue_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__due_date__lt=today, user__assigned_tasks__is_archived=False) & ~Q(user__assigned_tasks__status='completed'))
+        )
+
         officers_data = []
         for officer in officers_qs:
-            user = officer.user
-            total = tasks_base_qs.filter(assigned_officers=user).count()
-            completed = tasks_base_qs.filter(assigned_officers=user, status='completed').count()
-            active = tasks_base_qs.filter(assigned_officers=user).exclude(status='completed').count()
-            overdue = tasks_base_qs.filter(assigned_officers=user, due_date__lt=today).exclude(status='completed').count()
+            total = officer.total_count
+            completed = officer.completed_count
+            active = officer.active_count
+            overdue = officer.overdue_count
             rate = round(completed / total * 100) if total > 0 else 0
             officers_data.append({
                 'officer': officer,
@@ -49,13 +54,13 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
             due_date__gte=today,
             due_date__lte=today + datetime.timedelta(days=7),
             is_archived=False
-        ).exclude(status='completed').prefetch_related('assigned_officers').order_by('due_date')
+        ).exclude(status='completed').select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position').order_by('due_date')
 
         # Delayed tasks
         ctx['delayed_tasks'] = tasks_base_qs.filter(
             due_date__lt=today,
             is_archived=False
-        ).exclude(status='completed').prefetch_related('assigned_officers').order_by('due_date')
+        ).exclude(status='completed').select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position').order_by('due_date')
 
         # Overall stats
         total_tasks = tasks_base_qs.filter(is_archived=False).count()

@@ -121,7 +121,7 @@ class TaskListView(LoginRequiredMixin, ListView):
         else:
             qs = qs.order_by('-created_at')
 
-        return qs.select_related('created_by').prefetch_related('assigned_officers')
+        return qs.select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

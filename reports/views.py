@@ -52,14 +52,14 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         return {
             'officer': req.GET.get('officer', ''),
             'month': req.GET.get('month', ''),
-            'year': req.GET.get('year', str(timezone.now().year)),
+            'year': req.GET.get('year', ''),
             'status': req.GET.get('status', ''),
             'priority': req.GET.get('priority', ''),
             'scope': req.GET.get('scope', 'all' if req.user.has_task_override else 'my_tasks'),
         }
 
     def _get_filtered_tasks(self, filters):
-        qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
+        qs = Task.objects.filter(is_archived=False).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')
         if self.request.user.organization:
             qs = qs.filter(organization=self.request.user.organization)
             
@@ -70,9 +70,19 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         if filters['officer']:
             qs = qs.filter(assigned_officers__id=filters['officer'])
         if filters['year']:
-            qs = qs.filter(created_at__year=filters['year'])
+            from django.db.models import Q
+            try:
+                y = int(filters['year'])
+                qs = qs.filter(Q(due_date__year=y) | Q(created_at__year=y))
+            except ValueError:
+                pass
         if filters['month']:
-            qs = qs.filter(created_at__month=filters['month'])
+            from django.db.models import Q
+            try:
+                m = int(filters['month'])
+                qs = qs.filter(Q(due_date__month=m) | Q(created_at__month=m))
+            except ValueError:
+                pass
         if filters['status']:
             if filters['status'] == 'in_progress':
                 qs = qs.exclude(status__in=['not_started', 'completed'])
