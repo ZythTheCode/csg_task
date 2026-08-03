@@ -89,6 +89,7 @@
     <div class="brand-logo-container position-relative">
       {% if user.organization and user.organization.logo %}
       <img src="{{ user.organization.logo.url }}" alt="{{ user.organization.name }}" class="brand-logo-img shadow-sm" style="width:42px;height:42px;border-radius:12px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 6px 16px rgba(0,0,0,0.12)">
+      <div class="brand-logo" style="display:none">{{ user.organization.short_name|default:"CSG"|slice:":3"|upper }}</div>
       {% else %}
       <div class="brand-logo">{{ user.organization.short_name|default:"CSG"|slice:":3"|upper }}</div>
       {% endif %}
@@ -198,6 +199,7 @@
         <div class="topbar-avatar" data-bs-toggle="dropdown" data-bs-boundary="window" style="cursor:pointer">
           {% if user.profile_picture %}
           <img src="{{ user.profile_picture.url }}" alt="avatar">
+          <span class="avatar-fallback" style="display:none">{{ user.first_name|first|upper }}{{ user.last_name|first|upper }}</span>
           {% else %}
           {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
           {% endif %}
@@ -574,6 +576,43 @@ window.applyImageCrop = function() {
 </div>
 
 {% block modals %}{% endblock %}
+
+<script>
+// Global broken image fallback handler - automatically catches load failures for any image tag
+document.addEventListener('error', function (e) {
+  if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
+    const img = e.target;
+    if (img.dataset.broken) return;
+    img.dataset.broken = 'true';
+    
+    // Hide the broken img tag cleanly
+    img.style.display = 'none';
+    img.classList.add('d-none');
+
+    // Look for sibling or parent container fallback element
+    const container = img.closest('.brand-logo-container, .org-logo-preview, .avatar-upload-circle, .officer-avatar, .topbar-avatar, .position-relative, .card, .glass-card, td, div') || img.parentElement;
+    if (container) {
+      const fallback = container.querySelector('#orgLogoFallback, #avatarFallbackForm, #avatarFallbackProfile, .brand-logo, .avatar-fallback, .officer-avatar, .sidebar-logo-icon, [data-fallback="true"]');
+      if (fallback) {
+        fallback.style.display = 'flex';
+        fallback.classList.remove('d-none');
+        return;
+      }
+    }
+
+    // Fallback: If no dedicated element found, insert a clean icon placeholder
+    const parent = img.parentElement;
+    if (parent && !parent.querySelector('.auto-broken-fallback')) {
+      const fallbackDiv = document.createElement('div');
+      fallbackDiv.className = 'auto-broken-fallback d-inline-flex align-items-center justify-content-center fw-bold text-muted bg-light border rounded-3 p-2';
+      fallbackDiv.style.cssText = img.style.cssText;
+      fallbackDiv.style.display = 'inline-flex';
+      fallbackDiv.innerHTML = '<i class="bi bi-image text-secondary"></i>';
+      parent.insertBefore(fallbackDiv, img);
+    }
+  }
+}, true);
+</script>
 
 </body>
 </html>

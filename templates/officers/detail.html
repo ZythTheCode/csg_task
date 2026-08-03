@@ -6,8 +6,9 @@
   <div class="col-md-4">
     <div class="card text-center p-4">
       {% if officer.user.profile_picture %}
-      <div class="mx-auto mb-3 shadow-sm border border-2 border-white" style="width:80px;height:80px;border-radius:24px;overflow:hidden">
+      <div class="mx-auto mb-3 shadow-sm border border-2 border-white position-relative" style="width:80px;height:80px;border-radius:24px;overflow:hidden">
         <img src="{{ officer.user.profile_picture.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
+        <div class="officer-avatar avatar-fallback w-100 h-100" style="display:none;font-size:28px;border-radius:24px;align-items:center;justify-content:center">{{ officer.user.first_name|first }}{{ officer.user.last_name|first }}</div>
       </div>
       {% else %}
       <div class="officer-avatar mx-auto mb-3" style="width:80px;height:80px;font-size:28px;border-radius:24px">{{ officer.user.first_name|first }}{{ officer.user.last_name|first }}</div>

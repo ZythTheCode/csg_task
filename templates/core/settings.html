@@ -74,9 +74,9 @@
         {% csrf_token %}
         <div class="position-relative flex-shrink-0 text-center">
           <div id="orgLogoFallback" class="{% if target_org.logo %}d-none{% endif %} d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:84px;height:84px;border-radius:20px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;font-size:26px;box-shadow:0 8px 20px rgba(0,0,0,0.12)">
-            {{ target_org.name|default:"CSG"|slice:":3"|upper }}
+            {{ target_org.abbreviation|default:target_org.name|default:"CSG"|slice:":3"|upper }}
           </div>
-          <img id="orgLogoPreview" src="{% if target_org.logo %}{{ target_org.logo.url }}{% endif %}" alt="Org Logo" class="{% if not target_org.logo %}d-none{% endif %} shadow-sm" style="width:84px;height:84px;border-radius:20px;object-fit:cover;border:2px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,0.12)">
+          <img id="orgLogoPreview" src="{% if target_org.logo %}{{ target_org.logo.url }}{% endif %}" alt="Org Logo" class="{% if not target_org.logo %}d-none{% endif %} shadow-sm" style="width:84px;height:84px;border-radius:20px;object-fit:cover;border:2px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,0.12)" onerror="this.style.display='none'; this.classList.add('d-none'); const fb = document.getElementById('orgLogoFallback'); if (fb) { fb.classList.remove('d-none'); fb.style.display='flex'; }">
         </div>
         <div class="flex-grow-1">
           <div class="d-flex flex-wrap gap-2 mb-2">
