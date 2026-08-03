@@ -116,7 +116,8 @@ class Command(BaseCommand):
                 user.last_name = u_info['last_name']
                 user.role = u_info['role']
                 user.organization = u_info['org']
-                user.save()
+                # Exclude profile_picture so existing uploaded photos on deployed DB are untouched
+                user.save(update_fields=['first_name', 'last_name', 'role', 'organization'])
             user_map[u_info['username']] = user
             self.stdout.write(f'  [+] User: {user.username} ({user.get_role_display()}) - Org: {user.organization.name if user.organization else "None"}')
 
@@ -143,6 +144,12 @@ class Command(BaseCommand):
             user = user_map.get(off_info['username'])
             if user:
                 pos = pos_map.get((off_info['pos_title'], off_info['org'].name if off_info['org'] else None))
+                if pos:
+                    existing_officer_with_pos = Officer.objects.filter(position=pos).exclude(user=user).first()
+                    if existing_officer_with_pos:
+                        existing_officer_with_pos.position = None
+                        existing_officer_with_pos.save(update_fields=['position'])
+
                 officer, _ = Officer.objects.get_or_create(
                     user=user,
                     defaults={'student_id': off_info['student_id'], 'position': pos}

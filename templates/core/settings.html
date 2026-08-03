@@ -13,6 +13,57 @@
 <div class="row g-4">
   <!-- Organization Theme Customization Card -->
   <div class="col-12 col-lg-8">
+    <!-- Organization Logo Customization Card -->
+    <div class="glass-card p-4 mb-4">
+      <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+        <div>
+          <h6 class="fw-bold mb-1" style="color:var(--slate-800);font-size:16px">
+            <i class="bi bi-image me-2 text-primary"></i>Organization Logo
+          </h6>
+          <p class="text-muted mb-0" style="font-size:12.5px">
+            Upload or change the brand logo for <strong>{{ target_org.name|default:"CSG Organization" }}</strong>. It will be displayed across your organization dashboard & sidebar.
+          </p>
+        </div>
+      </div>
+
+      {% if can_edit_settings %}
+      <form method="post" enctype="multipart/form-data" id="orgLogoForm" class="d-flex flex-column flex-sm-row align-items-sm-center gap-4 p-3 rounded-4" style="background:var(--pink-50);border:1px dashed var(--slate-300)">
+        {% csrf_token %}
+        <div class="position-relative flex-shrink-0 text-center">
+          <div id="orgLogoFallback" class="{% if target_org.logo %}d-none{% endif %} d-flex align-items-center justify-content-center fw-bold shadow-sm" style="width:84px;height:84px;border-radius:20px;background:linear-gradient(135deg,var(--primary),var(--primary-light));color:#fff;font-size:26px;box-shadow:0 8px 20px rgba(0,0,0,0.12)">
+            {{ target_org.name|default:"CSG"|slice:":3"|upper }}
+          </div>
+          <img id="orgLogoPreview" src="{% if target_org.logo %}{{ target_org.logo.url }}{% endif %}" alt="Org Logo" class="{% if not target_org.logo %}d-none{% endif %} shadow-sm" style="width:84px;height:84px;border-radius:20px;object-fit:cover;border:2px solid #fff;box-shadow:0 8px 20px rgba(0,0,0,0.12)">
+        </div>
+        <div class="flex-grow-1">
+          <div class="d-flex flex-wrap gap-2 mb-2">
+            <label for="orgLogoInput" class="btn btn-primary-custom btn-sm px-3 py-2" style="font-size:13px;border-radius:20px;cursor:pointer">
+              <i class="bi bi-upload me-1"></i> Choose New Logo
+            </label>
+            <input type="file" name="logo" id="orgLogoInput" accept="image/*" class="d-none" onchange="handleProfilePhotoSelect(this, 'orgLogoPreview', 'orgLogoFallback')">
+
+            {% if target_org.logo %}
+            <button type="submit" name="action" value="remove_logo" class="btn btn-outline-danger btn-sm px-3 py-2" style="font-size:13px;border-radius:20px" onclick="return confirm('Are you sure you want to remove the organization logo?')">
+              <i class="bi bi-trash me-1"></i> Remove Logo
+            </button>
+            {% endif %}
+          </div>
+          <small class="text-muted d-block" style="font-size:11.5px">Recommended: Square PNG/SVG image, at least 200x200px. Max size 5MB.</small>
+        </div>
+        <div class="text-end">
+          <button type="submit" class="btn btn-success btn-sm px-4 py-2" style="border-radius:20px;font-weight:700">
+            <i class="bi bi-check-circle-fill me-1"></i> Save Logo
+          </button>
+        </div>
+      </form>
+      {% else %}
+      <div class="alert alert-info border-0 rounded-3 mb-0" style="font-size:13px">
+        <i class="bi bi-info-circle me-2"></i>Organization logos can only be updated by your Organization Admin or Super Admin.
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Organization Theme Customization Card -->
     <div class="glass-card p-4 mb-4">
       <div class="d-flex align-items-center justify-content-between mb-3">
         <div>
@@ -29,7 +80,7 @@
       </div>
 
       {% if can_edit_settings %}
-      <form method="post" id="themeForm">
+      <form method="post" id="themeForm" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="row g-3 mb-4">
           <!-- Pink -->
@@ -325,6 +376,7 @@
 <script>
 function previewTheme(themeName) {
   document.documentElement.setAttribute('data-theme', themeName);
+  if (window.updateTabFavicon) window.updateTabFavicon(themeName);
   document.querySelectorAll('.theme-swatch-card').forEach(card => {
     card.classList.remove('active');
     const check = card.querySelector('.check-icon');

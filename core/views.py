@@ -64,22 +64,43 @@ class SettingsView(LoginRequiredMixin, TemplateView):
     def post(self, request, *args, **kwargs):
         user = request.user
         if not (user.is_super_admin or user.is_president or user.is_org_admin):
-            messages.error(request, "Permission denied. Only organization presidents and admins can modify theme settings.")
+            messages.error(request, "Permission denied. Only organization admins and super admins can modify settings.")
             return redirect('core:settings')
 
         target_org = self.get_target_organization()
         if not target_org:
-            messages.error(request, "No valid organization found to update theme.")
+            messages.error(request, "No valid organization found to update settings.")
             return redirect('core:settings')
 
-        selected_theme = request.POST.get('theme')
-        valid_themes = [t[0] for t in Organization.THEME_CHOICES]
-        if selected_theme in valid_themes:
-            target_org.theme = selected_theme
+        updated_anything = False
+
+        # Handle Organization Logo removal
+        if request.POST.get('action') == 'remove_logo' or 'remove_logo' in request.POST:
+            if target_org.logo:
+                target_org.logo.delete(save=False)
+                target_org.logo = None
+                target_org.save()
+                messages.success(request, f"Organization logo removed for {target_org.name}.")
+                updated_anything = True
+
+        # Handle Organization Logo upload/change
+        if 'logo' in request.FILES:
+            target_org.logo = request.FILES['logo']
             target_org.save()
-            messages.success(request, f"Theme successfully updated to '{dict(Organization.THEME_CHOICES).get(selected_theme)}' for {target_org.name}!")
-        else:
-            messages.error(request, "Invalid theme selection.")
+            messages.success(request, f"Organization logo uploaded successfully for {target_org.name}!")
+            updated_anything = True
+
+        # Handle Organization Theme selection
+        selected_theme = request.POST.get('theme')
+        if selected_theme:
+            valid_themes = [t[0] for t in Organization.THEME_CHOICES]
+            if selected_theme in valid_themes:
+                if target_org.theme != selected_theme or not updated_anything:
+                    target_org.theme = selected_theme
+                    target_org.save()
+                    messages.success(request, f"Theme successfully updated to '{dict(Organization.THEME_CHOICES).get(selected_theme)}' for {target_org.name}!")
+            else:
+                messages.error(request, "Invalid theme selection.")
 
         return redirect('core:settings')
 

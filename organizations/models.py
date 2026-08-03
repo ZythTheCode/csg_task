@@ -30,6 +30,7 @@ class Organization(models.Model):
 
     name = models.CharField(max_length=255, unique=True)
     description = models.TextField(blank=True)
+    logo = models.ImageField(upload_to='org_logos/', blank=True, null=True)
     status = models.CharField(max_length=25, choices=STATUS_CHOICES, default='pending', db_index=True)
     theme = models.CharField(max_length=20, choices=THEME_CHOICES, default='pink')
     created_at = models.DateTimeField(auto_now_add=True)
