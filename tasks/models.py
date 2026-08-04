@@ -90,7 +90,8 @@ class Task(models.Model):
             org_prefix = "CSG"
             if self.organization:
                 import re
-                org_prefix = re.sub(r'[^A-Z0-9]', '', self.organization.name.upper())[:6]
+                raw_abbr = self.organization.abbreviation or self.organization.short_name or "CSG"
+                org_prefix = re.sub(r'[^A-Z0-9]', '', raw_abbr.upper())
                 if not org_prefix:
                     org_prefix = "ORG"
                     
