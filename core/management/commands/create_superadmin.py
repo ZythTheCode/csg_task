@@ -3,49 +3,19 @@ from accounts.models import User
 
 
 class Command(BaseCommand):
-    help = 'Create default super admin accounts if none exist'
+    help = 'Create a default super admin account if none exists'
 
     def handle(self, *args, **options):
-        # Ensure default 'admin' account exists
-        admin_user, created_admin = User.objects.get_or_create(
+        if User.objects.filter(role='super_admin').exists():
+            self.stdout.write(self.style.WARNING('Super admin already exists. Skipping.'))
+            return
+
+        User.objects.create_superuser(
             username='admin',
-            defaults={
-                'email': 'admin@csg.com',
-                'first_name': 'Admin',
-                'last_name': 'CSG',
-                'role': 'super_admin',
-                'is_staff': True,
-                'is_superuser': True,
-            }
+            password='admin',
+            first_name='Admin',
+            last_name='CSG',
+            email='admin@csg.com',
+            role='super_admin',
         )
-        if created_admin:
-            admin_user.set_password('admin')
-            admin_user.role = 'super_admin'
-            admin_user.is_staff = True
-            admin_user.is_superuser = True
-            admin_user.save()
-            self.stdout.write(self.style.SUCCESS('Super admin created: admin / admin'))
-
-        # Ensure 'superadmin' account exists (username: superadmin, password: admin123)
-        user, created = User.objects.get_or_create(
-            username='superadmin',
-            defaults={
-                'email': 'superadmin@csg.com',
-                'first_name': 'Super',
-                'last_name': 'Admin',
-                'role': 'super_admin',
-                'is_staff': True,
-                'is_superuser': True,
-            }
-        )
-        user.set_password('admin123')
-        user.role = 'super_admin'
-        user.is_staff = True
-        user.is_superuser = True
-        user.save()
-
-        if created:
-            self.stdout.write(self.style.SUCCESS('Super admin created: superadmin / admin123'))
-        else:
-            self.stdout.write(self.style.SUCCESS('Super admin updated: superadmin / admin123'))
-
+        self.stdout.write(self.style.SUCCESS('Super admin created: admin / admin'))

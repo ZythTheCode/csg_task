@@ -88,18 +88,18 @@
   <div class="sidebar-brand position-relative">
     <div class="brand-logo-container position-relative">
       {% if user.organization and user.organization.logo %}
-      <img src="{{ user.organization.logo.url }}" alt="{{ user.org_full_name }}" class="brand-logo-img shadow-sm" style="width:42px;height:42px;border-radius:12px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 6px 16px rgba(0,0,0,0.12)">
-      <div class="brand-logo" style="display:none">{{ user.org_short_name|slice:":3"|upper }}</div>
+      <img src="{{ user.organization.logo.url }}" alt="{{ user.organization.name }}" class="brand-logo-img shadow-sm" style="width:42px;height:42px;border-radius:12px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 6px 16px rgba(0,0,0,0.12)">
+      <div class="brand-logo" style="display:none">{{ user.organization.short_name|default:"CSG"|slice:":3"|upper }}</div>
       {% else %}
-      <div class="brand-logo">{{ user.org_short_name|slice:":3"|upper }}</div>
+      <div class="brand-logo">{{ user.organization.short_name|default:"CSG"|slice:":3"|upper }}</div>
       {% endif %}
       <button type="button" class="sidebar-expand-btn d-none d-lg-flex" onclick="toggleSidebarMin()" title="Expand Sidebar">
         <i data-lucide="chevrons-right" style="width:18px;height:18px"></i>
       </button>
     </div>
-    <div class="sidebar-brand-text" title="{{ user.org_full_name }}">
-      <h6 class="text-truncate" style="max-width:145px" title="{{ user.org_abbreviation }}">{{ user.org_abbreviation }}</h6>
-      <small class="d-block text-muted" style="max-width:145px;white-space:normal;word-break:break-word;line-height:1.2" title="{{ user.org_full_name }}">{% if user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}</small>
+    <div class="sidebar-brand-text" title="{{ user.organization.name|default:'CSG System' }}">
+      <h6 class="text-truncate" style="max-width:145px" title="{{ user.organization.name|default:user.organization.abbreviation|default:'CSG System' }}">{{ user.organization.abbreviation|default:user.organization.name|default:"CSG System" }}</h6>
+      <small class="d-block text-muted" style="max-width:145px;white-space:normal;word-break:break-word;line-height:1.2" title="{{ user.organization.name|default:'Task Management' }}">{{ user.organization.name|default:"Task Management" }}</small>
     </div>
     <button type="button" class="sidebar-collapse-btn d-none d-lg-flex ms-auto" onclick="toggleSidebarMin()" title="Collapse Sidebar">
       <i data-lucide="chevron-left" style="width:16px;height:16px"></i>
