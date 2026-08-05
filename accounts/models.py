@@ -44,6 +44,24 @@ class User(AbstractUser):
         return self.get_role_display() or 'Officer'
 
     @property
+    def org_abbreviation(self):
+        if self.organization:
+            return self.organization.abbreviation or self.organization.name or 'CSG System'
+        return 'CSG System'
+
+    @property
+    def org_short_name(self):
+        if self.organization:
+            return self.organization.short_name
+        return 'CSG'
+
+    @property
+    def org_full_name(self):
+        if self.organization and self.organization.name:
+            return self.organization.name
+        return 'CSG System'
+
+    @property
     def position_initials(self):
         if hasattr(self, 'officer_profile') and self.officer_profile and self.officer_profile.position:
             return self.officer_profile.position.get_initials()
