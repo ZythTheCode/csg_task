@@ -30,54 +30,6 @@
   </div>
 </div>
 
-{% if user.has_task_override and task.assigned_officers.exists %}
-<!-- NUDGE MODAL -->
-<div class="modal fade" id="nudgeModal" tabindex="-1" aria-labelledby="nudgeModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
-    <div class="modal-content border-0 shadow-lg">
-      <div class="modal-header border-0 px-4 pt-4 pb-2">
-        <div>
-          <h5 class="fw-bold mb-0" style="color:var(--slate-800)"><i data-lucide="bell" class="text-warning me-2" style="width:20px;height:20px"></i>Send Nudge</h5>
-          <p class="text-muted mb-0" style="font-size:12px">Send a reminder to assigned officers for <strong>{{ task.task_number }}</strong></p>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-      <div class="modal-body px-4 py-3">
-        <!-- Officer checklist -->
-        <div class="mb-3">
-          <div class="d-flex align-items-center justify-content-between mb-2">
-            <label class="fw-bold" style="font-size:13px;color:var(--slate-700)">Select Officers to Nudge</label>
-            <button type="button" id="nudgeToggleAll" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size:12px">Deselect All</button>
-          </div>
-          <div id="nudgeOfficerList" style="max-height:220px;overflow-y:auto;border:1px solid var(--slate-200);border-radius:14px;padding:8px">
-            {% for officer in task.sorted_assigned_officers %}
-            <label class="d-flex align-items-center gap-3 p-2 mb-1 rounded-3" style="cursor:pointer;background:var(--pink-50);border:1px solid rgba(249, 168, 212, 0.2)" id="nudge-label-{{ officer.pk }}">
-              <input type="checkbox" class="nudge-officer-check form-check-input mt-0" value="{{ officer.pk }}" checked style="width:16px;height:16px;cursor:pointer">
-              <div class="flex-grow-1">
-                <div class="fw-bold" style="font-size:13px;color:var(--slate-800)">{{ officer.get_full_name|default:officer.username }}</div>
-                <div style="font-size:11px;color:var(--slate-500)">{{ officer.position_title }} &nbsp;&middot;&nbsp; {{ officer.email|default:"No email" }}</div>
-              </div>
-            </label>
-            {% endfor %}
-          </div>
-        </div>
-        <!-- Optional message -->
-        <div class="mb-2">
-          <label class="fw-bold mb-1" style="font-size:13px;color:var(--slate-700)">Optional Message <span class="text-muted fw-normal">(appears in email &amp; notification)</span></label>
-          <textarea id="nudgeMessage" class="form-control" rows="2" placeholder="e.g. Please update your progress by end of day..." style="resize:none"></textarea>
-        </div>
-      </div>
-      <div class="modal-footer border-0 px-4 pb-4 pt-2 d-flex justify-content-between">
-        <button type="button" class="btn btn-secondary-custom btn-sm" data-bs-dismiss="modal">Cancel</button>
-        <button type="button" id="nudgeSendBtn" class="btn btn-warning btn-sm fw-bold" style="border-radius:30px;color:#fff;min-width:120px">
-          Send Nudge
-        </button>
-      </div>
-    </div>
-  </div>
-</div>
-{% endif %}
-
 <div class="row g-3">
   <!-- Main Info -->
   <div class="col-md-8">
@@ -334,3 +286,54 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 {% endif %}
 {% endblock %}
+
+{% block modals %}
+{% if user.has_task_override and task.assigned_officers.exists %}
+<!-- NUDGE MODAL -->
+<div class="modal fade" id="nudgeModal" tabindex="-1" aria-labelledby="nudgeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-0 px-4 pt-4 pb-2">
+        <div>
+          <h5 class="fw-bold mb-0" style="color:var(--slate-800)"><i data-lucide="bell" class="text-warning me-2" style="width:20px;height:20px"></i>Send Nudge</h5>
+          <p class="text-muted mb-0" style="font-size:12px">Send a reminder to assigned officers for <strong>{{ task.task_number }}</strong></p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <!-- Officer checklist -->
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <label class="fw-bold" style="font-size:13px;color:var(--slate-700)">Select Officers to Nudge</label>
+            <button type="button" id="nudgeToggleAll" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size:12px">Deselect All</button>
+          </div>
+          <div id="nudgeOfficerList" style="max-height:220px;overflow-y:auto;border:1px solid var(--slate-200);border-radius:14px;padding:8px">
+            {% for officer in task.sorted_assigned_officers %}
+            <label class="d-flex align-items-center gap-3 p-2 mb-1 rounded-3" style="cursor:pointer;background:var(--pink-50);border:1px solid rgba(249, 168, 212, 0.2)" id="nudge-label-{{ officer.pk }}">
+              <input type="checkbox" class="nudge-officer-check form-check-input mt-0" value="{{ officer.pk }}" checked style="width:16px;height:16px;cursor:pointer">
+              <div class="flex-grow-1">
+                <div class="fw-bold" style="font-size:13px;color:var(--slate-800)">{{ officer.get_full_name|default:officer.username }}</div>
+                <div style="font-size:11px;color:var(--slate-500)">{{ officer.position_title }} &nbsp;&middot;&nbsp; {{ officer.email|default:"No email" }}</div>
+              </div>
+            </label>
+            {% endfor %}
+          </div>
+        </div>
+        <!-- Optional message -->
+        <div class="mb-2">
+          <label class="fw-bold mb-1" style="font-size:13px;color:var(--slate-700)">Optional Message <span class="text-muted fw-normal">(appears in email &amp; notification)</span></label>
+          <textarea id="nudgeMessage" class="form-control" rows="2" placeholder="e.g. Please update your progress by end of day..." style="resize:none"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer border-0 px-4 pb-4 pt-2 d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary-custom btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="nudgeSendBtn" class="btn btn-warning btn-sm fw-bold" style="border-radius:30px;color:#fff;min-width:120px">
+          Send Nudge
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
