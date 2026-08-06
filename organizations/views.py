@@ -116,7 +116,8 @@ def organization_detail_json(request, org_id):
     
     org = get_object_or_404(Organization, id=org_id)
     users = org.users.filter(is_active=True).order_by('role', 'first_name')
-    admin_user = users.filter(role__in=['org_admin', 'president']).first()
+    admin_users = users.filter(role__in=['super_admin', 'org_admin', 'president'])
+    admin_name = ", ".join([u.get_full_name() or u.username for u in admin_users]) if admin_users.exists() else 'None Assigned'
     
     officers = []
     for u in users:

@@ -16,7 +16,9 @@ class Command(BaseCommand):
             {'username': 'admin', 'email': 'admin@csg.edu.ph', 'first_name': 'Admin', 'last_name': 'CSG'},
         ]
 
-        for sa in superadmins:
+        from officers.models import Officer
+
+        for idx, sa in enumerate(superadmins, start=1):
             user = User.objects.filter(username=sa['username']).first()
             if not user:
                 user = User.objects.create_superuser(
@@ -37,4 +39,10 @@ class Command(BaseCommand):
                     user.organization = csg_org
                 user.save(update_fields=['role', 'is_superuser', 'is_staff', 'organization'])
                 self.stdout.write(self.style.SUCCESS(f"Super admin '{sa['username']}' updated with full superadmin access & CSG organization."))
+
+            Officer.objects.get_or_create(
+                user=user,
+                defaults={'student_id': f'SA-2026-000{idx}'}
+            )
+
 

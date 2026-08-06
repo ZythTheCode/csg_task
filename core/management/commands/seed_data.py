@@ -136,6 +136,8 @@ class Command(BaseCommand):
 
         # ── OFFICERS ─────────────────────────────
         officers_data = [
+            {'username': 'superadmin', 'student_id': 'SA-2026-0001', 'pos_title': None, 'org': csg_org},
+            {'username': 'admin', 'student_id': 'SA-2026-0002', 'pos_title': None, 'org': csg_org},
             {'username': 'president', 'student_id': '2024-0001', 'pos_title': 'President', 'org': csg_org},
             {'username': 'vp_juan', 'student_id': '2024-0002', 'pos_title': 'Vice President', 'org': csg_org},
             {'username': 'sec_anna', 'student_id': '2024-0003', 'pos_title': 'Secretary', 'org': csg_org},
