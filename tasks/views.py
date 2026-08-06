@@ -809,7 +809,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                             json={
                                 "sender": {
                                     "name": "CSG System",
-                                    "email": config('DEFAULT_FROM_EMAIL', default='csgtasks2026@gmail.com').strip()
+                                    "email": config('BREVO_SENDER_EMAIL', default=config('DEFAULT_FROM_EMAIL', default='csgtasks2026@gmail.com')).strip()
                                 },
                                 "to": [{"email": officer.email}],
                                 "subject": subject,
