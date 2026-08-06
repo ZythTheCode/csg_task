@@ -76,7 +76,7 @@ DATABASES = {
     'default': config(
         'DATABASE_URL',
         default='postgres://postgres:123456@localhost:5432/csg_db',
-        cast=dj_database_url.parse
+        cast=lambda v: dj_database_url.parse(v, ssl_require=False if ('localhost' in v or '127.0.0.1' in v) else True)
     )
 }
 
@@ -107,8 +107,18 @@ CLOUDINARY_URL_ENV = config('CLOUDINARY_URL', default='').strip()
 CLOUDINARY_CLOUD_NAME_ENV = config('CLOUDINARY_CLOUD_NAME', default='').strip()
 
 if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
-    if CLOUDINARY_URL_ENV:
-        cloudinary.config(cloudinary_url=CLOUDINARY_URL_ENV, secure=True)
+    if CLOUDINARY_URL_ENV and 'cloudinary://' in CLOUDINARY_URL_ENV:
+        try:
+            creds, c_name = CLOUDINARY_URL_ENV.replace('cloudinary://', '').split('@')
+            a_key, a_secret = creds.split(':')
+            cloudinary.config(
+                cloud_name=c_name,
+                api_key=a_key,
+                api_secret=a_secret,
+                secure=True
+            )
+        except Exception:
+            pass
     elif CLOUDINARY_CLOUD_NAME_ENV:
         cloudinary.config(
             cloud_name=CLOUDINARY_CLOUD_NAME_ENV,
