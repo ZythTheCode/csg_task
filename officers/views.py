@@ -144,9 +144,14 @@ class OfficerDeleteView(LoginRequiredMixin, DeleteView):
         user = self.object.user
         user_name = user.get_full_name() or user.username if user else 'Officer'
         user_pk = user.pk if user else None
-        self.object.delete()
-        if user:
-            user.delete()
+
+        from django.db import transaction
+        with transaction.atomic():
+            if user:
+                user.delete()
+            else:
+                self.object.delete()
+
         from core.services.audit import log_activity
         log_activity(request, 'OFFICER_DELETE', f"Deleted officer account '{user_name}'", resource_type='Officer', resource_id=user_pk)
         messages.success(request, f"User account '{user_name}' has been permanently deleted.")
