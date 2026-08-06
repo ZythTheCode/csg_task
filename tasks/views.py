@@ -789,12 +789,43 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                     f'— CSG Task Management System'
                 )
                 
-                # Check for Resend HTTPS API Key (Port 443 bypasses cloud firewall blocks)
+                # Email Dispatchers (Brevo HTTPS API -> Resend HTTPS API -> Django SMTP)
+                brevo_key = config('BREVO_API_KEY', default='').strip()
                 resend_key = config('RESEND_API_KEY', default='').strip()
                 email_sent = False
                 email_err = None
 
-                if resend_key:
+                # 1. Try Brevo HTTPS API (300 free emails/day to ANY recipient address)
+                if brevo_key:
+                    try:
+                        import requests
+                        resp = requests.post(
+                            "https://api.brevo.com/v3/smtp/email",
+                            headers={
+                                "api-key": brevo_key,
+                                "Content-Type": "application/json",
+                                "Accept": "application/json"
+                            },
+                            json={
+                                "sender": {
+                                    "name": "CSG System",
+                                    "email": config('DEFAULT_FROM_EMAIL', default='csgtasks2026@gmail.com').strip()
+                                },
+                                "to": [{"email": officer.email}],
+                                "subject": subject,
+                                "textContent": body,
+                            },
+                            timeout=10
+                        )
+                        if resp.status_code in [200, 201]:
+                            email_sent = True
+                        else:
+                            email_err = f"Brevo API ({resp.status_code}): {resp.text}"
+                    except Exception as b_ex:
+                        email_err = f"Brevo HTTPS failed: {b_ex}"
+
+                # 2. Try Resend HTTPS API (fallback)
+                if not email_sent and resend_key:
                     try:
                         import requests
                         resp = requests.post(
@@ -818,7 +849,8 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                     except Exception as r_ex:
                         email_err = f"Resend HTTPS failed: {r_ex}"
 
-                if not email_sent and not resend_key:
+                # 3. Try Standard SMTP (local dev)
+                if not email_sent and not brevo_key and not resend_key:
                     try:
                         send_mail(
                             subject=subject,
@@ -831,7 +863,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                     except Exception as e:
                         err_msg = str(e).strip()
                         if "101" in err_msg or "unreachable" in err_msg.lower() or "timeout" in err_msg.lower():
-                            email_err = "Render free tier blocks raw SMTP ports 587/465. Use Resend API Key for HTTPS email delivery."
+                            email_err = "Render cloud firewall blocks raw SMTP ports 587/465. Use BREVO_API_KEY for free HTTPS email delivery."
                         else:
                             email_err = err_msg
 
