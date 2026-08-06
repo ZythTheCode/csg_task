@@ -745,6 +745,10 @@ class NudgeOfficersView(LoginRequiredMixin, View):
 
         nudged = []
         failed_emails = []
+        no_email_officers = []
+
+        import logging
+        logger = logging.getLogger(__name__)
 
         for officer in officers:
             # ── In-app notification ──────────────────────────────
@@ -765,7 +769,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
             )
 
             # ── Email ─────────────────────────────────────────────
-            if officer.email:
+            if officer.email and '@' in officer.email:
                 subject = f'[CSG] Nudge Reminder – {task.task_number}: {task.title}'
                 body = (
                     f'Hi {officer.get_full_name() or officer.username},\n\n'
@@ -792,7 +796,10 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                         fail_silently=False,
                     )
                 except Exception as e:
+                    logger.error(f"Nudge email failed for {officer.email}: {e}")
                     failed_emails.append(officer.email)
+            else:
+                no_email_officers.append(officer.get_full_name() or officer.username)
 
             nudged.append(officer.get_full_name() or officer.username)
 
@@ -805,13 +812,17 @@ class NudgeOfficersView(LoginRequiredMixin, View):
             new_value=f'Nudge sent to: {", ".join(nudged)}',
         )
 
+        msg = f'In-app nudge sent to {len(nudged)} officer(s).'
+        if failed_emails:
+            msg += f' Email delivery failed for: {", ".join(failed_emails)}.'
+        if no_email_officers:
+            msg += f' (No email address configured for: {", ".join(no_email_officers)}).'
+
         return JsonResponse({
             'ok': True,
             'nudged': nudged,
             'failed_emails': failed_emails,
-            'message': f'Nudge sent to {len(nudged)} officer(s).' + (
-                f' Email failed for: {", ".join(failed_emails)}.' if failed_emails else ''
-            ),
+            'message': msg,
         })
 
 

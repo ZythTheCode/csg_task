@@ -133,13 +133,14 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
-EMAIL_BACKEND    = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST       = 'smtp.gmail.com'
-EMAIL_PORT       = 587
-EMAIL_USE_TLS    = True
-EMAIL_HOST_USER  = config('EMAIL_HOST_USER',  default='csgtasks2026@gmail.com')
+EMAIL_BACKEND    = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST       = config('EMAIL_HOST', default='smtp.gmail.com')
+EMAIL_PORT       = config('EMAIL_PORT', default=587, cast=int)
+EMAIL_USE_TLS    = config('EMAIL_USE_TLS', default=True, cast=bool)
+EMAIL_HOST_USER  = config('EMAIL_HOST_USER', default='csgtasks2026@gmail.com')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='azybnpcsynwnfxly')
-DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL',  default='CSG System <csgtasks2026@gmail.com>')
+DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='csgtasks2026@gmail.com')
+EMAIL_TIMEOUT    = 10
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
