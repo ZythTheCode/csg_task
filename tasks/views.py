@@ -787,18 +787,56 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                     f'update this task.\n\n'
                     f'— CSG Task Management System'
                 )
-                try:
-                    send_mail(
-                        subject=subject,
-                        message=body,
-                        from_email=django_settings.DEFAULT_FROM_EMAIL,
-                        recipient_list=[officer.email],
-                        fail_silently=False,
-                    )
-                except Exception as e:
-                    err_msg = str(e).strip()
-                    logger.error(f"Nudge email failed for {officer.email}: {err_msg}")
-                    failed_emails.append(f"{officer.email} ({err_msg})")
+                
+                # Check for Resend HTTPS API Key (Port 443 bypasses cloud firewall blocks)
+                resend_key = config('RESEND_API_KEY', default='').strip()
+                email_sent = False
+                email_err = None
+
+                if resend_key:
+                    try:
+                        import requests
+                        resp = requests.post(
+                            "https://api.resend.com/emails",
+                            headers={
+                                "Authorization": f"Bearer {resend_key}",
+                                "Content-Type": "application/json"
+                            },
+                            json={
+                                "from": config('RESEND_FROM_EMAIL', default="CSG Task System <onboarding@resend.dev>"),
+                                "to": [officer.email],
+                                "subject": subject,
+                                "text": body,
+                            },
+                            timeout=10
+                        )
+                        if resp.status_code in [200, 201]:
+                            email_sent = True
+                        else:
+                            email_err = f"Resend API ({resp.status_code}): {resp.text}"
+                    except Exception as r_ex:
+                        email_err = f"Resend HTTPS failed: {r_ex}"
+
+                if not email_sent and not resend_key:
+                    try:
+                        send_mail(
+                            subject=subject,
+                            message=body,
+                            from_email=django_settings.DEFAULT_FROM_EMAIL,
+                            recipient_list=[officer.email],
+                            fail_silently=False,
+                        )
+                        email_sent = True
+                    except Exception as e:
+                        err_msg = str(e).strip()
+                        if "101" in err_msg or "unreachable" in err_msg.lower() or "timeout" in err_msg.lower():
+                            email_err = "Render free tier blocks raw SMTP ports 587/465. Use Resend API Key for HTTPS email delivery."
+                        else:
+                            email_err = err_msg
+
+                if not email_sent and email_err:
+                    logger.error(f"Nudge email failed for {officer.email}: {email_err}")
+                    failed_emails.append(f"{officer.email} ({email_err})")
             else:
                 no_email_officers.append(officer.get_full_name() or officer.username)
 
