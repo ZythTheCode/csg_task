@@ -107,27 +107,30 @@ CLOUDINARY_URL_ENV = config('CLOUDINARY_URL', default='').strip()
 CLOUDINARY_CLOUD_NAME_ENV = config('CLOUDINARY_CLOUD_NAME', default='').strip()
 
 if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
+    c_name, a_key, a_secret = '', '', ''
     if CLOUDINARY_URL_ENV and 'cloudinary://' in CLOUDINARY_URL_ENV:
         try:
             creds, c_name = CLOUDINARY_URL_ENV.replace('cloudinary://', '').split('@')
             a_key, a_secret = creds.split(':')
-            cloudinary.config(
-                cloud_name=c_name,
-                api_key=a_key,
-                api_secret=a_secret,
-                secure=True
-            )
         except Exception:
             pass
-    elif CLOUDINARY_CLOUD_NAME_ENV:
+    else:
+        c_name = CLOUDINARY_CLOUD_NAME_ENV
+        a_key = config('CLOUDINARY_API_KEY', default='').strip()
+        a_secret = config('CLOUDINARY_API_SECRET', default='').strip()
+
+    if c_name and a_key and a_secret:
+        CLOUDINARY_STORAGE = {
+            'CLOUD_NAME': c_name,
+            'API_KEY': a_key,
+            'API_SECRET': a_secret,
+        }
         cloudinary.config(
-            cloud_name=CLOUDINARY_CLOUD_NAME_ENV,
-            api_key=config('CLOUDINARY_API_KEY', default='').strip(),
-            api_secret=config('CLOUDINARY_API_SECRET', default='').strip(),
+            cloud_name=c_name,
+            api_key=a_key,
+            api_secret=a_secret,
             secure=True
         )
-    
-    if cloudinary.config().cloud_name:
         INSTALLED_APPS.insert(0, 'cloudinary_storage')
         INSTALLED_APPS.append('cloudinary')
         DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
