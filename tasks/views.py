@@ -796,8 +796,9 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                         fail_silently=False,
                     )
                 except Exception as e:
-                    logger.error(f"Nudge email failed for {officer.email}: {e}")
-                    failed_emails.append(officer.email)
+                    err_msg = str(e).strip()
+                    logger.error(f"Nudge email failed for {officer.email}: {err_msg}")
+                    failed_emails.append(f"{officer.email} ({err_msg})")
             else:
                 no_email_officers.append(officer.get_full_name() or officer.username)
 

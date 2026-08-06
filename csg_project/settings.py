@@ -146,14 +146,17 @@ LOGOUT_REDIRECT_URL = '/accounts/login/'
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'bootstrap5'
 CRISPY_TEMPLATE_PACK = 'bootstrap5'
 
-EMAIL_BACKEND    = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
-EMAIL_HOST       = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT       = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS    = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER  = config('EMAIL_HOST_USER', default='csgtasks2026@gmail.com')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='azybnpcsynwnfxly')
-DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='csgtasks2026@gmail.com')
-EMAIL_TIMEOUT    = 10
+EMAIL_BACKEND       = config('EMAIL_BACKEND', default='django.core.mail.backends.smtp.EmailBackend')
+EMAIL_HOST          = config('EMAIL_HOST', default='smtp.gmail.com').strip()
+EMAIL_PORT          = config('EMAIL_PORT', default=587, cast=int)
+_use_tls            = config('EMAIL_USE_TLS', default=(EMAIL_PORT == 587), cast=bool)
+_use_ssl            = config('EMAIL_USE_SSL', default=(EMAIL_PORT == 465), cast=bool)
+EMAIL_USE_TLS       = _use_tls if EMAIL_PORT == 587 else False
+EMAIL_USE_SSL       = _use_ssl if EMAIL_PORT == 465 else False
+EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='csgtasks2026@gmail.com').strip()
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='azybnpcsynwnfxly').strip().replace(' ', '')
+DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='csgtasks2026@gmail.com').strip()
+EMAIL_TIMEOUT       = 15
 
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
