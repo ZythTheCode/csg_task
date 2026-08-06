@@ -85,7 +85,6 @@ class Command(BaseCommand):
 
         # ── USERS ─────────────────────────────────
         users_data = [
-            {'username': 'superadmin', 'first_name': 'Super', 'last_name': 'Admin', 'email': 'superadmin@csg.com', 'role': 'super_admin', 'org': csg_org},
             {'username': 'admin', 'first_name': 'Admin', 'last_name': 'CSG', 'email': 'admin@csg.edu.ph', 'role': 'super_admin', 'org': csg_org},
             {'username': 'president', 'first_name': 'Zyron Asty', 'last_name': 'Bustamante', 'email': 'president@csg.edu.ph', 'role': 'president', 'org': csg_org},
             {'username': 'vp_juan', 'first_name': 'Boris', 'last_name': 'Alano', 'email': 'juan@csg.edu.ph', 'role': 'executive', 'org': csg_org},
@@ -138,8 +137,7 @@ class Command(BaseCommand):
 
         # ── OFFICERS ─────────────────────────────
         officers_data = [
-            {'username': 'superadmin', 'student_id': 'SA-2026-0001', 'pos_title': None, 'org': csg_org},
-            {'username': 'admin', 'student_id': 'SA-2026-0002', 'pos_title': None, 'org': csg_org},
+            {'username': 'admin', 'student_id': 'SA-2026-0001', 'pos_title': None, 'org': csg_org},
             {'username': 'president', 'student_id': '2024-0001', 'pos_title': 'President', 'org': csg_org},
             {'username': 'vp_juan', 'student_id': '2024-0002', 'pos_title': 'Vice President', 'org': csg_org},
             {'username': 'sec_anna', 'student_id': '2024-0003', 'pos_title': 'Secretary', 'org': csg_org},

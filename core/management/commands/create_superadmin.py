@@ -12,38 +12,37 @@ class Command(BaseCommand):
                   Organization.objects.filter(abbreviation='CSG').first() or \
                   Organization.objects.first()
 
-        superadmins = [
-            {'username': 'superadmin', 'email': 'superadmin@csg.com', 'first_name': 'Super', 'last_name': 'Admin'},
-            {'username': 'admin', 'email': 'admin@csg.edu.ph', 'first_name': 'Admin', 'last_name': 'CSG'},
-        ]
+        # Cleanup legacy 'superadmin' account if present
+        User.objects.filter(username='superadmin').delete()
+
+        admin_data = {'username': 'admin', 'email': 'admin@csg.edu.ph', 'first_name': 'Admin', 'last_name': 'CSG'}
 
         from officers.models import Officer
 
-        for idx, sa in enumerate(superadmins, start=1):
-            user = User.objects.filter(username=sa['username']).first()
-            if not user:
-                user = User.objects.create_superuser(
-                    username=sa['username'],
-                    email=sa['email'],
-                    password='admin',
-                    first_name=sa['first_name'],
-                    last_name=sa['last_name'],
-                    role='super_admin',
-                    organization=csg_org
-                )
-                self.stdout.write(self.style.SUCCESS(f"Super admin '{sa['username']}' created with password 'admin'."))
-            else:
-                user.role = 'super_admin'
-                user.is_superuser = True
-                user.is_staff = True
-                if csg_org:
-                    user.organization = csg_org
-                user.save(update_fields=['role', 'is_superuser', 'is_staff', 'organization'])
-                self.stdout.write(self.style.SUCCESS(f"Super admin '{sa['username']}' updated with full superadmin access & CSG organization."))
-
-            Officer.objects.get_or_create(
-                user=user,
-                defaults={'student_id': f'SA-2026-000{idx}'}
+        user = User.objects.filter(username=admin_data['username']).first()
+        if not user:
+            user = User.objects.create_superuser(
+                username=admin_data['username'],
+                email=admin_data['email'],
+                password='admin',
+                first_name=admin_data['first_name'],
+                last_name=admin_data['last_name'],
+                role='super_admin',
+                organization=csg_org
             )
+            self.stdout.write(self.style.SUCCESS(f"Super admin '{admin_data['username']}' created with password 'admin'."))
+        else:
+            user.role = 'super_admin'
+            user.is_superuser = True
+            user.is_staff = True
+            if csg_org:
+                user.organization = csg_org
+            user.save(update_fields=['role', 'is_superuser', 'is_staff', 'organization'])
+            self.stdout.write(self.style.SUCCESS(f"Super admin '{admin_data['username']}' updated with full superadmin access & CSG organization."))
+
+        Officer.objects.get_or_create(
+            user=user,
+            defaults={'student_id': 'SA-2026-0001'}
+        )
 
 
