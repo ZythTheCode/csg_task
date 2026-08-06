@@ -7,8 +7,9 @@ class Command(BaseCommand):
     help = 'Create or sync default super admin accounts (superadmin and admin) attached to CSG organization'
 
     def handle(self, *args, **options):
-        csg_org = Organization.objects.filter(abbreviation='CSG').first() or \
+        csg_org = Organization.objects.filter(id=2).first() or \
                   Organization.objects.filter(name__icontains='Central Student Government').first() or \
+                  Organization.objects.filter(abbreviation='CSG').first() or \
                   Organization.objects.first()
 
         superadmins = [

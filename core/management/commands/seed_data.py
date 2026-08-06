@@ -18,14 +18,16 @@ class Command(BaseCommand):
 
         # ── ORGANIZATIONS ─────────────────────────
         orgs_data = [
-            {'name': 'CSG', 'abbreviation': 'CSG', 'description': 'Central Student Government Main Organization', 'status': 'approved'},
+            {'name': 'Central Student Government', 'abbreviation': 'CSG', 'description': 'Central Student Government Main Organization', 'status': 'approved'},
             {'name': 'CO:DE', 'abbreviation': 'CO:DE', 'description': 'Computer Developers and Engineers Society', 'status': 'approved'},
             {'name': 'ACES', 'abbreviation': 'ACES', 'description': 'Association of Civil Engineering Students', 'status': 'approved'},
         ]
         org_map = {}
         for o_info in orgs_data:
-            org = Organization.objects.filter(abbreviation=o_info['abbreviation']).first() or \
-                  Organization.objects.filter(name__iexact=o_info['name']).first()
+            org = Organization.objects.filter(id=2).first() if o_info['abbreviation'] == 'CSG' else None
+            if not org:
+                org = Organization.objects.filter(abbreviation=o_info['abbreviation']).first() or \
+                      Organization.objects.filter(name__iexact=o_info['name']).first()
             if not org:
                 org = Organization.objects.create(
                     name=o_info['name'],
