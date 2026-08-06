@@ -132,12 +132,17 @@
                             <td class="px-4 py-3"><strong>{{ org.name }}</strong></td>
                             <td class="px-3 py-3" style="font-size:12.5px"><span class="text-danger fw-bold"><i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></i> {{ org.marked_for_deletion_at|date:"M d, Y H:i" }}</span> (Deletes in 24h)</td>
                             <td class="px-4 py-3 text-end">
-                                <form action="{% url 'restore_organization' org.id %}" method="POST" class="d-inline">
-                                    {% csrf_token %}
-                                    <button type="submit" class="btn-sm-icon" style="background:#FEF3C7;border-color:#FDE68A;color:#D97706" title="Restore Organization">
-                                        <i data-lucide="rotate-ccw" style="width:14px;height:14px"></i>
+                                <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                    <form action="{% url 'restore_organization' org.id %}" method="POST" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn-sm-icon" style="background:#FEF3C7;border-color:#FDE68A;color:#D97706" title="Restore Organization">
+                                            <i data-lucide="rotate-ccw" style="width:14px;height:14px"></i>
+                                        </button>
+                                    </form>
+                                    <button type="button" class="btn-sm-icon force-delete-btn" style="background:#FFF1F2;border-color:#FECDD3;color:#EF4444" data-bs-toggle="modal" data-bs-target="#forceDeleteOrgModal" data-org-id="{{ org.id }}" data-org-name="{{ org.name }}" title="Force Delete Permanently Now">
+                                        <i data-lucide="trash-2" style="width:14px;height:14px"></i>
                                     </button>
-                                </form>
+                                </div>
                             </td>
                         </tr>
                         {% empty %}
@@ -179,6 +184,35 @@
                 <div class="modal-footer border-0 pt-0 px-4 pb-4">
                     <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
                     <button type="submit" class="btn btn-danger-custom" id="confirmDeleteBtn" disabled>Mark for Deletion</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Force Delete Modal -->
+<div class="modal fade" id="forceDeleteOrgModal" tabindex="-1" aria-labelledby="forceDeleteOrgModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <form id="forceDeleteOrgForm" method="POST" action="">
+                {% csrf_token %}
+                <div class="modal-header border-0 pb-0" style="background:#FFF1F2;border-radius:24px 24px 0 0;padding:20px 24px">
+                    <h5 class="modal-title fw-bold text-danger d-flex align-items-center gap-2" id="forceDeleteOrgModalLabel">
+                        <i data-lucide="alert-triangle" style="width:20px;height:20px"></i> Force Delete Organization
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-danger fw-bold mb-2">CRITICAL WARNING: This will immediately and permanently delete the organization and all related data from the database.</p>
+                    <p class="text-muted" style="font-size:13.5px">You are about to permanently delete <strong id="forceModalOrgName" class="text-dark"></strong>.</p>
+                    <div class="mb-3">
+                        <label for="forceConfirmText" class="form-label">To confirm immediate deletion, type <strong class="text-danger">DELETE</strong> below:</label>
+                        <input type="text" class="form-control" id="forceConfirmText" name="confirm_text" required autocomplete="off" pattern="DELETE" title="Please type DELETE exactly" placeholder="Type DELETE to confirm">
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-danger-custom" id="confirmForceDeleteBtn" disabled>Permanently Force Delete</button>
                 </div>
             </form>
         </div>
@@ -284,6 +318,31 @@ document.addEventListener('DOMContentLoaded', function () {
 
         confirmInput.addEventListener('input', function() {
             confirmBtn.disabled = (this.value.trim() !== 'DELETE');
+        });
+    }
+
+    // Force Delete Modal Handling
+    const forceDeleteOrgModalEl = document.getElementById('forceDeleteOrgModal');
+    if (forceDeleteOrgModalEl) {
+        const forceConfirmInput = document.getElementById('forceConfirmText');
+        const forceConfirmBtn = document.getElementById('confirmForceDeleteBtn');
+        const forceForm = document.getElementById('forceDeleteOrgForm');
+
+        forceDeleteOrgModalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            if (!button) return;
+            const orgId = button.getAttribute('data-org-id');
+            const orgName = button.getAttribute('data-org-name');
+            
+            document.getElementById('forceModalOrgName').textContent = orgName || '';
+            forceConfirmInput.value = '';
+            forceConfirmBtn.disabled = true;
+
+            forceForm.action = "{% url 'force_delete_organization' 0 %}".replace('0', orgId);
+        });
+
+        forceConfirmInput.addEventListener('input', function() {
+            forceConfirmBtn.disabled = (this.value.trim() !== 'DELETE');
         });
     }
 

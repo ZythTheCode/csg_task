@@ -67,6 +67,22 @@ def restore_organization(request, org_id):
 
 @login_required
 @user_passes_test(lambda u: u.is_super_admin)
+def force_delete_organization(request, org_id):
+    if request.method == 'POST':
+        confirm_text = request.POST.get('confirm_text', '').strip()
+        org = get_object_or_404(Organization, id=org_id, status='marked_for_deletion')
+
+        if confirm_text != 'DELETE':
+            messages.error(request, 'You must type DELETE to confirm immediate deletion.')
+            return redirect('pending_organizations')
+
+        org_name = org.name
+        org.delete()
+        messages.success(request, f'Organization "{org_name}" has been permanently force deleted.')
+    return redirect('pending_organizations')
+
+@login_required
+@user_passes_test(lambda u: u.is_super_admin)
 def approve_organization(request, org_id):
     org = get_object_or_404(Organization, id=org_id)
     org.status = 'approved'

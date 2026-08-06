@@ -8,5 +8,6 @@ urlpatterns = [
     path('<int:org_id>/reject/', views.reject_organization, name='reject_organization'),
     path('<int:org_id>/delete/', views.delete_organization, name='delete_organization'),
     path('<int:org_id>/restore/', views.restore_organization, name='restore_organization'),
+    path('<int:org_id>/force-delete/', views.force_delete_organization, name='force_delete_organization'),
     path('<int:org_id>/json/', views.organization_detail_json, name='organization_detail_json'),
 ]
