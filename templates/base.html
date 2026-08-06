@@ -123,12 +123,12 @@
       <i data-lucide="file-text"></i> <span class="sidebar-link-text">Reports</span>
     </a>
     {% endif %}
-
-    {% if user.can_manage_officers %}
-    <div class="nav-section-label">Management</div>
     <a href="{% url 'officers:list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'officers' %}active{% endif %}" title="Officers">
       <i data-lucide="users"></i> <span class="sidebar-link-text">Officers</span>
     </a>
+
+    {% if user.can_manage_officers %}
+    <div class="nav-section-label">Management</div>
     <a href="{% url 'officers:position_list' %}" class="sidebar-link {% if 'position' in request.resolver_match.url_name %}active{% endif %}" title="Positions">
       <i data-lucide="briefcase"></i> <span class="sidebar-link-text">Positions</span>
     </a>
