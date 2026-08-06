@@ -14,9 +14,10 @@ class OfficerListView(LoginRequiredMixin, ListView):
     context_object_name = 'officers'
 
     def get_queryset(self):
-        qs = Officer.objects.select_related('user', 'position').order_by('user__last_name')
-        if self.request.user.organization:
-            qs = qs.filter(user__organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        qs = Officer.objects.select_related('user', 'position').exclude(user__role='super_super_admin').order_by('user__last_name')
+        if org:
+            qs = qs.filter(user__organization=org)
         return qs
 
     def get_context_data(self, **kwargs):
@@ -31,9 +32,10 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
     context_object_name = 'officer'
 
     def get_queryset(self):
-        qs = Officer.objects.select_related('user', 'position')
-        if self.request.user.organization:
-            qs = qs.filter(user__organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        qs = Officer.objects.select_related('user', 'position').exclude(user__role='super_super_admin')
+        if org:
+            qs = qs.filter(user__organization=org)
         return qs
 
     def get_context_data(self, **kwargs):
@@ -164,9 +166,10 @@ class PositionListView(LoginRequiredMixin, ListView):
     context_object_name = 'positions'
 
     def get_queryset(self):
+        org = self.request.user.get_organization(self.request)
         qs = Position.objects.select_related('officer__user')
-        if self.request.user.organization:
-            qs = qs.filter(organization=self.request.user.organization)
+        if org:
+            qs = qs.filter(organization=org)
         return qs
 
     def get_context_data(self, **kwargs):

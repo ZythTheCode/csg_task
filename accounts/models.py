@@ -14,6 +14,7 @@ def user_profile_picture_path(instance, filename):
 
 class User(AbstractUser):
     ROLE_CHOICES = [
+        ('super_super_admin', 'Super Super Admin'),
         ('super_admin', 'Super Admin'),
         ('org_admin', 'Organization Admin'),
         ('president', 'President'),
@@ -37,6 +38,16 @@ class User(AbstractUser):
     def __str__(self):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"
 
+    def get_organization(self, request=None):
+        if request and hasattr(request, 'session') and self.is_super_admin:
+            active_org_id = request.session.get('active_org_id')
+            if active_org_id:
+                from organizations.models import Organization
+                org = Organization.objects.filter(id=active_org_id).first()
+                if org:
+                    return org
+        return self.organization
+
     @property
     def position_title(self):
         if hasattr(self, 'officer_profile') and self.officer_profile and self.officer_profile.position:
@@ -52,7 +63,11 @@ class User(AbstractUser):
 
     @property
     def is_super_admin(self):
-        return self.role == 'super_admin'
+        return self.role in ['super_admin', 'super_super_admin']
+
+    @property
+    def is_super_super_admin(self):
+        return self.role == 'super_super_admin'
 
     @property
     def is_org_admin(self):
@@ -68,7 +83,7 @@ class User(AbstractUser):
 
     @property
     def has_task_override(self):
-        return self.role in ['super_admin', 'org_admin', 'president']
+        return self.role in ['super_admin', 'super_super_admin', 'org_admin', 'president']
 
     @property
     def can_manage_tasks(self):
@@ -97,4 +112,4 @@ class User(AbstractUser):
 
     @property
     def can_manage_officers(self):
-        return self.role in ['super_admin', 'org_admin']
+        return self.role in ['super_admin', 'super_super_admin', 'org_admin']

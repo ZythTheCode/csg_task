@@ -23,8 +23,9 @@ class TaskListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        if self.request.user.organization:
-            qs = Task.objects.filter(is_archived=False, organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        if org:
+            qs = Task.objects.filter(is_archived=False, organization=org)
         else:
             qs = Task.objects.filter(is_archived=False)
 
@@ -128,10 +129,11 @@ class TaskListView(LoginRequiredMixin, ListView):
         ctx['page_title'] = 'Task Management'
         ctx['status_choices'] = Task.STATUS_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
-        if self.request.user.organization:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization=self.request.user.organization).order_by('first_name', 'last_name')
+        org = self.request.user.get_organization(self.request)
+        if org:
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role='super_super_admin').order_by('first_name', 'last_name')
         else:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).order_by('organization__name', 'first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role='super_super_admin').order_by('organization__name', 'first_name', 'last_name')
         ctx['current_filters'] = {
             'q': self.request.GET.get('q', ''),
             'status': self.request.GET.get('status', ''),
@@ -302,8 +304,9 @@ class TaskBoardView(LoginRequiredMixin, ListView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        if self.request.user.organization:
-            base_qs = Task.objects.filter(is_archived=False, organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        if org:
+            base_qs = Task.objects.filter(is_archived=False, organization=org)
         else:
             base_qs = Task.objects.filter(is_archived=False)
 
@@ -338,10 +341,10 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         ctx['page_title'] = 'Task Kanban Board'
         ctx['status_columns'] = columns
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
-        if self.request.user.organization:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization=self.request.user.organization).order_by('first_name', 'last_name')
+        if org:
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role='super_super_admin').order_by('first_name', 'last_name')
         else:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).order_by('organization__name', 'first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role='super_super_admin').order_by('organization__name', 'first_name', 'last_name')
         ctx['current_filters'] = {'q': q, 'priority': priority, 'officer': officers, 'scope': scope}
         return ctx
 

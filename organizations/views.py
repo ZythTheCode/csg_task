@@ -115,7 +115,7 @@ def organization_detail_json(request, org_id):
     from officers.models import Position
     
     org = get_object_or_404(Organization, id=org_id)
-    users = org.users.filter(is_active=True).order_by('role', 'first_name')
+    users = org.users.filter(is_active=True).exclude(role='super_super_admin').order_by('role', 'first_name')
     admin_users = users.filter(role__in=['super_admin', 'org_admin', 'president'])
     admin_name = ", ".join([u.get_full_name() or u.username for u in admin_users]) if admin_users.exists() else 'None Assigned'
     
@@ -142,12 +142,19 @@ def organization_detail_json(request, org_id):
         'description': org.description or 'No description provided.',
         'status': org.get_status_display(),
         'created_at': org.created_at.strftime('%b %d, %Y'),
-        'admin_name': admin_user.get_full_name() or admin_user.username if admin_user else 'None Assigned',
-        'admin_email': admin_user.email if admin_user and admin_user.email else 'N/A',
+        'admin_name': admin_name,
         'officers_count': users.count(),
         'tasks_count': tasks_count,
         'completed_tasks': completed_tasks,
         'positions': positions,
         'officers': officers,
     })
+
+@login_required
+def switch_organization(request, org_id):
+    if request.user.is_super_admin:
+        org = get_object_or_404(Organization, id=org_id, status='approved')
+        request.session['active_org_id'] = org.id
+        messages.success(request, f"Switched active workspace dashboard to: {org.name}")
+    return redirect(request.META.get('HTTP_REFERER', 'core:dashboard'))
 

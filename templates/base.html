@@ -192,6 +192,26 @@
       </div>
     </div>
     <div class="topbar-right">
+      {% if user.is_super_admin and all_approved_organizations %}
+      <div class="dropdown me-1">
+        <button class="btn btn-sm border-0 dropdown-toggle d-flex align-items-center gap-2 px-3 py-1.5" style="border-radius:14px;font-size:12.5px;background:var(--pink-50);color:var(--slate-800);font-weight:600" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Switch Organization Dashboard Workspace">
+          <i data-lucide="building-2" style="width:15px;height:15px;color:var(--primary)"></i>
+          <span>{{ current_organization.abbreviation|default:current_organization.name|default:"Select Org" }}</span>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0" style="border-radius:16px;min-width:230px;padding:8px">
+          <li><span class="dropdown-item-text text-muted fw-bold" style="font-size:10.5px;letter-spacing:0.5px">SWITCH WORKSPACE DASHBOARD</span></li>
+          <li><hr class="dropdown-divider my-1"></li>
+          {% for org in all_approved_organizations %}
+          <li>
+            <a class="dropdown-item rounded-2 py-2 d-flex align-items-center justify-content-between {% if current_organization.id == org.id %}active bg-primary text-white{% endif %}" href="{% url 'switch_organization' org.id %}">
+              <span class="fw-semibold" style="font-size:13px">{{ org.name }}</span>
+              <span class="badge {% if current_organization.id == org.id %}bg-white text-primary{% else %}bg-light text-muted border{% endif %}" style="font-size:10px">{{ org.abbreviation|default:org.name }}</span>
+            </a>
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      {% endif %}
       <button class="topbar-icon-btn" onclick="toggleUserDarkMode()" id="darkModeToggleBtn" type="button" title="Toggle Dark/Light Mode">
         <i data-lucide="sun" id="darkModeIconSun" style="display:none"></i>
         <i data-lucide="moon" id="darkModeIconMoon"></i>

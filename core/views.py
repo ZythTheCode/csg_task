@@ -15,8 +15,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
 
         active_statuses = ['not_started', 'processing', 'to_advisers', 'accounting', 'oca', 'osas', 'ppss', 'supply']
 
-        if user.organization:
-            base_qs = Task.objects.filter(organization=user.organization, is_archived=False)
+        org = user.get_organization(self.request)
+
+        if org:
+            base_qs = Task.objects.filter(organization=org, is_archived=False)
         else:
             base_qs = Task.objects.filter(is_archived=False)
 
@@ -38,10 +40,10 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         ).count()
         ctx['recent_tasks'] = base_qs.select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:10]
         
-        if user.organization:
-            ctx['total_officers'] = Officer.objects.filter(user__organization=user.organization).count()
+        if org:
+            ctx['total_officers'] = Officer.objects.filter(user__organization=org).exclude(user__role='super_super_admin').count()
         else:
-            ctx['total_officers'] = Officer.objects.count()
+            ctx['total_officers'] = Officer.objects.exclude(user__role='super_super_admin').count()
         return ctx
 
 

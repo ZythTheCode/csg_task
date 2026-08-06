@@ -25,9 +25,10 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         ctx['page_title'] = 'Reports'
         ctx['status_choices'] = Task.STATUS_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
-        officers_qs = Officer.objects.select_related('user')
-        if self.request.user.organization:
-            officers_qs = officers_qs.filter(user__organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        officers_qs = Officer.objects.select_related('user').exclude(user__role='super_super_admin')
+        if org:
+            officers_qs = officers_qs.filter(user__organization=org)
         ctx['officers'] = officers_qs.all()
 
         # Apply filters
@@ -60,8 +61,9 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
 
     def _get_filtered_tasks(self, filters):
         qs = Task.objects.filter(is_archived=False).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')
-        if self.request.user.organization:
-            qs = qs.filter(organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        if org:
+            qs = qs.filter(organization=org)
             
         if filters['scope'] == 'my_tasks':
             from django.db.models import Q

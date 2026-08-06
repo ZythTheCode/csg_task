@@ -45,4 +45,26 @@ class Command(BaseCommand):
             defaults={'student_id': 'SA-2026-0001'}
         )
 
+        # ── CREATE / SYNC SUPERSUPERADMIN ACCOUNT ─────────────────────
+        super_user = User.objects.filter(username='supersuperadmin').first()
+        if not super_user:
+            super_user = User.objects.create_superuser(
+                username='supersuperadmin',
+                email='supersuperadmin@csg.com',
+                password='admin',
+                first_name='Super',
+                last_name='Super Admin',
+                role='super_super_admin',
+                organization=csg_org
+            )
+            self.stdout.write(self.style.SUCCESS("Super Super Admin 'supersuperadmin' created with password 'admin'."))
+        else:
+            super_user.role = 'super_super_admin'
+            super_user.is_superuser = True
+            super_user.is_staff = True
+            if csg_org:
+                super_user.organization = csg_org
+            super_user.save(update_fields=['role', 'is_superuser', 'is_staff', 'organization'])
+            self.stdout.write(self.style.SUCCESS("Super Super Admin 'supersuperadmin' updated with super_super_admin role."))
+
 

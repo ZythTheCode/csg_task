@@ -26,10 +26,11 @@ class TaskForm(forms.ModelForm):
     def __init__(self, *args, user=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user:
-            if user.organization:
-                self.fields['assigned_officers'].queryset = User.objects.filter(is_active=True, organization=user.organization).order_by('first_name', 'last_name')
+            org = user.get_organization() if hasattr(user, 'get_organization') else getattr(user, 'organization', None)
+            if org:
+                self.fields['assigned_officers'].queryset = User.objects.filter(is_active=True, organization=org).exclude(role='super_super_admin').order_by('first_name', 'last_name')
             else:
-                self.fields['assigned_officers'].queryset = User.objects.filter(is_active=True, organization__isnull=False).order_by('organization__name', 'first_name', 'last_name')
+                self.fields['assigned_officers'].queryset = User.objects.filter(is_active=True, organization__isnull=False).exclude(role='super_super_admin').order_by('organization__name', 'first_name', 'last_name')
         if self.instance and self.instance.pk:
             self.fields['assigned_officers'].initial = self.instance.assigned_officers.all()
 

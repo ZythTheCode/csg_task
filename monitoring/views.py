@@ -16,8 +16,8 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
         today = timezone.now().date()
         ctx['page_title'] = 'Monitoring Dashboard'
 
-        org = self.request.user.organization
-        officers_qs = Officer.objects.select_related('user', 'position')
+        org = self.request.user.get_organization(self.request)
+        officers_qs = Officer.objects.select_related('user', 'position').exclude(user__role='super_super_admin')
         if org:
             officers_qs = officers_qs.filter(user__organization=org)
             tasks_base_qs = Task.objects.filter(organization=org)
