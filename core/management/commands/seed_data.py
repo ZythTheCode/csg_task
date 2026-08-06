@@ -83,6 +83,7 @@ class Command(BaseCommand):
 
         # ── USERS ─────────────────────────────────
         users_data = [
+            {'username': 'superadmin', 'first_name': 'Super', 'last_name': 'Admin', 'email': 'superadmin@csg.com', 'role': 'super_admin', 'org': csg_org},
             {'username': 'admin', 'first_name': 'Admin', 'last_name': 'CSG', 'email': 'admin@csg.edu.ph', 'role': 'super_admin', 'org': csg_org},
             {'username': 'president', 'first_name': 'Zyron Asty', 'last_name': 'Bustamante', 'email': 'president@csg.edu.ph', 'role': 'president', 'org': csg_org},
             {'username': 'vp_juan', 'first_name': 'Boris', 'last_name': 'Alano', 'email': 'juan@csg.edu.ph', 'role': 'executive', 'org': csg_org},
@@ -104,6 +105,7 @@ class Command(BaseCommand):
 
         user_map = {}
         for u_info in users_data:
+            is_su = True if u_info['role'] == 'super_admin' else False
             user, created = User.objects.get_or_create(
                 username=u_info['username'],
                 defaults={
@@ -112,6 +114,8 @@ class Command(BaseCommand):
                     'email': u_info['email'],
                     'role': u_info['role'],
                     'organization': u_info['org'],
+                    'is_superuser': is_su,
+                    'is_staff': is_su,
                     'is_active': True
                 }
             )
@@ -123,8 +127,10 @@ class Command(BaseCommand):
                 user.last_name = u_info['last_name']
                 user.role = u_info['role']
                 user.organization = u_info['org']
-                # Exclude profile_picture so existing uploaded photos on deployed DB are untouched
-                user.save(update_fields=['first_name', 'last_name', 'role', 'organization'])
+                if is_su:
+                    user.is_superuser = True
+                    user.is_staff = True
+                user.save(update_fields=['first_name', 'last_name', 'role', 'organization', 'is_superuser', 'is_staff'])
             user_map[u_info['username']] = user
             self.stdout.write(f'  [+] User: {user.username} ({user.get_role_display()}) - Org: {user.organization.name if user.organization else "None"}')
 
