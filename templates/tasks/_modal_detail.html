@@ -81,7 +81,10 @@
       <!-- Modal Footer -->
       <div class="modal-footer border-top px-4 py-3 d-flex flex-wrap gap-2 justify-content-between align-items-center border-0">
         <a id="modalFullPageBtn" href="#" class="btn btn-secondary-custom btn-sm">Open Full Page</a>
-        <div class="d-flex gap-1 flex-wrap ms-auto ms-sm-0">
+        <div class="d-flex gap-1 flex-wrap ms-auto ms-sm-0 align-items-center">
+          <button type="button" id="modalNudgeBtn" class="btn btn-warning btn-sm d-none" style="border-radius:30px;font-weight:700;color:#fff;padding:6px 16px">
+            <i data-lucide="bell" style="width:14px;height:14px"></i> Nudge
+          </button>
           <a id="modalEditBtn" href="#" class="btn btn-primary-custom btn-sm d-none">Edit Task</a>
           <button type="button" class="btn btn-secondary-custom btn-sm" data-bs-dismiss="modal">Close</button>
         </div>
@@ -89,3 +92,150 @@
     </div>
   </div>
 </div>
+
+<!-- GLOBAL VIEWING MODAL NUDGE DIALOG -->
+<div class="modal fade" id="modalNudgeDialog" tabindex="-1" aria-labelledby="modalNudgeDialogLabel" aria-hidden="true" style="z-index:1070">
+  <div class="modal-dialog modal-dialog-centered" style="max-width:460px">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:24px;overflow:hidden">
+      {% csrf_token %}
+      <div class="modal-header border-0 px-4 pt-4 pb-2">
+        <div>
+          <h5 class="fw-bold mb-0" style="color:var(--slate-800)"><i data-lucide="bell" class="text-warning me-2" style="width:20px;height:20px"></i>Send Nudge</h5>
+          <p class="text-muted mb-0" style="font-size:12px">Send a reminder to assigned officers for <strong id="modalNudgeTaskNum"></strong></p>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <!-- Officer checklist -->
+        <div class="mb-3">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <label class="fw-bold" style="font-size:13px;color:var(--slate-700)">Select Officers to Nudge</label>
+            <button type="button" id="modalNudgeToggleAll" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size:12px">Deselect All</button>
+          </div>
+          <div id="modalNudgeOfficerList" style="max-height:220px;overflow-y:auto;border:1px solid var(--slate-200);border-radius:14px;padding:8px">
+          </div>
+        </div>
+        <!-- Optional message -->
+        <div class="mb-2">
+          <label class="fw-bold mb-1" style="font-size:13px;color:var(--slate-700)">Optional Message <span class="text-muted fw-normal">(appears in email &amp; notification)</span></label>
+          <textarea id="modalNudgeMessage" class="form-control" rows="2" placeholder="e.g. Please update your progress by end of day..." style="resize:none"></textarea>
+        </div>
+      </div>
+      <div class="modal-footer border-0 px-4 pb-4 pt-2 d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary-custom btn-sm" data-bs-dismiss="modal">Cancel</button>
+        <button type="button" id="modalNudgeSendBtn" class="btn btn-warning btn-sm fw-bold" style="border-radius:30px;color:#fff;min-width:120px">
+          Send Nudge
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const nudgeBtn = document.getElementById('modalNudgeBtn');
+  const nudgeDialogEl = document.getElementById('modalNudgeDialog');
+  if (!nudgeBtn || !nudgeDialogEl) return;
+
+  const sendBtn = document.getElementById('modalNudgeSendBtn');
+  const toggleAllBtn = document.getElementById('modalNudgeToggleAll');
+  const officerList = document.getElementById('modalNudgeOfficerList');
+  const messageInput = document.getElementById('modalNudgeMessage');
+  const taskNumEl = document.getElementById('modalNudgeTaskNum');
+
+  let allChecked = true;
+
+  nudgeBtn.addEventListener('click', function() {
+    const data = window.currentModalTaskData;
+    if (!data || !data.assigned_officers || data.assigned_officers.length === 0) return;
+
+    taskNumEl.textContent = data.task_number;
+    messageInput.value = '';
+    allChecked = true;
+    toggleAllBtn.textContent = 'Deselect All';
+
+    officerList.innerHTML = data.assigned_officers.map(off => `
+      <label class="d-flex align-items-center gap-3 p-2 mb-1 rounded-3" style="cursor:pointer;background:var(--pink-50);border:1px solid rgba(249, 168, 212, 0.2)">
+        <input type="checkbox" class="modal-nudge-officer-check form-check-input mt-0" value="${off.id}" checked style="width:16px;height:16px;cursor:pointer">
+        <div class="flex-grow-1">
+          <div class="fw-bold" style="font-size:13px;color:var(--slate-800)">${off.name}</div>
+          <div style="font-size:11px;color:var(--slate-500)">${off.position_title || off.role || 'Officer'} &nbsp;&middot;&nbsp; ${off.email || 'No email'}</div>
+        </div>
+      </label>
+    `).join('');
+
+    if (window.lucide) lucide.createIcons();
+    const nudgeModal = bootstrap.Modal.getOrCreateInstance(nudgeDialogEl);
+    nudgeModal.show();
+  });
+
+  toggleAllBtn.addEventListener('click', function() {
+    allChecked = !allChecked;
+    document.querySelectorAll('.modal-nudge-officer-check').forEach(cb => {
+      cb.checked = allChecked;
+    });
+    this.textContent = allChecked ? 'Deselect All' : 'Select All';
+  });
+
+  sendBtn.addEventListener('click', function() {
+    const data = window.currentModalTaskData;
+    if (!data) return;
+
+    const checkedIds = [...document.querySelectorAll('.modal-nudge-officer-check:checked')].map(cb => cb.value);
+    if (checkedIds.length === 0) {
+      alert('Please select at least one officer to nudge.');
+      return;
+    }
+
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = 'Sending...';
+
+    const csrfToken = document.querySelector('#modalNudgeDialog input[name=csrfmiddlewaretoken]')?.value || '';
+    const formData = new FormData();
+    formData.append('csrfmiddlewaretoken', csrfToken);
+    checkedIds.forEach(id => formData.append('officer_ids', id));
+    const msg = messageInput.value.trim();
+    if (msg) formData.append('message', msg);
+
+    fetch(data.nudge_url || `/tasks/${data.id}/nudge/`, { method: 'POST', body: formData })
+      .then(r => r.json())
+      .then(res => {
+        const nudgeModal = bootstrap.Modal.getInstance(nudgeDialogEl);
+        if (nudgeModal) nudgeModal.hide();
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = 'Send Nudge';
+        messageInput.value = '';
+
+        const toastMsg = res.message || (res.ok ? 'Nudge sent successfully.' : (res.error || 'Failed to send nudge.'));
+        const toastType = res.ok ? 'success' : 'danger';
+        showToastNotification(toastMsg, toastType);
+      })
+      .catch(err => {
+        console.error(err);
+        sendBtn.disabled = false;
+        sendBtn.innerHTML = 'Send Nudge';
+        showToastNotification('Server error while sending nudge. Please try again.', 'danger');
+      });
+  });
+
+  function showToastNotification(message, type = 'success') {
+    let container = document.querySelector('.toast-container');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      document.body.appendChild(container);
+    }
+    const alert = document.createElement('div');
+    alert.className = `alert alert-${type} alert-dismissible fade show shadow-sm`;
+    alert.style.borderRadius = '14px';
+    alert.innerHTML = `
+      ${message}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    `;
+    container.appendChild(alert);
+    setTimeout(() => {
+      try { bootstrap.Alert.getOrCreateInstance(alert).close(); } catch(e){}
+    }, 4500);
+  }
+});
+</script>

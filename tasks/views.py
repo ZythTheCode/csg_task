@@ -404,7 +404,8 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
                 'name': u.get_full_name() or u.username,
                 'initials': f"{u.first_name[:1]}{u.last_name[:1]}".upper() if u.first_name and u.last_name else u.username[:2].upper(),
                 'role': u.position_title,
-                'position_title': u.position_title
+                'position_title': u.position_title,
+                'email': u.email or 'No email'
             }
             for u in task.sorted_assigned_officers
         ]
@@ -449,6 +450,8 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
             'comments': comments,
             'detail_url': f'/tasks/{task.pk}/',
             'edit_url': f'/tasks/{task.pk}/edit/' if request.user.can_edit_task(task) else None,
+            'can_nudge': request.user.can_manage_tasks and task.assigned_officers.exists(),
+            'nudge_url': f'/tasks/{task.pk}/nudge/',
         }
 
         return JsonResponse(data)

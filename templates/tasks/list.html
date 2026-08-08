@@ -427,6 +427,16 @@ document.addEventListener('DOMContentLoaded', function() {
           editBtn.classList.add('d-none');
         }
 
+        window.currentModalTaskData = data;
+        const nudgeBtn = document.getElementById('modalNudgeBtn');
+        if (nudgeBtn) {
+          if (data.can_nudge) {
+            nudgeBtn.classList.remove('d-none');
+          } else {
+            nudgeBtn.classList.add('d-none');
+          }
+        }
+
         document.getElementById('modalLoadingSpinner').classList.add('d-none');
         document.getElementById('modalTaskContent').classList.remove('d-none');
       })
