@@ -53,13 +53,19 @@ class Officer(models.Model):
         return f"{self.user.get_full_name()} - {self.position}"
 
     def completed_tasks(self):
+        if hasattr(self, 'annotated_completed'):
+            return self.annotated_completed
         from tasks.models import TaskAssignment
         return TaskAssignment.objects.filter(officer=self.user, task__status='completed').count()
 
     def active_tasks(self):
+        if hasattr(self, 'annotated_active'):
+            return self.annotated_active
         from tasks.models import TaskAssignment
         return TaskAssignment.objects.filter(officer=self.user, task__status__in=['not_started', 'processing', 'to_advisers', 'accounting', 'oca', 'osas', 'ppss', 'supply']).count()
 
     def total_tasks(self):
+        if hasattr(self, 'annotated_total'):
+            return self.annotated_total
         from tasks.models import TaskAssignment
         return TaskAssignment.objects.filter(officer=self.user).count()

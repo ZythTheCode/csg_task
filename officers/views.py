@@ -14,8 +14,15 @@ class OfficerListView(LoginRequiredMixin, ListView):
     context_object_name = 'officers'
 
     def get_queryset(self):
+        from django.db.models import Count, Q
         org = self.request.user.get_organization(self.request)
-        qs = Officer.objects.select_related('user', 'position').exclude(user__role__in=['super_admin', 'super_super_admin']).order_by('user__last_name')
+        qs = Officer.objects.select_related('user', 'position').exclude(
+            user__role__in=['super_admin', 'super_super_admin']
+        ).annotate(
+            annotated_total=Count('user__task_assignments'),
+            annotated_completed=Count('user__task_assignments', filter=Q(user__task_assignments__task__status='completed')),
+            annotated_active=Count('user__task_assignments', filter=Q(user__task_assignments__task__is_archived=False) & ~Q(user__task_assignments__task__status='completed'))
+        ).order_by('user__last_name', 'user__first_name')
         if org:
             qs = qs.filter(user__organization=org)
         return qs
@@ -164,6 +171,10 @@ class OfficerDeleteView(LoginRequiredMixin, DeleteView):
         from django.db import transaction
         with transaction.atomic():
             if user:
+                from notifications.models import Notification
+                from tasks.models import TaskAssignment
+                Notification.objects.filter(recipient=user).delete()
+                TaskAssignment.objects.filter(officer=user).delete()
                 user.delete()
             else:
                 self.object.delete()

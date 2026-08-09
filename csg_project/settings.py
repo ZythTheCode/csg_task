@@ -76,7 +76,12 @@ DATABASES = {
     'default': config(
         'DATABASE_URL',
         default='postgres://postgres:123456@localhost:5432/csg_db',
-        cast=lambda v: dj_database_url.parse(v, ssl_require=False if ('localhost' in v or '127.0.0.1' in v) else True)
+        cast=lambda v: dj_database_url.parse(
+            v,
+            ssl_require=False if ('localhost' in v or '127.0.0.1' in v) else True,
+            conn_max_age=600,
+            conn_health_checks=True
+        )
     )
 }
 
@@ -95,7 +100,8 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
+WHITENOISE_MAX_AGE = 31536000
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
