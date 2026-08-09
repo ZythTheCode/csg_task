@@ -6,7 +6,7 @@ databases:
 
 services:
   - type: web
-    name: csg-web
+    name: csg-ccat-tasks
     env: python
     plan: free
     buildCommand: "./build.sh"
