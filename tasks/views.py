@@ -450,7 +450,9 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
             'comments': comments,
             'detail_url': f'/tasks/{task.pk}/',
             'edit_url': f'/tasks/{task.pk}/edit/' if request.user.can_edit_task(task) else None,
-            'can_nudge': request.user.can_manage_tasks and task.assigned_officers.exists(),
+            'can_edit': request.user.can_edit_task(task),
+            'can_update_progress': request.user.can_update_task_progress(task),
+            'can_nudge': request.user.can_nudge_task(task),
             'nudge_url': f'/tasks/{task.pk}/nudge/',
         }
 
@@ -728,10 +730,9 @@ class NudgeOfficersView(LoginRequiredMixin, View):
     """Send a nudge reminder (in-app notification + email) to selected assigned officers."""
 
     def post(self, request, pk):
-        if not request.user.can_manage_tasks:
-            return JsonResponse({'error': 'Permission denied.'}, status=403)
-
         task = get_object_or_404(Task, pk=pk)
+        if not request.user.can_nudge_task(task):
+            return JsonResponse({'error': 'Permission denied. You are not authorized to nudge this task.'}, status=403)
 
         # Get the list of officer IDs selected by the sender
         officer_ids = request.POST.getlist('officer_ids')

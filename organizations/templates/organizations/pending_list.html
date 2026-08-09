@@ -95,6 +95,9 @@
                                     <button type="button" class="btn-sm-icon view-org-info-btn" data-org-id="{{ org.id }}" title="View Organization Information">
                                         <i data-lucide="eye" style="width:14px;height:14px"></i>
                                     </button>
+                                    <button type="button" class="btn-sm-icon reassign-org-admin-btn" style="background:#FEF3C7;border-color:#FDE68A;color:#D97706" data-org-id="{{ org.id }}" data-org-name="{{ org.name }}" title="Reassign Org Admin">
+                                        <i data-lucide="user-check" style="width:14px;height:14px"></i>
+                                    </button>
                                     <button type="button" class="btn-sm-icon single-delete-btn" style="background:#FFF1F2;border-color:#FECDD3;color:#EF4444" data-bs-toggle="modal" data-bs-target="#deleteOrgModal" data-org-id="{{ org.id }}" data-org-name="{{ org.name }}" title="Delete Organization">
                                         <i data-lucide="trash-2" style="width:14px;height:14px"></i>
                                     </button>
@@ -291,6 +294,42 @@
     </div>
 </div>
 
+<!-- Reassign Org Admin Modal -->
+<div class="modal fade" id="reassignOrgAdminModal" tabindex="-1" aria-labelledby="reassignOrgAdminModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:24px;border:none;box-shadow:0 20px 50px rgba(0,0,0,0.18)">
+            <form id="reassignOrgAdminForm" method="POST" action="">
+                {% csrf_token %}
+                <div class="modal-header border-0 pb-0" style="background:#FEF3C7;border-radius:24px 24px 0 0;padding:20px 24px">
+                    <h5 class="modal-title fw-bold text-dark d-flex align-items-center gap-2" id="reassignOrgAdminModalLabel">
+                        <i data-lucide="user-check" style="width:20px;height:20px;color:#D97706"></i> Reassign Org Admin
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <p class="text-muted mb-3" style="font-size:13.5px">Select an active officer to assign as the designated <strong>Org Admin</strong> for <strong id="reassignOrgName" class="text-dark"></strong>:</p>
+                    
+                    <div id="reassignLoadingSpinner" class="text-center py-3">
+                        <div class="spinner-border text-warning spinner-border-sm" role="status"></div>
+                        <span class="ms-2 text-muted" style="font-size:12px">Loading officers list...</span>
+                    </div>
+
+                    <div id="reassignContent" class="d-none mb-3">
+                        <label for="newAdminSelect" class="form-label fw-bold" style="font-size:13px">Select New Org Admin</label>
+                        <select class="form-select" id="newAdminSelect" name="new_admin_id" required style="border-radius:12px">
+                        </select>
+                        <small class="text-muted mt-2 d-block" style="font-size:11px"><i data-lucide="info" style="width:12px;height:12px;display:inline-block"></i> Assigning a new Org Admin will automatically update the previous admin's role to Elected Officer, enforcing the 1 Org Admin limit.</small>
+                    </div>
+                </div>
+                <div class="modal-footer border-0 pt-0 px-4 pb-4">
+                    <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-warning-custom" id="confirmReassignBtn" style="border-radius:20px;font-weight:700">Assign Org Admin</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Lucide Icons initialization
@@ -394,6 +433,44 @@ document.addEventListener('DOMContentLoaded', function () {
                 .catch(err => {
                     console.error('Failed to load organization details:', err);
                     document.getElementById('orgModalLoading').classList.add('d-none');
+                });
+        }
+    });
+
+    // Reassign Org Admin Dynamic Modal Handler
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.reassign-org-admin-btn');
+        if (btn) {
+            e.preventDefault();
+            const orgId = btn.getAttribute('data-org-id');
+            const orgName = btn.getAttribute('data-org-name');
+            const modalEl = document.getElementById('reassignOrgAdminModal');
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl);
+            const form = document.getElementById('reassignOrgAdminForm');
+            
+            form.action = `/organizations/${orgId}/reassign-admin/`;
+            document.getElementById('reassignOrgName').textContent = orgName || '';
+            document.getElementById('reassignLoadingSpinner').classList.remove('d-none');
+            document.getElementById('reassignContent').classList.add('d-none');
+            modalInstance.show();
+
+            fetch(`/organizations/${orgId}/json/`)
+                .then(res => res.json())
+                .then(data => {
+                    const select = document.getElementById('newAdminSelect');
+                    if (data.officers && data.officers.length > 0) {
+                        select.innerHTML = data.officers.map(off => `
+                            <option value="${off.id}">${off.name} (@${off.username}) - ${off.position || off.role}</option>
+                        `).join('');
+                    } else {
+                        select.innerHTML = '<option value="">No registered officers found in this organization</option>';
+                    }
+                    document.getElementById('reassignLoadingSpinner').classList.add('d-none');
+                    document.getElementById('reassignContent').classList.remove('d-none');
+                })
+                .catch(err => {
+                    console.error('Failed to load officers for reassignment:', err);
+                    document.getElementById('reassignLoadingSpinner').classList.add('d-none');
                 });
         }
     });

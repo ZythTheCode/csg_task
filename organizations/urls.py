@@ -10,5 +10,6 @@ urlpatterns = [
     path('<int:org_id>/restore/', views.restore_organization, name='restore_organization'),
     path('<int:org_id>/force-delete/', views.force_delete_organization, name='force_delete_organization'),
     path('<int:org_id>/json/', views.organization_detail_json, name='organization_detail_json'),
+    path('<int:org_id>/reassign-admin/', views.reassign_org_admin, name='reassign_org_admin'),
     path('switch-org/<int:org_id>/', views.switch_organization, name='switch_organization'),
 ]

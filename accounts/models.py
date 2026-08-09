@@ -105,6 +105,19 @@ class User(AbstractUser):
     def can_update_task_progress(self, task):
         if self.has_task_override:
             return True
+        if task.created_by_id == self.id:
+            return True
+        if task.assigned_officers.filter(id=self.id).exists():
+            return True
+        return False
+
+    def can_nudge_task(self, task):
+        if not task or not task.assigned_officers.exists():
+            return False
+        if self.has_task_override:
+            return True
+        if task.created_by_id == self.id:
+            return True
         if task.assigned_officers.filter(id=self.id).exists():
             return True
         return False

@@ -158,3 +158,43 @@ def switch_organization(request, org_id):
         messages.success(request, f"Switched active workspace dashboard to: {org.name}")
     return redirect(request.META.get('HTTP_REFERER', 'core:dashboard'))
 
+
+@login_required
+def reassign_org_admin(request, org_id):
+    if request.method == 'POST':
+        org = get_object_or_404(Organization, id=org_id)
+        if not (request.user.is_super_admin or (request.user.role == 'org_admin' and request.user.organization == org)):
+            messages.error(request, 'Permission denied.')
+            return redirect('core:dashboard')
+
+        new_admin_id = request.POST.get('new_admin_id')
+        if not new_admin_id:
+            messages.error(request, 'Please select an officer to assign as Org Admin.')
+            return redirect(request.META.get('HTTP_REFERER', 'pending_organizations'))
+
+        new_admin = get_object_or_404(User, id=new_admin_id, organization=org)
+        
+        if not request.user.is_super_admin:
+            password = request.POST.get('password', '')
+            if not request.user.check_password(password):
+                messages.error(request, 'Invalid password. Handover failed.')
+                return redirect(request.META.get('HTTP_REFERER', 'core:settings'))
+
+        # Demote existing org_admin in this org to executive
+        existing_admins = User.objects.filter(organization=org, role='org_admin').exclude(id=new_admin.id)
+        for prev in existing_admins:
+            prev.role = 'executive'
+            prev.save(update_fields=['role'])
+
+        # Promote new admin
+        new_admin.role = 'org_admin'
+        new_admin.is_active = True
+        new_admin.save(update_fields=['role', 'is_active'])
+
+        from core.services.audit import log_activity
+        log_activity(request, 'ORG_ADMIN_TRANSFER', f"Transferred Org Admin role for '{org.name}' to '{new_admin.get_full_name() or new_admin.username}'", resource_type='Organization', resource_id=org.id)
+
+        messages.success(request, f"Org Admin role for '{org.name}' has been successfully assigned to {new_admin.get_full_name() or new_admin.username}.")
+    return redirect(request.META.get('HTTP_REFERER', 'pending_organizations'))
+
+

@@ -155,6 +155,24 @@ class OfficerForm(forms.ModelForm):
 
         return position_obj
 
+    def clean_role(self):
+        role = self.cleaned_data.get('role')
+        if role == 'president':
+            org = None
+            if self.user_creator and self.user_creator.organization:
+                org = self.user_creator.organization
+            elif self.instance and self.instance.pk and getattr(self.instance, 'user', None) and self.instance.user.organization:
+                org = self.instance.user.organization
+
+            if org:
+                existing_pres = User.objects.filter(organization=org, role='president', is_active=True)
+                if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+                    existing_pres = existing_pres.exclude(pk=self.instance.user.pk)
+                if existing_pres.exists():
+                    pres_name = existing_pres.first().get_full_name() or existing_pres.first().username
+                    raise forms.ValidationError(f"This organization already has a President ({pres_name}). An organization can only have one President.")
+        return role
+
     def save(self, commit=True):
         officer = super().save(commit=False)
         first_name = self.cleaned_data.get('first_name')
