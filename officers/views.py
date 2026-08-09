@@ -140,8 +140,18 @@ class OfficerDeleteView(LoginRequiredMixin, DeleteView):
             return redirect('officers:list')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_object(self, queryset=None):
+        try:
+            return super().get_object(queryset)
+        except Exception:
+            return None
+
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        if not self.object:
+            messages.warning(request, "This officer account has already been deleted or no longer exists.")
+            return redirect(self.success_url)
+
         confirm_text = request.POST.get('confirm_text', '').strip()
         if confirm_text.upper() != 'DELETE':
             messages.error(request, "Deletion failed. You must type 'DELETE' to confirm account deletion.")
