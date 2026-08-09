@@ -81,8 +81,10 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         qs = Officer.objects.select_related('user', 'position')
-        if self.request.user.organization:
-            qs = qs.filter(user__organization=self.request.user.organization)
+        if not self.request.user.is_super_admin:
+            org = self.request.user.get_organization(self.request)
+            if org:
+                qs = qs.filter(user__organization=org)
         return qs
 
     def get_success_url(self):
@@ -126,8 +128,10 @@ class OfficerDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         qs = Officer.objects.select_related('user', 'position')
-        if self.request.user.organization:
-            qs = qs.filter(user__organization=self.request.user.organization)
+        if not self.request.user.is_super_admin:
+            org = self.request.user.get_organization(self.request)
+            if org:
+                qs = qs.filter(user__organization=org)
         return qs
 
     def dispatch(self, request, *args, **kwargs):
