@@ -12,12 +12,13 @@ class Command(BaseCommand):
                   Organization.objects.filter(abbreviation='CSG').first() or \
                   Organization.objects.first()
 
-        # Cleanup legacy 'superadmin' account if present
-        User.objects.filter(username='superadmin').delete()
+        from officers.models import Officer
+
+        # Delete legacy 'superadmin' and 'supersuperadmin' accounts if present
+        User.objects.filter(username__in=['superadmin', 'supersuperadmin']).delete()
+        User.objects.filter(role='super_super_admin').delete()
 
         admin_data = {'username': 'admin', 'email': 'admin@csg.edu.ph', 'first_name': 'Admin', 'last_name': 'CSG'}
-
-        from officers.models import Officer
 
         user = User.objects.filter(username=admin_data['username']).first()
         if not user:
@@ -40,31 +41,8 @@ class Command(BaseCommand):
             user.save(update_fields=['role', 'is_superuser', 'is_staff', 'organization'])
             self.stdout.write(self.style.SUCCESS(f"Super admin '{admin_data['username']}' updated with full superadmin access & CSG organization."))
 
-        Officer.objects.get_or_create(
-            user=user,
-            defaults={'student_id': 'SA-2026-0001'}
-        )
+        # Super Admins do not have Officer profiles in any Org
+        Officer.objects.filter(user__role='super_admin').delete()
 
-        # ── CREATE / SYNC SUPERSUPERADMIN ACCOUNT ─────────────────────
-        super_user = User.objects.filter(username='supersuperadmin').first()
-        if not super_user:
-            super_user = User.objects.create_superuser(
-                username='supersuperadmin',
-                email='supersuperadmin@csg.com',
-                password='admin',
-                first_name='Super',
-                last_name='Super Admin',
-                role='super_super_admin',
-                organization=csg_org
-            )
-            self.stdout.write(self.style.SUCCESS("Super Super Admin 'supersuperadmin' created with password 'admin'."))
-        else:
-            super_user.role = 'super_super_admin'
-            super_user.is_superuser = True
-            super_user.is_staff = True
-            if csg_org:
-                super_user.organization = csg_org
-            super_user.save(update_fields=['role', 'is_superuser', 'is_staff', 'organization'])
-            self.stdout.write(self.style.SUCCESS("Super Super Admin 'supersuperadmin' updated with super_super_admin role."))
 
 
