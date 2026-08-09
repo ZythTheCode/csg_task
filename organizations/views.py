@@ -37,11 +37,15 @@ def pending_organizations(request):
     })
 
 @login_required
+@login_required
 @user_passes_test(lambda u: u.is_super_admin)
 def delete_organization(request, org_id):
     if request.method == 'POST':
         confirm_text = request.POST.get('confirm_text', '').strip()
-        org = get_object_or_404(Organization, id=org_id)
+        org = Organization.objects.filter(id=org_id).first()
+        if not org:
+            messages.warning(request, 'This organization no longer exists or has already been deleted.')
+            return redirect('pending_organizations')
 
         if confirm_text != 'DELETE':
             messages.error(request, 'You must type DELETE to confirm.')
@@ -58,7 +62,10 @@ def delete_organization(request, org_id):
 @user_passes_test(lambda u: u.is_super_admin)
 def restore_organization(request, org_id):
     if request.method == 'POST':
-        org = get_object_or_404(Organization, id=org_id, status='marked_for_deletion')
+        org = Organization.objects.filter(id=org_id, status='marked_for_deletion').first()
+        if not org:
+            messages.warning(request, 'This organization was not found in deletion queue.')
+            return redirect('pending_organizations')
         org.status = 'approved'
         org.marked_for_deletion_at = None
         org.save()
@@ -70,7 +77,10 @@ def restore_organization(request, org_id):
 def force_delete_organization(request, org_id):
     if request.method == 'POST':
         confirm_text = request.POST.get('confirm_text', '').strip()
-        org = get_object_or_404(Organization, id=org_id, status='marked_for_deletion')
+        org = Organization.objects.filter(id=org_id, status='marked_for_deletion').first()
+        if not org:
+            messages.warning(request, 'This organization was not found in deletion queue.')
+            return redirect('pending_organizations')
 
         if confirm_text != 'DELETE':
             messages.error(request, 'You must type DELETE to confirm immediate deletion.')
@@ -84,7 +94,10 @@ def force_delete_organization(request, org_id):
 @login_required
 @user_passes_test(lambda u: u.is_super_admin)
 def approve_organization(request, org_id):
-    org = get_object_or_404(Organization, id=org_id)
+    org = Organization.objects.filter(id=org_id).first()
+    if not org:
+        messages.warning(request, 'This organization no longer exists or has already been deleted.')
+        return redirect('pending_organizations')
     org.status = 'approved'
     org.save()
     
@@ -93,7 +106,6 @@ def approve_organization(request, org_id):
     if admin_user:
         admin_user.is_active = True
         admin_user.save()
-        # Optionally send an email here
         
     messages.success(request, f'Organization {org.name} has been approved.')
     return redirect('pending_organizations')
@@ -101,7 +113,10 @@ def approve_organization(request, org_id):
 @login_required
 @user_passes_test(lambda u: u.is_super_admin)
 def reject_organization(request, org_id):
-    org = get_object_or_404(Organization, id=org_id)
+    org = Organization.objects.filter(id=org_id).first()
+    if not org:
+        messages.warning(request, 'This organization no longer exists or has already been deleted.')
+        return redirect('pending_organizations')
     org.status = 'rejected'
     org.save()
     messages.info(request, f'Organization {org.name} has been rejected.')
@@ -114,7 +129,10 @@ def organization_detail_json(request, org_id):
     from tasks.models import Task
     from officers.models import Position
     
-    org = get_object_or_404(Organization, id=org_id)
+    org = Organization.objects.filter(id=org_id).first()
+    if not org:
+        return JsonResponse({'error': 'Organization not found.'}, status=404)
+
     users = org.users.filter(is_active=True).exclude(role__in=['super_admin', 'super_super_admin']).order_by('role', 'first_name')
     current_admin = org.users.filter(role='org_admin', is_active=True).first()
     current_admin_name = (current_admin.get_full_name() or current_admin.username) if current_admin else 'None (Unassigned)'
@@ -160,16 +178,23 @@ def organization_detail_json(request, org_id):
 @login_required
 def switch_organization(request, org_id):
     if request.user.is_super_admin:
-        org = get_object_or_404(Organization, id=org_id, status='approved')
-        request.session['active_org_id'] = org.id
-        messages.success(request, f"Switched active workspace dashboard to: {org.name}")
+        org = Organization.objects.filter(id=org_id, status='approved').first()
+        if org:
+            request.session['active_org_id'] = org.id
+            messages.success(request, f"Switched active workspace dashboard to: {org.name}")
+        else:
+            messages.warning(request, "Organization not found.")
     return redirect(request.META.get('HTTP_REFERER', 'core:dashboard'))
 
 
 @login_required
 def reassign_org_admin(request, org_id):
     if request.method == 'POST':
-        org = get_object_or_404(Organization, id=org_id)
+        org = Organization.objects.filter(id=org_id).first()
+        if not org:
+            messages.warning(request, 'This organization no longer exists or has already been deleted.')
+            return redirect('pending_organizations')
+
         if not (request.user.is_super_admin or (request.user.role == 'org_admin' and request.user.organization == org)):
             messages.error(request, 'Permission denied.')
             return redirect('core:dashboard')

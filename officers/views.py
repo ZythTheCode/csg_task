@@ -41,9 +41,17 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
     def get_queryset(self):
         org = self.request.user.get_organization(self.request)
         qs = Officer.objects.select_related('user', 'position').exclude(user__role__in=['super_admin', 'super_super_admin'])
-        if org:
+        if org and not self.request.user.is_super_admin:
             qs = qs.filter(user__organization=org)
         return qs
+
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+        except Exception:
+            messages.warning(request, 'This officer profile has already been deleted or no longer exists.')
+            return redirect('officers:list')
+        return super().dispatch(request, *args, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -101,6 +109,11 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
         if not request.user.can_manage_officers:
             messages.error(request, 'Permission denied.')
             return redirect('officers:list')
+        try:
+            self.object = self.get_object()
+        except Exception:
+            messages.warning(request, 'This officer account has already been deleted or no longer exists.')
+            return redirect('officers:list')
         return super().dispatch(request, *args, **kwargs)
 
     def get_form_kwargs(self):
@@ -110,6 +123,9 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        if not self.object:
+            messages.warning(request, 'This officer account has already been deleted or no longer exists.')
+            return redirect('officers:list')
         if request.POST.get('action') == 'remove_photo':
             if self.object.user and self.object.user.profile_picture:
                 user_name = self.object.user.get_full_name()
@@ -144,6 +160,11 @@ class OfficerDeleteView(LoginRequiredMixin, DeleteView):
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_officers:
             messages.error(request, 'Access denied. Only Super Admin can delete user accounts.')
+            return redirect('officers:list')
+        try:
+            self.object = self.get_object()
+        except Exception:
+            messages.warning(request, "This officer account has already been deleted or no longer exists.")
             return redirect('officers:list')
         return super().dispatch(request, *args, **kwargs)
 
@@ -216,7 +237,8 @@ class PositionCreateView(LoginRequiredMixin, CreateView):
         return super().dispatch(request, *args, **kwargs)
 
     def form_valid(self, form):
-        form.instance.organization = self.request.user.organization
+        org = self.request.user.get_organization(self.request)
+        form.instance.organization = org or self.request.user.organization
         resp = super().form_valid(form)
         from core.services.audit import log_activity
         log_activity(self.request, 'POSITION_CREATE', f"Created position '{self.object.title}' ({self.object.get_initials()})", resource_type='Position', resource_id=self.object.pk)
@@ -237,13 +259,19 @@ class PositionUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         qs = Position.objects.all()
-        if self.request.user.organization:
-            qs = qs.filter(organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        if org and not self.request.user.is_super_admin:
+            qs = qs.filter(organization=org)
         return qs
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_officers:
             messages.error(request, 'Permission denied.')
+            return redirect('officers:position_list')
+        try:
+            self.object = self.get_object()
+        except Exception:
+            messages.warning(request, 'This position has already been deleted or no longer exists.')
             return redirect('officers:position_list')
         return super().dispatch(request, *args, **kwargs)
 
@@ -267,13 +295,19 @@ class PositionDeleteView(LoginRequiredMixin, DeleteView):
 
     def get_queryset(self):
         qs = Position.objects.all()
-        if self.request.user.organization:
-            qs = qs.filter(organization=self.request.user.organization)
+        org = self.request.user.get_organization(self.request)
+        if org and not self.request.user.is_super_admin:
+            qs = qs.filter(organization=org)
         return qs
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_manage_officers:
             messages.error(request, 'Access denied. Only Super Admin can delete positions.')
+            return redirect('officers:position_list')
+        try:
+            self.object = self.get_object()
+        except Exception:
+            messages.warning(request, 'This position has already been deleted or no longer exists.')
             return redirect('officers:position_list')
         return super().dispatch(request, *args, **kwargs)
 
@@ -287,7 +321,16 @@ class PositionDeleteView(LoginRequiredMixin, DeleteView):
         return ctx
 
     def post(self, request, *args, **kwargs):
-        self.object = self.get_object()
+        try:
+            self.object = self.get_object()
+        except Exception:
+            messages.warning(request, 'This position has already been deleted or no longer exists.')
+            return redirect(self.success_url)
+
+        if not self.object:
+            messages.warning(request, 'This position has already been deleted or no longer exists.')
+            return redirect(self.success_url)
+
         position_title = self.object.title
         position_pk = self.object.pk
         self.object.delete()

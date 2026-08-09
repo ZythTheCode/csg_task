@@ -151,6 +151,14 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
     template_name = 'tasks/detail.html'
     context_object_name = 'task'
 
+    def dispatch(self, request, *args, **kwargs):
+        try:
+            self.object = self.get_object()
+        except Exception:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
+        return super().dispatch(request, *args, **kwargs)
+
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = f'Task: {self.object.task_number}'
@@ -223,7 +231,11 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         return kwargs
 
     def dispatch(self, request, *args, **kwargs):
-        task = self.get_object()
+        try:
+            task = self.get_object()
+        except Exception:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         if not request.user.can_edit_task(task):
             messages.error(request, 'You do not have permission to edit this task.')
             return redirect('tasks:list')
@@ -265,14 +277,22 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
     success_url = reverse_lazy('tasks:list')
 
     def dispatch(self, request, *args, **kwargs):
-        task = self.get_object()
+        try:
+            task = self.get_object()
+        except Exception:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         if not request.user.can_edit_task(task):
             messages.error(request, 'You do not have permission to delete this task.')
             return redirect('tasks:list')
         return super().dispatch(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
-        task = self.get_object()
+        try:
+            task = self.get_object()
+        except Exception:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         task_num = task.task_number
         task_pk = task.pk
         from core.services.audit import log_activity
@@ -461,7 +481,10 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
 
 class UpdateProgressView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        task = get_object_or_404(Task, pk=pk)
+        task = Task.objects.filter(pk=pk).first()
+        if not task:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         if not request.user.can_update_task_progress(task):
             messages.error(request, 'Permission denied. You are not authorized to update progress for this task.')
             return redirect('tasks:detail', pk=pk)
@@ -509,7 +532,10 @@ class UpdateProgressView(LoginRequiredMixin, View):
 
 class MarkCompleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        task = get_object_or_404(Task, pk=pk)
+        task = Task.objects.filter(pk=pk).first()
+        if not task:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         if not request.user.can_update_task_progress(task):
             messages.error(request, 'Permission denied. You are not authorized to mark this task complete.')
             return redirect('tasks:detail', pk=pk)
@@ -538,7 +564,10 @@ class ArchiveTaskView(LoginRequiredMixin, View):
         if not request.user.has_task_override:
             messages.error(request, 'Permission denied. Only Super Admin can archive tasks.')
             return redirect('tasks:list')
-        task = get_object_or_404(Task, pk=pk)
+        task = Task.objects.filter(pk=pk).first()
+        if not task:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         task.is_archived = True
         task.save()
         messages.success(request, f'Task {task.task_number} archived.')
@@ -547,7 +576,10 @@ class ArchiveTaskView(LoginRequiredMixin, View):
 
 class AddCommentView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        task = get_object_or_404(Task, pk=pk)
+        task = Task.objects.filter(pk=pk).first()
+        if not task:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         form = CommentForm(request.POST)
         if form.is_valid():
             comment = form.save(commit=False)
@@ -560,7 +592,10 @@ class AddCommentView(LoginRequiredMixin, View):
 
 class AddAttachmentView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        task = get_object_or_404(Task, pk=pk)
+        task = Task.objects.filter(pk=pk).first()
+        if not task:
+            messages.warning(request, 'This task has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         form = AttachmentForm(request.POST, request.FILES)
         if form.is_valid():
             attachment = form.save(commit=False)
@@ -574,7 +609,10 @@ class AddAttachmentView(LoginRequiredMixin, View):
 
 class DeleteAttachmentView(LoginRequiredMixin, View):
     def post(self, request, pk):
-        attachment = get_object_or_404(TaskAttachment, pk=pk)
+        attachment = TaskAttachment.objects.filter(pk=pk).first()
+        if not attachment:
+            messages.warning(request, 'This attachment has already been deleted or no longer exists.')
+            return redirect('tasks:list')
         task_pk = attachment.task.pk
         attachment.delete()
         messages.success(request, 'Attachment deleted.')
