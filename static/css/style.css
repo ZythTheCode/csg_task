@@ -136,16 +136,16 @@
    GLOBAL DARK MODE ([data-mode="dark"]) OVERRIDES
 ══════════════════════════════════════ */
 [data-mode="dark"], [data-theme="dark"] {
-  --pink-50:  rgba(15, 23, 42, 0.65) !important;
-  --pink-100: rgba(51, 65, 85, 0.5) !important;
-  --pink-200: rgba(71, 85, 105, 0.6) !important;
+  --pink-50:  rgba(15, 23, 42, 0.75) !important;
+  --pink-100: rgba(51, 65, 85, 0.6) !important;
+  --pink-200: rgba(71, 85, 105, 0.7) !important;
   --slate-800: #F8FAFC !important;
   --slate-700: #F1F5F9 !important;
   --slate-600: #E2E8F0 !important;
   --slate-500: #94A3B8 !important;
   --slate-400: #64748B !important;
   --slate-200: rgba(51, 65, 85, 0.6) !important;
-  --sidebar-bg: rgba(15, 23, 42, 0.95);
+  --sidebar-bg: rgba(15, 23, 42, 0.96);
   --sidebar-border: rgba(51, 65, 85, 0.6);
   --sidebar-text: #CBD5E1;
   --sidebar-hover: rgba(51, 65, 85, 0.5);
@@ -163,12 +163,14 @@
 [data-mode="dark"] [style*="background: #ffffff"],
 [data-mode="dark"] [style*="background:rgba(255,255,255"],
 [data-mode="dark"] [style*="background: rgba(255, 255, 255"] {
-  background: rgba(15, 23, 42, 0.7) !important;
+  background: rgba(15, 23, 42, 0.75) !important;
   border-color: rgba(51, 65, 85, 0.6) !important;
   color: #F8FAFC !important;
 }
 
-[data-mode="dark"] .text-dark {
+[data-mode="dark"] .text-dark,
+[data-mode="dark"] .text-black,
+[data-mode="dark"] .text-body {
   color: #F8FAFC !important;
 }
 
