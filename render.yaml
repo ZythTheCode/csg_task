@@ -26,8 +26,5 @@ services:
         sync: false
       - key: SEED_DATA
         value: "false"
-    disk:
-      name: csg_media
-      mountPath: /opt/render/project/src/media
-      sizeGB: 1
+
 
