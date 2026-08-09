@@ -118,7 +118,7 @@ class OfficerForm(forms.ModelForm):
         # Restrict role choices
         allowed_roles = []
         for code, label in User.ROLE_CHOICES:
-            if code in ['super_admin', 'org_admin']:
+            if code in ['super_admin', 'org_admin', 'super_super_admin']:
                 continue
             allowed_roles.append((code, label))
             
