@@ -1,12 +1,12 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en" data-theme="{% if user.organization %}{{ user.organization.theme }}{% else %}pink{% endif %}">
+<html lang="en" data-theme="{% if current_organization %}{{ current_organization.theme }}{% elif user.organization %}{{ user.organization.theme }}{% else %}pink{% endif %}">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block title %}{{ page_title|default:"CSG Task System" }}{% endblock %} | CSG Task Management</title>
 <meta name="description" content="CSG Task Management and Monitoring System for university student government">
-<link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="{% if user.organization and user.organization.logo %}{{ user.organization.logo.url }}{% else %}{% static 'images/favicon.svg' %}{% endif %}">
+<link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="{% if current_organization and current_organization.logo %}{{ current_organization.logo.url }}{% elif user.organization and user.organization.logo %}{{ user.organization.logo.url }}{% else %}{% static 'images/favicon.svg' %}{% endif %}">
 <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
 <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
 <link rel="preload" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/fonts/bootstrap-icons.woff2" as="font" type="font/woff2" crossorigin>
@@ -47,11 +47,14 @@
   window.updateTabFavicon = function(themeName) {
     const faviconEl = document.getElementById('dynamicFavicon');
     if (!faviconEl) return;
-    {% if user.organization and user.organization.logo %}
+    {% if current_organization and current_organization.logo %}
+    faviconEl.href = "{{ current_organization.logo.url }}";
+    return;
+    {% elif user.organization and user.organization.logo %}
     faviconEl.href = "{{ user.organization.logo.url }}";
     return;
     {% endif %}
-    const theme = themeName || document.documentElement.getAttribute('data-theme') || "{% if user.organization %}{{ user.organization.theme }}{% else %}pink{% endif %}";
+    const theme = themeName || document.documentElement.getAttribute('data-theme') || "{% if current_organization %}{{ current_organization.theme }}{% elif user.organization %}{{ user.organization.theme }}{% else %}pink{% endif %}";
     const colors = window.THEME_COLOR_MAP[theme] || window.THEME_COLOR_MAP['pink'];
     const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
       <defs>
@@ -87,19 +90,22 @@
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-brand position-relative">
     <div class="brand-logo-container position-relative">
-      {% if user.organization and user.organization.logo %}
+      {% if current_organization and current_organization.logo %}
+      <img src="{{ current_organization.logo.url }}" alt="{{ current_organization.name }}" class="brand-logo-img shadow-sm" style="width:42px;height:42px;border-radius:12px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 6px 16px rgba(0,0,0,0.12)">
+      <div class="brand-logo" style="display:none">{% if current_organization %}{{ current_organization.short_name|slice:":3"|upper }}{% elif user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
+      {% elif user.organization and user.organization.logo %}
       <img src="{{ user.organization.logo.url }}" alt="{{ user.organization.name }}" class="brand-logo-img shadow-sm" style="width:42px;height:42px;border-radius:12px;object-fit:cover;border:1.5px solid rgba(255,255,255,0.8);box-shadow:0 6px 16px rgba(0,0,0,0.12)">
-      <div class="brand-logo" style="display:none">{% if user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
+      <div class="brand-logo" style="display:none">{% if current_organization %}{{ current_organization.short_name|slice:":3"|upper }}{% elif user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
       {% else %}
-      <div class="brand-logo">{% if user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
+      <div class="brand-logo">{% if current_organization %}{{ current_organization.short_name|slice:":3"|upper }}{% elif user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
       {% endif %}
       <button type="button" class="sidebar-expand-btn d-none d-lg-flex" onclick="toggleSidebarMin()" title="Expand Sidebar">
         <i data-lucide="chevrons-right" style="width:18px;height:18px"></i>
       </button>
     </div>
-    <div class="sidebar-brand-text" title="{% if user.organization %}{{ user.organization.name }}{% else %}CSG System{% endif %}">
-      <h6 class="text-truncate" style="max-width:145px" title="{% if user.organization %}{{ user.organization.abbreviation|default:user.organization.name }}{% else %}CSG System{% endif %}">{% if user.organization %}{{ user.organization.abbreviation|default:user.organization.name }}{% else %}CSG System{% endif %}</h6>
-      <small class="d-block text-muted" style="max-width:145px;white-space:normal;word-break:break-word;line-height:1.2" title="{% if user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}">{% if user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}</small>
+    <div class="sidebar-brand-text" title="{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}CSG System{% endif %}">
+      <h6 class="text-truncate" style="max-width:145px" title="{% if current_organization %}{{ current_organization.abbreviation|default:current_organization.name }}{% elif user.organization %}{{ user.organization.abbreviation|default:user.organization.name }}{% else %}CSG System{% endif %}">{% if current_organization %}{{ current_organization.abbreviation|default:current_organization.name }}{% elif user.organization %}{{ user.organization.abbreviation|default:user.organization.name }}{% else %}CSG System{% endif %}</h6>
+      <small class="d-block text-muted" style="max-width:145px;white-space:normal;word-break:break-word;line-height:1.2" title="{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}">{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}</small>
     </div>
     <button type="button" class="sidebar-collapse-btn d-none d-lg-flex ms-auto" onclick="toggleSidebarMin()" title="Collapse Sidebar">
       <i data-lucide="chevron-left" style="width:16px;height:16px"></i>
