@@ -315,10 +315,25 @@
                     </div>
 
                     <div id="reassignContent" class="d-none mb-3">
-                        <label for="newAdminSelect" class="form-label fw-bold" style="font-size:13px">Select New Org Admin</label>
-                        <select class="form-select" id="newAdminSelect" name="new_admin_id" required style="border-radius:12px">
-                        </select>
-                        <small class="text-muted mt-2 d-block" style="font-size:11px"><i data-lucide="info" style="width:12px;height:12px;display:inline-block"></i> Assigning a new Org Admin will automatically update the previous admin's role to Elected Officer, enforcing the 1 Org Admin limit.</small>
+                        <!-- Current Org Admin Display Card -->
+                        <div class="p-3 mb-3 border rounded-3" style="background:#FFFBEB;border-color:#FDE68A!important">
+                            <div class="text-muted fw-bold text-uppercase mb-1" style="font-size:10px;letter-spacing:0.5px;color:#B45309">Current Organization Admin</div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <strong id="currentAdminName" class="text-dark fs-6 d-block">—</strong>
+                                    <small id="currentAdminSub" class="text-muted" style="font-size:11.5px"></small>
+                                </div>
+                                <span class="badge bg-warning text-dark fw-bold px-2 py-1" style="font-size:10.5px;border-radius:10px">Current Admin</span>
+                            </div>
+                        </div>
+
+                        <!-- Dropdown to Select Next Org Admin -->
+                        <div class="mb-2">
+                            <label for="newAdminSelect" class="form-label fw-bold" style="font-size:13px;color:var(--slate-700)">Select Next Org Admin</label>
+                            <select class="form-select" id="newAdminSelect" name="new_admin_id" required style="border-radius:12px">
+                            </select>
+                            <small class="text-muted mt-2 d-block" style="font-size:11px"><i data-lucide="info" style="width:12px;height:12px;display:inline-block"></i> Assigning a new Org Admin will automatically update the previous admin's role to Elected Officer, enforcing the 1 Org Admin limit.</small>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer border-0 pt-0 px-4 pb-4">
@@ -457,10 +472,24 @@ document.addEventListener('DOMContentLoaded', function () {
             fetch(`/organizations/${orgId}/json/`)
                 .then(res => res.json())
                 .then(data => {
+                    const currentNameEl = document.getElementById('currentAdminName');
+                    const currentSubEl = document.getElementById('currentAdminSub');
                     const select = document.getElementById('newAdminSelect');
+
+                    if (data.current_admin) {
+                        currentNameEl.textContent = data.current_admin.name;
+                        currentSubEl.textContent = `@${data.current_admin.username} (${data.current_admin.position || 'Org Admin'})`;
+                    } else {
+                        currentNameEl.textContent = 'None Assigned';
+                        currentSubEl.textContent = 'No active Org Admin set';
+                    }
+
                     if (data.officers && data.officers.length > 0) {
-                        select.innerHTML = data.officers.map(off => `
-                            <option value="${off.id}">${off.name} (@${off.username}) - ${off.position || off.role}</option>
+                        const selectableOfficers = data.officers;
+                        select.innerHTML = '<option value="" disabled selected>-- Choose next Org Admin --</option>' + selectableOfficers.map(off => `
+                            <option value="${off.id}" ${off.is_current_admin ? 'disabled' : ''}>
+                                ${off.name} (@${off.username}) - ${off.position || off.role} ${off.is_current_admin ? '(Current Admin)' : ''}
+                            </option>
                         `).join('');
                     } else {
                         select.innerHTML = '<option value="">No registered officers found in this organization</option>';

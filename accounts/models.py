@@ -62,11 +62,11 @@ class User(AbstractUser):
 
     @property
     def is_super_admin(self):
-        return self.role in ['super_admin', 'super_super_admin']
+        return self.role == 'super_admin'
 
     @property
     def is_super_super_admin(self):
-        return self.role == 'super_super_admin'
+        return False
 
     @property
     def is_org_admin(self):
@@ -82,7 +82,7 @@ class User(AbstractUser):
 
     @property
     def has_task_override(self):
-        return self.role in ['super_admin', 'super_super_admin', 'org_admin', 'president']
+        return self.role in ['super_admin', 'org_admin', 'president']
 
     @property
     def can_manage_tasks(self):
@@ -124,4 +124,5 @@ class User(AbstractUser):
 
     @property
     def can_manage_officers(self):
-        return self.role in ['super_admin', 'super_super_admin', 'org_admin']
+        return self.role in ['super_admin', 'org_admin']
+

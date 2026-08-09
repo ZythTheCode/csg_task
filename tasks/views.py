@@ -343,9 +343,9 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         ctx['status_columns'] = columns
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         if org:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role='super_super_admin').order_by('first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role__in=['super_admin', 'super_super_admin']).order_by('first_name', 'last_name')
         else:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role='super_super_admin').order_by('organization__name', 'first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role__in=['super_admin', 'super_super_admin']).order_by('organization__name', 'first_name', 'last_name')
         ctx['current_filters'] = {'q': q, 'priority': priority, 'officer': officers, 'scope': scope}
         return ctx
 

@@ -15,7 +15,7 @@ class OfficerListView(LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         org = self.request.user.get_organization(self.request)
-        qs = Officer.objects.select_related('user', 'position').exclude(user__role='super_super_admin').order_by('user__last_name')
+        qs = Officer.objects.select_related('user', 'position').exclude(user__role__in=['super_admin', 'super_super_admin']).order_by('user__last_name')
         if org:
             qs = qs.filter(user__organization=org)
         return qs
@@ -33,7 +33,7 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
 
     def get_queryset(self):
         org = self.request.user.get_organization(self.request)
-        qs = Officer.objects.select_related('user', 'position').exclude(user__role='super_super_admin')
+        qs = Officer.objects.select_related('user', 'position').exclude(user__role__in=['super_admin', 'super_super_admin'])
         if org:
             qs = qs.filter(user__organization=org)
         return qs

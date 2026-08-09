@@ -115,9 +115,9 @@ def organization_detail_json(request, org_id):
     from officers.models import Position
     
     org = get_object_or_404(Organization, id=org_id)
-    users = org.users.filter(is_active=True).exclude(role='super_super_admin').order_by('role', 'first_name')
-    admin_users = users.filter(role__in=['super_admin', 'org_admin', 'president'])
-    admin_name = ", ".join([u.get_full_name() or u.username for u in admin_users]) if admin_users.exists() else 'None Assigned'
+    users = org.users.filter(is_active=True).exclude(role__in=['super_admin', 'super_super_admin']).order_by('role', 'first_name')
+    current_admin = org.users.filter(role='org_admin', is_active=True).first()
+    current_admin_name = (current_admin.get_full_name() or current_admin.username) if current_admin else 'None (Unassigned)'
     
     officers = []
     for u in users:
@@ -128,6 +128,7 @@ def organization_detail_json(request, org_id):
             'email': u.email or 'N/A',
             'role': u.get_role_display(),
             'position': u.position_title,
+            'is_current_admin': (current_admin and u.id == current_admin.id),
         })
 
     tasks_count = Task.objects.filter(organization=org).count()
@@ -142,7 +143,13 @@ def organization_detail_json(request, org_id):
         'description': org.description or 'No description provided.',
         'status': org.get_status_display(),
         'created_at': org.created_at.strftime('%b %d, %Y'),
-        'admin_name': admin_name,
+        'admin_name': current_admin_name,
+        'current_admin': {
+            'id': current_admin.id,
+            'name': current_admin.get_full_name() or current_admin.username,
+            'username': current_admin.username,
+            'position': current_admin.position_title
+        } if current_admin else None,
         'officers_count': users.count(),
         'tasks_count': tasks_count,
         'completed_tasks': completed_tasks,

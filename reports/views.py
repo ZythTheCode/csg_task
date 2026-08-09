@@ -26,7 +26,7 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         ctx['status_choices'] = Task.STATUS_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         org = self.request.user.get_organization(self.request)
-        officers_qs = Officer.objects.select_related('user').exclude(user__role='super_super_admin')
+        officers_qs = Officer.objects.select_related('user').exclude(user__role__in=['super_admin', 'super_super_admin'])
         if org:
             officers_qs = officers_qs.filter(user__organization=org)
         ctx['officers'] = officers_qs.all()
