@@ -196,7 +196,8 @@ const OFFICER_PALETTE = [
 
 async function loadCharts() {
   try {
-    const res = await fetch('/api/dashboard/charts/');
+    const searchParams = window.location.search || '';
+    const res = await fetch('/api/dashboard/charts/' + searchParams);
     const d = await res.json();
 
     const isDarkMode = document.documentElement.getAttribute('data-mode') === 'dark';
@@ -206,6 +207,14 @@ async function loadCharts() {
     const statusColors   = d.status_distribution.labels.map(l => STATUS_COLOR_MAP[l] || '#94A3B8');
     const priorityColors = d.priority_distribution.labels.map(l => PRIORITY_COLOR_MAP[l] || '#94A3B8');
     const officerColors  = d.tasks_per_officer.labels.map((_, i) => OFFICER_PALETTE[i % OFFICER_PALETTE.length]);
+
+    const chartIds = ['statusChart', 'monthlyChart', 'priorityChart', 'officerChart', 'weeklyChart'];
+    chartIds.forEach(id => {
+      const existingChart = Chart.getChart(id);
+      if (existingChart) {
+        existingChart.destroy();
+      }
+    });
 
     // Status Doughnut
     new Chart(document.getElementById('statusChart'), {

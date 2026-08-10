@@ -39,12 +39,17 @@ class DashboardChartsAPIView(APIView):
 
     def get(self, request):
         user = request.user
-        if user.can_manage_tasks:
-            base_qs = Task.objects.filter(is_archived=False)
+        org = user.get_organization(request)
+
+        if org:
+            base_qs = Task.objects.filter(organization=org, is_archived=False)
         else:
-            base_qs = Task.objects.filter(assigned_officers=user, is_archived=False)
-        if user.organization:
-            base_qs = base_qs.filter(organization=user.organization)
+            base_qs = Task.objects.filter(is_archived=False)
+
+        scope = request.GET.get('scope', 'all' if user.has_task_override else 'my_tasks')
+        if scope == 'my_tasks':
+            from django.db.models import Q
+            base_qs = base_qs.filter(Q(assigned_officers=user) | Q(created_by=user)).distinct()
 
         today = timezone.now().date()
 
@@ -62,13 +67,24 @@ class DashboardChartsAPIView(APIView):
         monthly_labels = []
         monthly_data = []
         for i in range(5, -1, -1):
-            d = today.replace(day=1) - datetime.timedelta(days=i * 28)
-            month_start = d.replace(day=1)
-            if d.month == 12:
-                month_end = d.replace(year=d.year + 1, month=1, day=1) - datetime.timedelta(days=1)
+            year = today.year
+            month = today.month - i
+            while month <= 0:
+                month += 12
+                year -= 1
+            month_start = datetime.date(year, month, 1)
+            if month == 12:
+                month_end = datetime.date(year + 1, 1, 1) - datetime.timedelta(days=1)
             else:
-                month_end = d.replace(month=d.month + 1, day=1) - datetime.timedelta(days=1)
-            count = base_qs.filter(status='completed', completion_date__gte=month_start, completion_date__lte=month_end).count()
+                month_end = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+
+            from django.db.models import Q
+            count = base_qs.filter(
+                Q(status='completed') & (
+                    Q(completion_date__gte=month_start, completion_date__lte=month_end) |
+                    Q(completion_date__isnull=True, updated_at__date__gte=month_start, updated_at__date__lte=month_end)
+                )
+            ).count()
             monthly_labels.append(month_start.strftime('%b %Y'))
             monthly_data.append(count)
 
@@ -92,26 +108,34 @@ class DashboardChartsAPIView(APIView):
         # Tasks per officer (top 8)
         officer_data = []
         officer_labels = []
-        assignments = TaskAssignment.objects.filter(
-            task__in=base_qs
-        ).select_related('officer__officer_profile__position') \
-         .values('officer__first_name', 'officer__last_name',
-                 'officer__officer_profile__position__title') \
-         .annotate(count=Count('id')).order_by('-count')[:8]
-        for a in assignments:
-            full_name = f"{a['officer__first_name']} {a['officer__last_name']}".strip() or 'Unknown'
-            pos_title = a.get('officer__officer_profile__position__title') or ''
-            abbrev = POSITION_ABBREV.get(pos_title) or ''.join(w[0].upper() for w in pos_title.split() if w)
+        officer_counts = base_qs.values(
+            'assigned_officers__id',
+            'assigned_officers__first_name',
+            'assigned_officers__last_name',
+            'assigned_officers__username',
+            'assigned_officers__officer_profile__position__title'
+        ).annotate(count=Count('id')).exclude(assigned_officers__isnull=True).order_by('-count')[:8]
+
+        for item in officer_counts:
+            fname = item['assigned_officers__first_name'] or ''
+            lname = item['assigned_officers__last_name'] or ''
+            full_name = f"{fname} {lname}".strip() or item['assigned_officers__username'] or 'Officer'
+            pos_title = item.get('assigned_officers__officer_profile__position__title') or ''
+            abbrev = POSITION_ABBREV.get(pos_title) or (''.join(w[0].upper() for w in pos_title.split() if w) if pos_title else '')
             label = f"{full_name} ({abbrev})" if abbrev else full_name
             officer_labels.append(label)
-            officer_data.append(a['count'])
+            officer_data.append(item['count'])
 
         # Weekly trend (last 7 days)
         weekly_labels = []
         weekly_data = []
         for i in range(6, -1, -1):
             day = today - datetime.timedelta(days=i)
-            count = base_qs.filter(completion_date=day).count()
+            count = base_qs.filter(
+                Q(status='completed') & (
+                    Q(completion_date=day) | Q(completion_date__isnull=True, updated_at__date=day)
+                )
+            ).count()
             weekly_labels.append(day.strftime('%a %d'))
             weekly_data.append(count)
 
