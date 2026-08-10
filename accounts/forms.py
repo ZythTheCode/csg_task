@@ -15,7 +15,7 @@ class CustomPasswordResetForm(PasswordResetForm):
 class ProfileEditForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ['first_name', 'last_name', 'email', 'phone', 'bio', 'profile_picture']
+        fields = ['first_name', 'last_name', 'email', 'bio', 'profile_picture']
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4}),
         }

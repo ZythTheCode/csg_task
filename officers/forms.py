@@ -105,7 +105,7 @@ class OfficerForm(forms.ModelForm):
             except Officer.DoesNotExist:
                 pass
 
-        choices = [('', '---------')]
+        choices = [('', 'Select Position')]
         self.disabled_position_pks = set()
 
         for pos in all_positions:
@@ -122,8 +122,9 @@ class OfficerForm(forms.ModelForm):
 
         self.fields['position'] = forms.ChoiceField(
             choices=choices,
-            required=False,
+            required=True,
             initial=initial_position_id,
+            error_messages={'required': 'Assigning a position is required.'},
             widget=DisabledPositionSelect(
                 attrs={'class': 'form-select'},
                 disabled_choices=self.disabled_position_pks
@@ -156,7 +157,7 @@ class OfficerForm(forms.ModelForm):
     def clean_position(self):
         position_val = self.cleaned_data.get('position')
         if not position_val:
-            return None
+            raise forms.ValidationError("Assigning a position is required.")
         if isinstance(position_val, Position):
             position_obj = position_val
         else:

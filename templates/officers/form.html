@@ -110,7 +110,7 @@
                   {% if form.role.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.role.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold" style="font-size:12px">Assigned Position Title</label>
+                  <label class="form-label fw-semibold" style="font-size:12px">Assigned Position Title <span class="text-danger">*</span></label>
                   {{ form.position }}
                   <small class="text-muted d-block" style="font-size:11px">Organizational position (e.g. Vice President, Treasurer).</small>
                   {% if form.position.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.position.errors.0 }}</div>{% endif %}
