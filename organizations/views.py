@@ -13,7 +13,7 @@ def register_organization(request):
         if form.is_valid():
             form.save()
             messages.success(request, 'Your organization has been registered and is pending approval from the Super Admin.')
-            return redirect('login')
+            return redirect('accounts:login')
     else:
         form = OrganizationRegistrationForm()
     
