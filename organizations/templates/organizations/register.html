@@ -156,7 +156,7 @@
           </div>
           <div class="col-md-6">
             <label class="form-label fw-bold text-dark" style="font-size:13px">Student ID <span class="text-danger">*</span></label>
-            <input type="text" name="admin_student_id" class="form-control {% if form.admin_student_id.errors %}is-invalid{% endif %}" placeholder="e.g. 2024-00123" value="{{ form.admin_student_id.value|default:'' }}" required>
+            <input type="text" name="admin_student_id" class="form-control {% if form.admin_student_id.errors %}is-invalid{% endif %}" placeholder="e.g. 202612345" value="{{ form.admin_student_id.value|default:'' }}" required>
             {% if form.admin_student_id.errors %}<div class="invalid-feedback">{% for e in form.admin_student_id.errors %}{{ e }}{% endfor %}</div>{% endif %}
           </div>
           <div class="col-md-6">

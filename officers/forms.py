@@ -82,7 +82,7 @@ class OfficerForm(forms.ModelForm):
         model = Officer
         fields = ['position', 'student_id']
         widgets = {
-            'student_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2024-0001'}),
+            'student_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 202612345'}),
         }
 
     def __init__(self, *args, user=None, request=None, **kwargs):
