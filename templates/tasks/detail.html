@@ -160,7 +160,10 @@
             </div>
           </div>
           <div class="d-flex gap-2 align-items-center">
-            <a href="{% url 'tasks:download_attachment' att.pk %}" class="btn-sm-icon" title="Download File">
+            <a href="{% url 'tasks:view_attachment' att.pk %}" target="_blank" class="btn-sm-icon text-primary" title="View / Open Document">
+              <i data-lucide="eye" style="width:14px;height:14px"></i>
+            </a>
+            <a href="{% url 'tasks:download_attachment' att.pk %}" onclick="return downloadAttachmentToDevice(event, '{% url 'tasks:download_attachment' att.pk %}', '{{ att.filename|escapejs }}')" download="{{ att.filename }}" class="btn-sm-icon" title="Download File">
               <i data-lucide="download" style="width:14px;height:14px"></i>
             </a>
             {% if can_edit_task or att.uploaded_by == user %}

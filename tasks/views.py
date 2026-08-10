@@ -576,7 +576,9 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
             {
                 'id': att.pk,
                 'filename': att.filename,
-                'url': f'/tasks/attachments/{att.pk}/download/',
+                'url': f'/tasks/attachments/{att.pk}/view/',
+                'view_url': f'/tasks/attachments/{att.pk}/view/',
+                'download_url': f'/tasks/attachments/{att.pk}/download/',
                 'created_at': att.created_at.strftime('%b %d, %Y'),
                 'uploaded_by': att.uploaded_by.get_full_name() or att.uploaded_by.username,
                 'uploaded_by_role': att.uploaded_by.get_role_display(),
@@ -822,7 +824,7 @@ class DeleteAttachmentView(LoginRequiredMixin, View):
 
 
 class DownloadAttachmentView(LoginRequiredMixin, View):
-    """Secure attachment downloader handling local storage and Cloudinary binary streaming."""
+    """Secure attachment downloader forcing direct device file download."""
     def get(self, request, pk):
         import os, logging, urllib.parse, requests
         logger = logging.getLogger(__name__)
@@ -845,12 +847,11 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
 
         if target_path and os.path.isfile(target_path):
             try:
-                response = FileResponse(open(target_path, 'rb'), as_attachment=True, filename=filename)
-                return response
+                return FileResponse(open(target_path, 'rb'), content_type='application/octet-stream', as_attachment=True, filename=filename)
             except Exception as e:
                 logger.warning(f"Failed serving local attachment file: {e}")
 
-        # 2. Try Django Storage API (att.file.open)
+        # 2. Try Django Storage API (att.file.open / read binary bytes)
         try:
             attachment.file.open('rb')
             content = attachment.file.read()
@@ -864,13 +865,23 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
         except Exception as ex:
             logger.warning(f"Django storage open failed for {attachment.file.name}: {ex}")
 
-        # 3. Generate Cloudinary authenticated private download URLs & direct URLs
+        # 3. Direct Cloudinary / Storage URL with fl_attachment flag
+        file_url = None
+        try:
+            if hasattr(attachment.file, 'url') and attachment.file.url:
+                file_url = attachment.file.url
+        except Exception:
+            pass
+
+        urls_to_try = []
+        if file_url:
+            urls_to_try.append(file_url)
+
         file_ext = (os.path.splitext(filename)[1] or os.path.splitext(clean_name)[1]).lstrip('.')
         pub_id = clean_name
         if file_ext and pub_id.endswith('.' + file_ext):
             pub_id = pub_id[:-len(file_ext)-1]
 
-        urls_to_try = []
         try:
             import cloudinary, cloudinary.utils
             if pub_id:
@@ -881,18 +892,6 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
                 urls_to_try.append(cloudinary.utils.private_download_url(clean_name, format='', resource_type='image', attachment=True))
         except Exception as ex:
             logger.warning(f"Failed generating Cloudinary private download URL: {ex}")
-
-        if hasattr(attachment.file, 'url') and attachment.file.url:
-            urls_to_try.append(attachment.file.url)
-
-        try:
-            import cloudinary
-            cfg = cloudinary.config()
-            if cfg.cloud_name:
-                urls_to_try.append(f"https://res.cloudinary.com/{cfg.cloud_name}/raw/upload/{clean_name}")
-                urls_to_try.append(f"https://res.cloudinary.com/{cfg.cloud_name}/image/upload/{clean_name}")
-        except Exception:
-            pass
 
         for target_url in urls_to_try:
             try:
@@ -907,15 +906,82 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
                 if resp.status_code == 200:
                     content = resp.content
                     if content and not (content.startswith(b'<!DOCTYPE html') or content.startswith(b'<html') or b'401 Unauthorized' in content[:500]):
-                        content_type = resp.headers.get('Content-Type', 'application/octet-stream')
-                        response = HttpResponse(content, content_type=content_type)
+                        response = HttpResponse(content, content_type='application/octet-stream')
                         response['Content-Disposition'] = content_disposition
                         return response
             except Exception as net_ex:
                 logger.warning(f"Failed fetching attachment from {target_url}: {net_ex}")
 
+        # Fallback redirect to direct Cloudinary URL with forced attachment flag
+        if file_url:
+            forced_download_url = file_url.replace('/upload/', '/upload/fl_attachment/') if '/upload/' in file_url else file_url
+            return redirect(forced_download_url)
+
         # 4. Fallback if file cannot be retrieved
         messages.error(request, f"Unable to download attachment '{filename}'. The file may be unavailable.")
+        return redirect('tasks:detail', pk=attachment.task.pk)
+
+
+class ViewAttachmentView(LoginRequiredMixin, View):
+    """View/preview attachment directly in browser with inline Content-Disposition."""
+    def get(self, request, pk):
+        import os, logging, urllib.parse, mimetypes, requests
+        logger = logging.getLogger(__name__)
+        attachment = get_object_or_404(TaskAttachment, pk=pk)
+
+        filename = attachment.filename or os.path.basename(attachment.file.name)
+        safe_filename = urllib.parse.quote(filename)
+        content_disposition = f'inline; filename="{filename}"; filename*=UTF-8\'\'{safe_filename}'
+
+        guessed_type, _ = mimetypes.guess_type(filename)
+        content_type = guessed_type or 'application/pdf'
+
+        # 1. Direct Cloudinary or Remote File URL
+        file_url = None
+        try:
+            if hasattr(attachment.file, 'url') and attachment.file.url:
+                file_url = attachment.file.url
+        except Exception:
+            pass
+
+        # If Cloudinary URL or remote link, redirect to direct URL for instant inline browser viewing
+        if file_url and (file_url.startswith('http://') or file_url.startswith('https://')):
+            clean_url = file_url.replace('/fl_attachment/', '/').replace('/fl_attachment', '/')
+            return redirect(clean_url)
+
+        # 2. Try local file system
+        clean_name = attachment.file.name.replace('media/', '', 1) if attachment.file.name.startswith('media/') else attachment.file.name
+        full_local_path = os.path.join(django_settings.MEDIA_ROOT, attachment.file.name)
+        clean_local_path = os.path.join(django_settings.MEDIA_ROOT, clean_name)
+
+        target_path = None
+        if os.path.exists(full_local_path):
+            target_path = full_local_path
+        elif os.path.exists(clean_local_path):
+            target_path = clean_local_path
+
+        if target_path and os.path.isfile(target_path):
+            try:
+                response = FileResponse(open(target_path, 'rb'), content_type=content_type)
+                response['Content-Disposition'] = content_disposition
+                return response
+            except Exception as e:
+                logger.warning(f"Failed viewing local attachment file: {e}")
+
+        # 3. Try Django Storage API (open/read)
+        try:
+            attachment.file.open('rb')
+            content = attachment.file.read()
+            attachment.file.close()
+
+            if content:
+                response = HttpResponse(content, content_type=content_type)
+                response['Content-Disposition'] = content_disposition
+                return response
+        except Exception as ex:
+            logger.warning(f"Django storage open failed for {attachment.file.name}: {ex}")
+
+        messages.error(request, f"Unable to view attachment '{filename}'. The file may be unavailable.")
         return redirect('tasks:detail', pk=attachment.task.pk)
 
 

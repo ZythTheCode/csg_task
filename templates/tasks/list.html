@@ -413,7 +413,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 <span class="text-truncate d-block fw-bold text-dark" style="font-size:12px" title="${att.filename}">${att.filename}</span>
                 <small class="text-muted" style="font-size:10.5px">Uploaded by <strong>${att.uploaded_by || 'Officer'}</strong> &middot; ${att.created_at}</small>
               </div>
-              <a href="${att.url}" target="_blank" class="btn btn-sm btn-light p-1 px-2 flex-shrink-0" style="font-size:11px">Download</a>
+              <div class="d-flex gap-1 flex-shrink-0">
+                <a href="${att.view_url || att.url}" target="_blank" class="btn btn-sm btn-primary-custom p-1 px-2" style="font-size:11px" title="View Document"><i data-lucide="eye" style="width:12px;height:12px"></i> View</a>
+                <a href="${att.download_url || att.url}" onclick="return downloadAttachmentToDevice(event, '${att.download_url || att.url}', '${(att.filename || 'download').replace(/'/g, "\\'")}')" download="${att.filename}" class="btn btn-sm btn-light border p-1 px-2" style="font-size:11px" title="Download File"><i data-lucide="download" style="width:12px;height:12px"></i></a>
+              </div>
             </div>
           `).join('');
         } else {
