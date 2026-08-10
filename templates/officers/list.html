@@ -26,6 +26,7 @@
       <div class="officer-avatar mx-auto mb-3" style="width:64px;height:64px;font-size:22px;border-radius:20px">{{ officer.user.first_name|first }}{{ officer.user.last_name|first }}</div>
       {% endif %}
       <h6 class="mb-1 fw-bold" style="color:var(--slate-800);font-size:14.5px">{{ officer.user.get_full_name }}</h6>
+      <small class="text-muted d-block mb-1" style="font-size:11.5px">@{{ officer.user.username }}</small>
       <div style="font-size:12px;color:var(--primary);font-weight:700">{{ officer.position|default:"—" }}</div>
       <span class="badge bg-light text-muted border mt-2 mx-auto" style="font-size:10.5px;padding:4px 10px;border-radius:20px">
         {{ officer.user.get_role_display }}

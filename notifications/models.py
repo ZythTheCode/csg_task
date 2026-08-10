@@ -10,6 +10,8 @@ class Notification(models.Model):
         ('overdue', 'Task Overdue'),
         ('task_completed', 'Task Completed'),
         ('approval_needed', 'Approval Needed'),
+        ('comment_added', 'New Comment'),
+        ('attachment_added', 'New Attachment'),
         ('system', 'System'),
     ]
     TYPE_ICONS = {
@@ -19,6 +21,8 @@ class Notification(models.Model):
         'overdue': 'bi-exclamation-triangle',
         'task_completed': 'bi-check-circle',
         'approval_needed': 'bi-hourglass-split',
+        'comment_added': 'bi-chat-left-text',
+        'attachment_added': 'bi-paperclip',
         'system': 'bi-gear',
     }
     TYPE_COLORS = {
@@ -28,6 +32,8 @@ class Notification(models.Model):
         'overdue': 'danger',
         'task_completed': 'success',
         'approval_needed': 'warning',
+        'comment_added': 'primary',
+        'attachment_added': 'info',
         'system': 'secondary',
     }
 

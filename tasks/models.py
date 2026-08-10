@@ -39,9 +39,26 @@ class Task(models.Model):
         'urgent': 'dark',
     }
 
+    CATEGORY_CHOICES = [
+        ('document', 'Document'),
+        ('multimedia', 'Multimedia'),
+        ('other', 'Other'),
+    ]
+    CATEGORY_COLORS = {
+        'document': 'info',
+        'multimedia': 'purple',
+        'other': 'secondary',
+    }
+    CATEGORY_ICONS = {
+        'document': 'file-text',
+        'multimedia': 'film',
+        'other': 'box',
+    }
+
     task_number = models.CharField(max_length=20, unique=True, editable=False)
     title = models.CharField(max_length=200)
     description = models.TextField()
+    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='document', db_index=True)
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium', db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started', db_index=True)
     due_date = models.DateField(null=True, blank=True, db_index=True)
@@ -123,6 +140,14 @@ class Task(models.Model):
         return 'danger'
 
     @property
+    def category_color(self):
+        return self.CATEGORY_COLORS.get(self.category, 'secondary')
+
+    @property
+    def category_icon(self):
+        return self.CATEGORY_ICONS.get(self.category, 'box')
+
+    @property
     def sorted_assigned_officers(self):
         ORDER_MAP = {
             "President": 1,
@@ -195,6 +220,27 @@ class TaskAttachment(models.Model):
 
     def __str__(self):
         return self.filename
+
+    @property
+    def file_extension(self):
+        import os
+        ext = os.path.splitext(self.filename or self.file.name)[1].lower()
+        return ext.lstrip('.')
+
+    @property
+    def icon_name(self):
+        ext = self.file_extension
+        if ext in ['pdf']:
+            return 'file-text'
+        elif ext in ['doc', 'docx']:
+            return 'file-text'
+        elif ext in ['xls', 'xlsx', 'csv']:
+            return 'file-spreadsheet'
+        elif ext in ['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg']:
+            return 'image'
+        elif ext in ['zip', 'rar', '7z']:
+            return 'archive'
+        return 'file'
 
 
 class TaskHistory(models.Model):

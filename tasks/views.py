@@ -59,6 +59,10 @@ class TaskListView(LoginRequiredMixin, ListView):
             end_of_week = today + timezone.timedelta(days=7)
             qs = qs.filter(due_date__gte=today, due_date__lte=end_of_week).exclude(status='completed')
 
+        category = self.request.GET.get('category', '')
+        if category:
+            qs = qs.filter(category=category)
+
         priority = self.request.GET.get('priority', '')
         if priority:
             qs = qs.filter(priority=priority)
@@ -135,8 +139,10 @@ class TaskListView(LoginRequiredMixin, ListView):
             ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role='super_super_admin').order_by('first_name', 'last_name')
         else:
             ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role='super_super_admin').order_by('organization__name', 'first_name', 'last_name')
+        ctx['category_choices'] = Task.CATEGORY_CHOICES
         ctx['current_filters'] = {
             'q': self.request.GET.get('q', ''),
+            'category': self.request.GET.get('category', ''),
             'status': self.request.GET.get('status', ''),
             'priority': self.request.GET.get('priority', ''),
             'officer': self.request.GET.getlist('officer'),
@@ -341,6 +347,10 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         if q:
             base_qs = base_qs.filter(Q(title__icontains=q) | Q(task_number__icontains=q))
 
+        category = self.request.GET.get('category', '')
+        if category:
+            base_qs = base_qs.filter(category=category)
+
         priority = self.request.GET.get('priority', '')
         if priority:
             base_qs = base_qs.filter(priority=priority)
@@ -368,7 +378,8 @@ class TaskBoardView(LoginRequiredMixin, ListView):
             ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role__in=['super_admin', 'super_super_admin']).order_by('first_name', 'last_name')
         else:
             ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role__in=['super_admin', 'super_super_admin']).order_by('organization__name', 'first_name', 'last_name')
-        ctx['current_filters'] = {'q': q, 'priority': priority, 'officer': officers, 'scope': scope}
+        ctx['category_choices'] = Task.CATEGORY_CHOICES
+        ctx['current_filters'] = {'q': q, 'category': category, 'priority': priority, 'officer': officers, 'scope': scope}
         return ctx
 
 
@@ -381,15 +392,18 @@ class TaskCalendarView(LoginRequiredMixin, TemplateView):
         scope = self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks')
 
         q = self.request.GET.get('q', '')
+        category = self.request.GET.get('category', '')
         priority = self.request.GET.get('priority', '')
         status = self.request.GET.get('status', '')
 
         ctx['page_title'] = 'Task Calendar View'
         ctx['current_org'] = org
         ctx['status_choices'] = Task.STATUS_CHOICES
+        ctx['category_choices'] = Task.CATEGORY_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         ctx['current_filters'] = {
             'q': q,
+            'category': category,
             'status': status,
             'priority': priority,
             'scope': scope
@@ -422,6 +436,10 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
                 qs = qs.exclude(status__in=['not_started', 'completed'])
             else:
                 qs = qs.filter(status=status)
+
+        category = request.GET.get('category', '')
+        if category:
+            qs = qs.filter(category=category)
 
         priority = request.GET.get('priority', '')
         if priority:
@@ -464,7 +482,7 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
 
             events.append({
                 'id': task.id,
-                'title': f"[{task.task_number}] {task.title}",
+                'title': task.title,
                 'start': task_date,
                 'allDay': True,
                 'backgroundColor': bg_color,
@@ -475,6 +493,8 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
                     'task_number': task.task_number,
                     'title': task.title,
                     'description': task.description or 'No description provided.',
+                    'category': task.category,
+                    'category_display': task.get_category_display(),
                     'status': task.status,
                     'status_display': task.get_status_display(),
                     'priority': task.priority,
@@ -557,7 +577,10 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
                 'id': att.pk,
                 'filename': att.filename,
                 'url': f'/tasks/attachments/{att.pk}/download/',
-                'created_at': att.created_at.strftime('%b %d, %Y')
+                'created_at': att.created_at.strftime('%b %d, %Y'),
+                'uploaded_by': att.uploaded_by.get_full_name() or att.uploaded_by.username,
+                'uploaded_by_role': att.uploaded_by.get_role_display(),
+                'icon_name': att.icon_name,
             }
             for att in task.attachments.all()
         ]
@@ -566,6 +589,8 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
             {
                 'id': c.pk,
                 'author': c.author.get_full_name() or c.author.username,
+                'author_username': c.author.username,
+                'author_role': c.author.get_role_display(),
                 'author_initials': f"{c.author.first_name[:1]}{c.author.last_name[:1]}".upper() if c.author.first_name and c.author.last_name else c.author.username[:2].upper(),
                 'content': c.content,
                 'created_at': c.created_at.strftime('%b %d, %Y %I:%M %p')
@@ -578,6 +603,9 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
             'task_number': task.task_number,
             'title': task.title,
             'description': task.description,
+            'category': task.category,
+            'category_display': task.get_category_display(),
+            'category_icon': task.category_icon,
             'status': task.status,
             'status_display': task.get_status_display(),
             'priority': task.priority,
@@ -708,8 +736,42 @@ class AddCommentView(LoginRequiredMixin, View):
             comment.task = task
             comment.author = request.user
             comment.save()
+
+            # Notify assigned officers & creator (excluding commenter)
+            recipients = set(task.assigned_officers.filter(is_active=True))
+            if task.created_by and task.created_by.is_active:
+                recipients.add(task.created_by)
+            recipients.discard(request.user)
+
+            author_name = request.user.get_full_name() or request.user.username
+            comment_snippet = comment.content[:80] + ('...' if len(comment.content) > 80 else '')
+            for recipient in recipients:
+                Notification.objects.create(
+                    recipient=recipient,
+                    title=f"New Comment on Task {task.task_number}",
+                    message=f"{author_name} commented: \"{comment_snippet}\"",
+                    notification_type='comment_added',
+                    related_task=task
+                )
+
             messages.success(request, 'Comment added.')
         return redirect('tasks:detail', pk=pk)
+
+
+class DeleteCommentView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        comment = TaskComment.objects.filter(pk=pk).first()
+        if not comment:
+            messages.warning(request, 'This comment has already been deleted or no longer exists.')
+            return redirect('tasks:list')
+        task_pk = comment.task.pk
+        if not (request.user == comment.author or request.user == comment.task.created_by or request.user.has_task_override or request.user.can_edit_task(comment.task)):
+            messages.error(request, 'You do not have permission to delete this comment.')
+            return redirect('tasks:detail', pk=task_pk)
+
+        comment.delete()
+        messages.success(request, 'Comment deleted successfully.')
+        return redirect('tasks:detail', pk=task_pk)
 
 
 class AddAttachmentView(LoginRequiredMixin, View):
@@ -723,8 +785,26 @@ class AddAttachmentView(LoginRequiredMixin, View):
             attachment = form.save(commit=False)
             attachment.task = task
             attachment.uploaded_by = request.user
-            attachment.filename = request.FILES['file'].name
+            filename = request.FILES['file'].name
+            attachment.filename = filename
             attachment.save()
+
+            # Notify assigned officers & creator (excluding uploader)
+            recipients = set(task.assigned_officers.filter(is_active=True))
+            if task.created_by and task.created_by.is_active:
+                recipients.add(task.created_by)
+            recipients.discard(request.user)
+
+            uploader_name = request.user.get_full_name() or request.user.username
+            for recipient in recipients:
+                Notification.objects.create(
+                    recipient=recipient,
+                    title=f"New Attachment on Task {task.task_number}",
+                    message=f"{uploader_name} attached a file: \"{filename}\"",
+                    notification_type='attachment_added',
+                    related_task=task
+                )
+
             messages.success(request, 'Attachment uploaded.')
         return redirect('tasks:detail', pk=pk)
 

@@ -7,11 +7,12 @@ from core.services.audit import log_activity
 class TaskService:
     @staticmethod
     @transaction.atomic
-    def create_task(user, title, description, priority='medium', status='not_started', due_date=None, progress=0, assigned_officer_ids=None, organization=None):
+    def create_task(user, title, description, category='document', priority='medium', status='not_started', due_date=None, progress=0, assigned_officer_ids=None, organization=None):
         org = organization or user.organization
         task = Task.objects.create(
             title=title,
             description=description,
+            category=category,
             priority=priority,
             status=status,
             due_date=due_date,

@@ -13,10 +13,11 @@ class TaskForm(forms.ModelForm):
 
     class Meta:
         model = Task
-        fields = ['title', 'description', 'priority', 'status', 'due_date', 'assigned_officers', 'progress']
+        fields = ['title', 'description', 'category', 'priority', 'status', 'due_date', 'assigned_officers', 'progress']
         widgets = {
             'title': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Task title'}),
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4, 'placeholder': 'Task description'}),
+            'category': forms.Select(attrs={'class': 'form-select'}),
             'priority': forms.Select(attrs={'class': 'form-select'}),
             'status': forms.Select(attrs={'class': 'form-select'}),
             'due_date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),
@@ -63,5 +64,8 @@ class AttachmentForm(forms.ModelForm):
         model = TaskAttachment
         fields = ['file']
         widgets = {
-            'file': forms.FileInput(attrs={'class': 'form-control'}),
+            'file': forms.FileInput(attrs={
+                'class': 'form-control',
+                'accept': '.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.csv,.txt,.png,.jpg,.jpeg,.gif,.zip,.rar'
+            }),
         }

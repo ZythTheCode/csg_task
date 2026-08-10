@@ -1217,6 +1217,11 @@ body {
 .badge-priority-high   { background: #FEE2E2; color: #991B1B; } /* Red */
 .badge-priority-urgent { background: #1E293B; color: #F87171; } /* Dark Red */
 
+/* Category Badges (Distinct high-contrast colors per category) */
+.badge-category-document   { background: #E0F2FE !important; color: #0284C7 !important; border: 1px solid #BAE6FD; font-weight: 700; } /* Blue Document */
+.badge-category-multimedia { background: #F3E8FF !important; color: #7E22CE !important; border: 1px solid #E9D5FF; font-weight: 700; } /* Purple Multimedia */
+.badge-category-other      { background: #F1F5F9 !important; color: #334155 !important; border: 1px solid #E2E8F0; font-weight: 700; } /* Slate Other */
+
 /* ══════════════════════════════════════
    PROGRESS BARS
 ══════════════════════════════════════ */

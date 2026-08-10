@@ -46,7 +46,15 @@
         </div>
         <div id="boardSearchSuggestions" class="search-suggestions-dropdown shadow-lg"></div>
       </div>
-      <div class="col-md-3">
+      <div class="col-md-2">
+        <select name="category" class="form-select" style="font-size:13.5px" onchange="this.form.submit()">
+          <option value="">All Categories</option>
+          {% for val, label in category_choices %}
+          <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="col-md-2">
         <select name="priority" class="form-select" style="font-size:13.5px" onchange="this.form.submit()">
           <option value="">All Priorities</option>
           {% for val, label in priority_choices %}
@@ -54,7 +62,7 @@
           {% endfor %}
         </select>
       </div>
-      <div class="col-md-2">
+      <div class="col-md-3">
         <div class="dropdown">
           <button class="btn btn-secondary-custom w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-boundary="window" style="font-size:13px;padding:9px 16px">
             <span>Officer {% if current_filters.officer %}({{ current_filters.officer|length }}){% endif %}</span>
@@ -78,7 +86,7 @@
       </div>
       <div class="col-md-2 d-flex gap-1">
         <button type="submit" class="btn btn-primary-custom btn-sm w-100" style="padding:8px">Filter</button>
-        <a href="{% url 'tasks:board' %}" class="btn btn-secondary-custom btn-sm" style="padding:8px 12px"><i data-lucide="x" style="width:16px;height:16px"></i></a>
+        <a href="{% url 'tasks:board' %}" class="btn btn-secondary-custom btn-sm" style="padding:8px 12px" title="Reset Filters"><i data-lucide="x" style="width:16px;height:16px"></i></a>
       </div>
     </form>
   </div>
@@ -107,6 +115,9 @@
             {% endif %}
           </div>
           <div class="d-flex align-items-center gap-1">
+            <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px;border-radius:10px">
+              <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
+            </span>
             <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{ task.get_priority_display }}</span>
             <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}" title="View Details" style="width:24px;height:24px">
               <i data-lucide="eye" style="width:12px;height:12px"></i>
@@ -256,9 +267,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const attList = document.getElementById('modalTaskAttachmentsList');
         if (data.attachments && data.attachments.length > 0) {
           attList.innerHTML = data.attachments.map(att => `
-            <div class="d-flex align-items-center justify-content-between p-2 mb-1" style="background:var(--pink-50);border-radius:6px">
-              <span class="text-truncate" style="font-size:12px" title="${att.filename}">${att.filename}</span>
-              <a href="${att.url}" target="_blank" class="btn btn-sm btn-light p-1" style="font-size:11px">Download</a>
+            <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
+              <div class="pe-2 overflow-hidden">
+                <span class="text-truncate d-block fw-bold text-dark" style="font-size:12px" title="${att.filename}">${att.filename}</span>
+                <small class="text-muted" style="font-size:10.5px">Uploaded by <strong>${att.uploaded_by || 'Officer'}</strong> &middot; ${att.created_at}</small>
+              </div>
+              <a href="${att.url}" target="_blank" class="btn btn-sm btn-light p-1 px-2 flex-shrink-0" style="font-size:11px">Download</a>
             </div>
           `).join('');
         } else {
@@ -268,9 +282,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const commentsList = document.getElementById('modalTaskCommentsList');
         if (data.comments && data.comments.length > 0) {
           commentsList.innerHTML = data.comments.map(c => `
-            <div class="p-2 mb-1" style="background:var(--pink-50);border-radius:6px">
+            <div class="p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
               <div class="d-flex justify-content-between align-items-center mb-1">
-                <strong style="font-size:11px;color:var(--primary)">${c.author}</strong>
+                <div>
+                  <strong style="font-size:11.5px;color:var(--slate-800)">${c.author}</strong>
+                  <span class="badge bg-light text-muted border ms-1" style="font-size:9.5px">${c.author_role || 'Officer'}</span>
+                </div>
                 <small style="font-size:10px;color:var(--slate-500)">${c.created_at}</small>
               </div>
               <p class="mb-0" style="font-size:12px;color:var(--slate-700)">${c.content}</p>

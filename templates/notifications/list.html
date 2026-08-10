@@ -1,50 +1,204 @@
 {% extends 'base.html' %}
 {% block title %}Notifications{% endblock %}
+
+{% block extra_css %}
+<style>
+.notif-item-container {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.08));
+  border-radius: 14px;
+  transition: all 0.2s ease;
+  margin-bottom: 6px;
+}
+.notif-item-container:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+.notif-item-container:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+.notif-item-container.unread {
+  background: rgba(255, 79, 163, 0.06);
+}
+.notif-checkbox-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.notif-checkbox-box input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+.notif-icon-box {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 18px;
+}
+.notif-main-content {
+  flex-grow: 1;
+  min-width: 0;
+}
+.notif-title-row {
+  font-weight: 700;
+  font-size: 14.5px;
+  margin-bottom: 3px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.notif-body-text {
+  font-size: 13px;
+  color: var(--slate-400, #94a3b8);
+  margin-bottom: 4px;
+  line-height: 1.4;
+  word-break: break-word;
+}
+.notif-side-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-left: 12px;
+}
+.notif-time-stamp {
+  font-size: 12px;
+  color: var(--slate-400, #94a3b8);
+  white-space: nowrap;
+  font-weight: 500;
+}
+.notif-action-links {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
   <div>
     <h5 class="mb-1 fw-bold" style="color:var(--primary)">Notifications</h5>
-    {% if unread_count > 0 %}<p class="text-muted mb-0" style="font-size:13px">{{ unread_count }} unread notification{{ unread_count|pluralize }}</p>{% endif %}
+    <p class="text-muted mb-0" style="font-size:13px">
+      {% if unread_count > 0 %}{{ unread_count }} unread notification{{ unread_count|pluralize }}{% else %}All notifications are up to date{% endif %}
+    </p>
   </div>
-  {% if unread_count > 0 %}
-  <form method="post" action="{% url 'notifications:mark_all_read' %}">
-    {% csrf_token %}
-    <button type="submit" class="btn btn-outline-primary btn-sm" style="border-radius:8px"><i class="bi bi-check-all me-1"></i>Mark All Read</button>
-  </form>
-  {% endif %}
+  
+  <div class="d-flex align-items-center gap-2 flex-wrap">
+    {% if unread_count > 0 %}
+    <form method="post" action="{% url 'notifications:mark_all_read' %}" class="d-inline">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-outline-primary btn-sm" style="border-radius:8px">
+        <i class="bi bi-check-all me-1"></i>Mark All Read
+      </button>
+    </form>
+    {% endif %}
+
+    {% if notifications %}
+    <button type="button" class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled style="border-radius:8px">
+      <i class="bi bi-trash me-1"></i>Delete Selected (<span id="selectedCount">0</span>)
+    </button>
+    
+    <form method="post" action="{% url 'notifications:bulk_delete' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to permanently delete ALL your notifications from the database?');">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="all">
+      <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius:8px">
+        <i class="bi bi-trash-fill me-1"></i>Clear All
+      </button>
+    </form>
+    {% endif %}
+  </div>
 </div>
 
 <div class="card">
   <div class="p-3">
-    {% for notif in notifications %}
-    <div class="notif-item {% if not notif.is_read %}unread{% endif %}">
-      <div class="notif-icon bg-{{ notif.color }}-subtle">
-        <i class="bi {{ notif.icon }} text-{{ notif.color }}"></i>
+    {% if notifications %}
+    <form method="post" action="{% url 'notifications:bulk_delete' %}" id="bulkDeleteForm">
+      {% csrf_token %}
+      <input type="hidden" name="action_type" value="selected">
+      
+      <div class="d-flex align-items-center pb-3 mb-3 border-bottom px-2">
+        <div class="d-flex align-items-center gap-2">
+          <input class="form-check-input" type="checkbox" id="selectAllCheckbox" style="width:18px;height:18px;cursor:pointer">
+          <label class="form-check-label fw-bold text-muted mb-0" for="selectAllCheckbox" style="font-size:13px;cursor:pointer">
+            Select All
+          </label>
+        </div>
       </div>
-      <div class="flex-grow-1">
-        <div class="d-flex justify-content-between align-items-start">
-          <div>
-            <h6 class="mb-1">{{ notif.title }} {% if not notif.is_read %}<span class="badge bg-primary" style="font-size:9px;border-radius:10px">New</span>{% endif %}</h6>
-            <p class="mb-1">{{ notif.message }}</p>
-            {% if notif.related_task %}
-            <a href="{% url 'tasks:detail' notif.related_task.pk %}" style="font-size:11px;color:var(--accent)"><i class="bi bi-link-45deg"></i> View Task: {{ notif.related_task.task_number }}</a>
+
+      {% for notif in notifications %}
+      <div class="notif-item-container {% if not notif.is_read %}unread{% endif %}">
+        <!-- 1. Selection Checkbox -->
+        <div class="notif-checkbox-box">
+          <input class="form-check-input notif-checkbox" type="checkbox" name="notification_ids" value="{{ notif.pk }}">
+        </div>
+        
+        <!-- 2. Notification Type Icon -->
+        <div class="notif-icon-box bg-{{ notif.color }}-subtle">
+          <i class="bi {{ notif.icon }} text-{{ notif.color }}"></i>
+        </div>
+
+        <!-- 3. Title & Content -->
+        <div class="notif-main-content">
+          <div class="notif-title-row">
+            <span>{{ notif.title }}</span>
+            {% if not notif.is_read %}
+            <span class="badge bg-primary" style="font-size:9px;border-radius:10px;padding:3px 8px">New</span>
             {% endif %}
           </div>
-          <div class="d-flex flex-column align-items-end gap-1 ms-3">
-            <span class="notif-time">{{ notif.created_at|date:"M d, H:i" }}</span>
+          <div class="notif-body-text">{{ notif.message }}</div>
+          {% if notif.related_task %}
+          <a href="{% url 'tasks:detail' notif.related_task.pk %}" style="font-size:12px;color:var(--accent);text-decoration:none" class="fw-semibold">
+            <i class="bi bi-link-45deg"></i> View Task: {{ notif.related_task.task_number }}
+          </a>
+          {% endif %}
+        </div>
+
+        <!-- 4. Timestamp & Individual Actions -->
+        <div class="notif-side-meta">
+          <span class="notif-time-stamp">{{ notif.created_at|date:"M d, H:i" }}</span>
+          <div class="notif-action-links">
             {% if not notif.is_read %}
-            <form method="post" action="{% url 'notifications:mark_read' notif.pk %}">
-              {% csrf_token %}
-              <button type="submit" class="btn btn-link p-0" style="font-size:11px;color:var(--accent)">Mark read</button>
-            </form>
+            <button type="submit" form="markReadForm{{ notif.pk }}" class="btn btn-link p-0 text-decoration-none" style="font-size:11.5px;color:var(--accent)">
+              Mark read
+            </button>
             {% endif %}
+            <button type="submit" form="deleteForm{{ notif.pk }}" class="btn btn-link text-danger p-0 border-0" title="Delete notification" style="font-size:13px">
+              <i class="bi bi-trash"></i>
+            </button>
           </div>
         </div>
       </div>
-    </div>
-    {% empty %}
-    <div class="empty-state"><i class="bi bi-bell-slash text-muted"></i><h6 class="text-muted mt-2">No notifications</h6></div>
+      {% endfor %}
+    </form>
+
+    <!-- Auxiliary forms for individual actions -->
+    {% for notif in notifications %}
+      {% if not notif.is_read %}
+      <form id="markReadForm{{ notif.pk }}" method="post" action="{% url 'notifications:mark_read' notif.pk %}" style="display:none">{% csrf_token %}</form>
+      {% endif %}
+      <form id="deleteForm{{ notif.pk }}" method="post" action="{% url 'notifications:delete' notif.pk %}" style="display:none" onsubmit="return confirm('Delete this notification permanently?');">{% csrf_token %}</form>
     {% endfor %}
+
+    {% else %}
+    <div class="empty-state py-5 text-center">
+      <i class="bi bi-bell-slash text-muted" style="font-size:36px"></i>
+      <h6 class="text-muted mt-2">No notifications found</h6>
+    </div>
+    {% endif %}
+
     {% if is_paginated %}
     <div class="d-flex justify-content-center mt-3">
       <nav>
@@ -58,4 +212,41 @@
     {% endif %}
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const selectAll = document.getElementById('selectAllCheckbox');
+  const checkboxes = document.querySelectorAll('.notif-checkbox');
+  const deleteBtn = document.getElementById('deleteSelectedBtn');
+  const selectedCountEl = document.getElementById('selectedCount');
+  const bulkForm = document.getElementById('bulkDeleteForm');
+
+  function updateDeleteBtn() {
+    const checkedCount = document.querySelectorAll('.notif-checkbox:checked').length;
+    if (selectedCountEl) selectedCountEl.textContent = checkedCount;
+    if (deleteBtn) deleteBtn.disabled = (checkedCount === 0);
+    if (selectAll) selectAll.checked = (checkboxes.length > 0 && checkedCount === checkboxes.length);
+  }
+
+  if (selectAll) {
+    selectAll.addEventListener('change', function() {
+      checkboxes.forEach(cb => cb.checked = selectAll.checked);
+      updateDeleteBtn();
+    });
+  }
+
+  checkboxes.forEach(cb => {
+    cb.addEventListener('change', updateDeleteBtn);
+  });
+
+  if (deleteBtn && bulkForm) {
+    deleteBtn.addEventListener('click', function() {
+      const checkedCount = document.querySelectorAll('.notif-checkbox:checked').length;
+      if (checkedCount > 0 && confirm(`Permanently delete ${checkedCount} selected notification(s) from the database?`)) {
+        bulkForm.submit();
+      }
+    });
+  }
+});
+</script>
 {% endblock %}

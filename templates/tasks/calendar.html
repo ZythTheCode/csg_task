@@ -157,6 +157,15 @@
       </div>
 
       <div class="col-12 col-sm-6 col-lg-3">
+        <select name="category" id="categorySelect" class="form-select" style="font-size:13.5px">
+          <option value="">All Categories</option>
+          {% for val, label in category_choices %}
+            <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
         <select name="status" id="statusSelect" class="form-select" style="font-size:13.5px">
           <option value="">All Statuses</option>
           <option value="in_progress" {% if current_filters.status == 'in_progress' %}selected{% endif %}>In Progress (Active)</option>
@@ -167,7 +176,7 @@
         </select>
       </div>
 
-      <div class="col-12 col-sm-6 col-lg-3">
+      <div class="col-12 col-sm-6 col-lg-2">
         <select name="priority" id="prioritySelect" class="form-select" style="font-size:13.5px">
           <option value="">All Priorities</option>
           {% for val, label in priority_choices %}
@@ -204,6 +213,7 @@
       <div class="modal-body p-4">
         <!-- Status, Priority, Org Badges -->
         <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <span id="modalCategoryBadge" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
           <span id="modalStatusBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
           <span id="modalPriorityBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
           <span id="modalOrgBadge" class="badge bg-light text-secondary border px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:600"></span>
@@ -303,6 +313,10 @@
         document.getElementById('modalTaskDesc').textContent = props.description || 'No description available.';
         document.getElementById('modalDueDate').innerHTML = '<i data-lucide="calendar" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.due_date || 'No Due Date');
         document.getElementById('modalCreatedBy').innerHTML = '<i data-lucide="user" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.created_by || 'System');
+        // Category Badge
+        var catBadge = document.getElementById('modalCategoryBadge');
+        catBadge.textContent = props.category_display || 'Document';
+        catBadge.className = 'badge-status badge-category-' + (props.category || 'document');
         document.getElementById('modalOrgBadge').textContent = props.org_name || 'Organization';
         document.getElementById('modalDetailLink').setAttribute('href', props.detail_url);
 

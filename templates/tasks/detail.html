@@ -37,6 +37,9 @@
       <div class="card-header-custom">
         <h6><i data-lucide="info" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Details</h6>
         <div class="d-flex gap-2">
+          <span class="badge-status badge-category-{{ task.category }}">
+            <i data-lucide="{{ task.category_icon }}" class="me-1" style="width:13px;height:13px"></i>{{ task.get_category_display }}
+          </span>
           <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
           <span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
         </div>
@@ -110,9 +113,17 @@
         <div class="d-flex gap-3 mb-3">
           <div class="officer-avatar flex-shrink-0">{{ comment.author.first_name|first }}{{ comment.author.last_name|first }}</div>
           <div class="flex-grow-1">
-            <div class="d-flex align-items-center gap-2 mb-1">
-              <span style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ comment.author.get_full_name }}</span>
-              <span style="font-size:11px;color:var(--slate-400)">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+              <span style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ comment.author.get_full_name|default:comment.author.username }}</span>
+              <small class="text-muted" style="font-size:11px">@{{ comment.author.username }}</small>
+              <span class="badge bg-light text-muted border" style="font-size:10px">{{ comment.author.get_role_display }}</span>
+              <span style="font-size:11px;color:var(--slate-400)" class="ms-2">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+              {% if user == comment.author or user == task.created_by or user.has_task_override or can_edit_task %}
+              <form method="post" action="{% url 'tasks:delete_comment' comment.pk %}" class="d-inline ms-auto" data-confirm="Are you sure you want to delete this comment?" data-confirm-title="Delete Comment" data-confirm-btn="Delete">
+                {% csrf_token %}
+                <button type="submit" class="btn-sm-icon" style="color:#EF4444;width:24px;height:24px" title="Delete Comment"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>
+              </form>
+              {% endif %}
             </div>
             <p style="font-size:13.5px;color:var(--slate-700);background:var(--pink-50);padding:10px 14px;border-radius:12px;margin:0">{{ comment.content }}</p>
           </div>
@@ -131,21 +142,35 @@
 
     <!-- Attachments -->
     <div class="glass-card">
-      <div class="card-header-custom"><h6><i data-lucide="paperclip" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Attachments</h6></div>
+      <div class="card-header-custom"><h6><i data-lucide="paperclip" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Attachments (PDF, Docs, Excel, Images)</h6></div>
       <div class="p-4">
         {% for att in task.attachments.all %}
-        <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:var(--pink-50);border-radius:12px">
-          <div class="d-flex align-items-center gap-2">
-            <i data-lucide="file-text" class="text-primary" style="width:16px;height:16px"></i>
-            <span style="font-size:13px;font-weight:600">{{ att.filename }}</span>
-            <small class="text-muted">{{ att.created_at|date:"M d" }}</small>
+        <div class="d-flex align-items-center justify-content-between p-3 mb-2" style="background:var(--pink-50);border-radius:12px">
+          <div class="d-flex align-items-center gap-3">
+            <div class="p-2 rounded-3 bg-white border text-primary flex-shrink-0" style="display:flex;align-items:center;justify-content:center">
+              <i data-lucide="{{ att.icon_name }}" style="width:20px;height:20px"></i>
+            </div>
+            <div>
+              <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ att.filename }}</div>
+              <div style="font-size:11.5px;color:var(--slate-500)">
+                Uploaded by <strong style="color:var(--slate-800)">{{ att.uploaded_by.get_full_name|default:att.uploaded_by.username }}</strong>
+                {% if att.uploaded_by.get_role_display %}<span class="badge bg-light text-muted border ms-1" style="font-size:10px">{{ att.uploaded_by.get_role_display }}</span>{% endif %}
+                &nbsp;&middot;&nbsp; {{ att.created_at|date:"M d, Y H:i" }}
+              </div>
+            </div>
           </div>
-          <div class="d-flex gap-2">
-            <a href="{% url 'tasks:download_attachment' att.pk %}" class="btn-sm-icon" title="Download"><i data-lucide="download" style="width:14px;height:14px"></i></a>
+          <div class="d-flex gap-2 align-items-center">
+            <a href="{% url 'tasks:download_attachment' att.pk %}" class="btn-sm-icon" title="Download File">
+              <i data-lucide="download" style="width:14px;height:14px"></i>
+            </a>
+            {% if can_edit_task or att.uploaded_by == user %}
             <form method="post" action="{% url 'tasks:delete_attachment' att.pk %}" class="d-inline" data-confirm="Are you sure you want to delete attachment <strong>{{ att.filename }}</strong>?" data-confirm-title="Delete Attachment" data-confirm-btn="Delete">
               {% csrf_token %}
-              <button type="submit" class="btn-sm-icon" style="color:#EF4444" title="Delete"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>
+              <button type="submit" class="btn-sm-icon" style="color:#EF4444" title="Delete Attachment">
+                <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+              </button>
             </form>
+            {% endif %}
           </div>
         </div>
         {% empty %}
@@ -155,7 +180,8 @@
         <form method="post" action="{% url 'tasks:add_attachment' task.pk %}" enctype="multipart/form-data">
           {% csrf_token %}
           {{ attachment_form.file }}
-          <button type="submit" class="btn-primary-custom mt-2"><i data-lucide="upload" style="width:14px;height:14px"></i>Upload</button>
+          <small class="text-muted d-block mt-1" style="font-size:11.5px"><i data-lucide="info" style="width:12px;height:12px;display:inline-block"></i> Supported file formats: PDF, Word (.doc, .docx), Excel (.xls, .xlsx, .csv), PowerPoint, Images, Text, and Zip files.</small>
+          <button type="submit" class="btn-primary-custom mt-2"><i data-lucide="upload" style="width:14px;height:14px"></i>Upload Attachment</button>
         </form>
       </div>
     </div>

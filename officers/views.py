@@ -89,6 +89,16 @@ class OfficerCreateView(LoginRequiredMixin, CreateView):
         ctx['form_action'] = 'Create Officer'
         return ctx
 
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        user = self.object.user
+        created_pass = form.cleaned_data.get('password') or 'admin123'
+        messages.success(
+            self.request,
+            f"Officer '{user.get_full_name()}' created successfully! Assigned Username: '{user.username}' (Password: '{created_pass}')."
+        )
+        return response
+
 
 class OfficerUpdateView(LoginRequiredMixin, UpdateView):
     model = Officer

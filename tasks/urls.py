@@ -20,6 +20,7 @@ urlpatterns = [
     path('<int:pk>/complete/', views.MarkCompleteView.as_view(), name='complete'),
     path('<int:pk>/archive/', views.ArchiveTaskView.as_view(), name='archive'),
     path('<int:pk>/comments/', views.AddCommentView.as_view(), name='add_comment'),
+    path('comments/<int:pk>/delete/', views.DeleteCommentView.as_view(), name='delete_comment'),
     path('<int:pk>/attachments/', views.AddAttachmentView.as_view(), name='add_attachment'),
     path('attachments/<int:pk>/delete/', views.DeleteAttachmentView.as_view(), name='delete_attachment'),
     path('attachments/<int:pk>/download/', views.DownloadAttachmentView.as_view(), name='download_attachment'),

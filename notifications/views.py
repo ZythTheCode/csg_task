@@ -36,3 +36,32 @@ class MarkAllReadView(LoginRequiredMixin, View):
         Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
         messages.success(request, 'All notifications marked as read.')
         return redirect('notifications:list')
+
+
+class DeleteNotificationView(LoginRequiredMixin, View):
+    def post(self, request, pk):
+        notif = get_object_or_404(Notification, pk=pk, recipient=request.user)
+        notif.delete()
+        messages.success(request, 'Notification permanently deleted.')
+        return redirect('notifications:list')
+
+
+class BulkDeleteNotificationView(LoginRequiredMixin, View):
+    def post(self, request):
+        action_type = request.POST.get('action_type', 'selected')
+        if action_type == 'all':
+            deleted_count, _ = Notification.objects.filter(recipient=request.user).delete()
+            if deleted_count > 0:
+                messages.success(request, f'All {deleted_count} notifications permanently deleted.')
+            else:
+                messages.info(request, 'No notifications to delete.')
+        else:
+            selected_ids = request.POST.getlist('notification_ids')
+            if selected_ids:
+                deleted_count, _ = Notification.objects.filter(recipient=request.user, pk__in=selected_ids).delete()
+                messages.success(request, f'Successfully deleted {deleted_count} notification(s) permanently.')
+            else:
+                messages.warning(request, 'No notifications were selected for deletion.')
+
+        return redirect('notifications:list')
+
