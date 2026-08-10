@@ -154,7 +154,12 @@
 }
 
 /* ── Dark Mode: Light Sub-Containers & Inline Boxes ── */
+[data-mode="dark"] .bg-white,
+[data-theme="dark"] .bg-white,
 [data-mode="dark"] .bg-light,
+[data-theme="dark"] .bg-light,
+[data-mode="dark"] .card-header,
+[data-theme="dark"] .card-header,
 [data-mode="dark"] [style*="background:var(--pink-50)"],
 [data-mode="dark"] [style*="background: var(--pink-50)"],
 [data-mode="dark"] [style*="background:#fff"],
