@@ -691,7 +691,14 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
 
         for target_url in urls_to_try:
             try:
-                resp = requests.get(target_url, stream=True, timeout=10)
+                import cloudinary
+                cfg = cloudinary.config()
+                auth = (cfg.api_key, cfg.api_secret) if (cfg.api_key and cfg.api_secret) else None
+
+                resp = requests.get(target_url, auth=auth, stream=True, timeout=10)
+                if resp.status_code != 200:
+                    resp = requests.get(target_url, stream=True, timeout=10)
+
                 if resp.status_code == 200:
                     content = resp.content
                     if content and not (content.startswith(b'<!DOCTYPE html') or content.startswith(b'<html') or b'401 Unauthorized' in content[:500]):
