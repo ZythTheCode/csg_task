@@ -184,9 +184,20 @@ class TaskComment(models.Model):
         return f"Comment by {self.author.get_full_name()} on {self.task.title}"
 
 
+def get_task_attachment_storage():
+    try:
+        from django.conf import settings
+        if 'cloudinary_storage' in getattr(settings, 'INSTALLED_APPS', []):
+            from core.storage import SmartRawMediaCloudinaryStorage
+            return SmartRawMediaCloudinaryStorage()
+    except Exception:
+        pass
+    return None
+
+
 class TaskAttachment(models.Model):
     task = models.ForeignKey(Task, on_delete=models.CASCADE, related_name='attachments')
-    file = models.FileField(upload_to='task_attachments/')
+    file = models.FileField(upload_to='task_attachments/', storage=get_task_attachment_storage)
     filename = models.CharField(max_length=255)
     uploaded_by = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)

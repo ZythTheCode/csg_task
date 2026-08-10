@@ -11,6 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = config('SECRET_KEY', default='csg-django-secret-key-change-in-production')
 DEBUG = config('DEBUG', default=True, cast=bool)
+AUTH_USER_MODEL = 'accounts.User'
 
 ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='127.0.0.1,localhost').split(',')
 RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
@@ -18,12 +19,14 @@ if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
 INSTALLED_APPS = [
+    'cloudinary_storage',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary',
     # Third-party
     'rest_framework',
     'crispy_forms',
@@ -72,10 +75,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'csg_project.wsgi.application'
 
+NEON_DB_URL = 'postgresql://neondb_owner:npg_r5CSNQZldFE3@ep-shiny-resonance-azn8xni0-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require'
+
 DATABASES = {
     'default': config(
         'DATABASE_URL',
-        default='postgres://postgres:123456@localhost:5432/csg_db',
+        default=NEON_DB_URL,
         cast=lambda v: dj_database_url.parse(
             v,
             ssl_require=False if ('localhost' in v or '127.0.0.1' in v) else True,
@@ -100,15 +105,17 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 STATIC_ROOT = BASE_DIR / 'staticfiles'
-STATICFILES_STORAGE = 'django.contrib.staticfiles.storage.StaticFilesStorage'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
 
-# Cloudinary persistent media storage for production cloud deployments (e.g. Render)
+# Cloudinary persistent media storage (configured for both production and local environments)
 import cloudinary
 
-CLOUDINARY_URL_ENV = config('CLOUDINARY_URL', default='').strip()
+CLOUDINARY_URL_ENV = config(
+    'CLOUDINARY_URL',
+    default='cloudinary://174948511115198:RfbiAaqkOi5ANpRPAhu2_bj8Jh4@rz2o4b1f'
+).strip()
 CLOUDINARY_CLOUD_NAME_ENV = config('CLOUDINARY_CLOUD_NAME', default='').strip()
 
 if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
@@ -125,10 +132,12 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
         a_secret = config('CLOUDINARY_API_SECRET', default='').strip()
 
     if c_name and a_key and a_secret:
+        os.environ['CLOUDINARY_URL'] = CLOUDINARY_URL_ENV
         CLOUDINARY_STORAGE = {
             'CLOUD_NAME': c_name,
             'API_KEY': a_key,
             'API_SECRET': a_secret,
+            'PREFIX': '',
         }
         cloudinary.config(
             cloud_name=c_name,
@@ -136,9 +145,17 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
             api_secret=a_secret,
             secure=True
         )
-        INSTALLED_APPS.insert(0, 'cloudinary_storage')
-        INSTALLED_APPS.append('cloudinary')
-        DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+        RAW_MEDIA_ASSETS_STORAGE = 'core.storage.SmartRawMediaCloudinaryStorage'
+
+        STORAGES = {
+            "default": {
+                "BACKEND": "core.storage.SmartMediaCloudinaryStorage",
+            },
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+            },
+        }
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
