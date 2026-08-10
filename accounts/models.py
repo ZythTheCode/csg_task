@@ -15,7 +15,7 @@ def user_profile_picture_path(instance, filename):
 class User(AbstractUser):
     ROLE_CHOICES = [
         ('super_admin', 'Super Admin'),
-        ('org_admin', 'Organization Admin'),
+        ('org_admin', 'Org Admin'),
         ('president', 'President'),
         ('executive', 'Elected Officer'),
         ('committee_head', 'Committee Member'),

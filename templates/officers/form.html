@@ -110,9 +110,9 @@
                   {% if form.role.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.role.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
-                  <label class="form-label fw-semibold" style="font-size:12px">Assigned Position Title <span class="text-danger">*</span></label>
+                  <label class="form-label fw-semibold" style="font-size:12px">Assigned Position Title</label>
                   {{ form.position }}
-                  <small class="text-muted d-block" style="font-size:11px">Organizational position (e.g. Vice President, Treasurer).</small>
+                  <small class="text-muted d-block" style="font-size:11px">Organizational position (e.g. Vice President, Treasurer). Leave blank if unassigned, or <a href="{% url 'officers:position_create' %}" class="text-primary text-decoration-underline">create a position</a>.</small>
                   {% if form.position.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.position.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
@@ -188,8 +188,8 @@
               <tr>
                 <td class="px-4 py-3">
                   <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <span class="badge bg-warning text-dark" style="font-size:10px;border-radius:6px;flex-shrink:0">President</span>
-                    <span class="fw-bold text-dark" style="font-size:12px;white-space:nowrap">Executive Leader</span>
+                    <span class="badge bg-warning text-dark" style="font-size:10px;border-radius:6px;flex-shrink:0">Org Admin</span>
+                    <span class="fw-bold text-dark" style="font-size:12px;white-space:nowrap">Organization Admin</span>
                   </div>
                 </td>
                 <td class="text-center"><i class="bi bi-x-circle-fill text-danger fs-5"></i></td>

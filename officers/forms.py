@@ -32,15 +32,27 @@ class PositionForm(forms.ModelForm):
         return title
 
 
+class DisabledRoleSelect(forms.Select):
+    def __init__(self, attrs=None, choices=(), disabled_choices=()):
+        super().__init__(attrs, choices)
+        self.disabled_choices = set(disabled_choices)
+
+    def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
+        option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
+        if str(value) in self.disabled_choices:
+            option['attrs']['disabled'] = 'disabled'
+        return option
+
+
 class DisabledPositionSelect(forms.Select):
     def __init__(self, attrs=None, choices=(), disabled_choices=()):
         super().__init__(attrs, choices)
-        self.disabled_choices = set(str(x) for x in disabled_choices)
+        self.disabled_choices = set(disabled_choices)
 
     def create_option(self, name, value, label, selected, index, subindex=None, attrs=None):
-        option = super().create_option(name, value, label, selected, index, subindex, attrs)
-        if value and str(value) in self.disabled_choices:
-            option['attrs']['disabled'] = True
+        option = super().create_option(name, value, label, selected, index, subindex=subindex, attrs=attrs)
+        if str(value) in self.disabled_choices:
+            option['attrs']['disabled'] = 'disabled'
         return option
 
 
@@ -123,7 +135,7 @@ class OfficerForm(forms.ModelForm):
             except Officer.DoesNotExist:
                 pass
 
-        choices = [('', 'Select Position')]
+        choices = [('', 'Select Position (Optional)')]
         self.disabled_position_pks = set()
 
         for pos in all_positions:
@@ -140,28 +152,44 @@ class OfficerForm(forms.ModelForm):
 
         self.fields['position'] = forms.ChoiceField(
             choices=choices,
-            required=True,
+            required=False,
             initial=initial_position_id,
-            error_messages={'required': 'Assigning a position is required.'},
             widget=DisabledPositionSelect(
                 attrs={'class': 'form-select'},
                 disabled_choices=self.disabled_position_pks
             )
         )
 
-        # Restrict role choices
-        allowed_roles = []
-        for code, label in User.ROLE_CHOICES:
-            if code in ['super_admin', 'org_admin', 'super_super_admin']:
-                continue
-            allowed_roles.append((code, label))
-            
-        if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
-            user = self.instance.user
-            if not any(c == user.role for c, l in allowed_roles):
-                allowed_roles.append((user.role, dict(User.ROLE_CHOICES).get(user.role, user.role)))
-        
-        self.fields['role'].choices = allowed_roles
+        # Check if an Org Admin already exists in this target_org
+        self.disabled_role_codes = set()
+        org_admin_user = None
+        if target_org:
+            existing_org_admin = User.objects.filter(organization=target_org, role='org_admin', is_active=True)
+            if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+                existing_org_admin = existing_org_admin.exclude(pk=self.instance.user.pk)
+            if existing_org_admin.exists():
+                org_admin_user = existing_org_admin.first()
+                self.disabled_role_codes.add('org_admin')
+
+        # Define role choices with Org Admin instead of President
+        role_choices = []
+        if 'org_admin' in self.disabled_role_codes and org_admin_user:
+            admin_name = org_admin_user.get_full_name() or org_admin_user.username
+            role_choices.append(('org_admin', f"Org Admin ({admin_name})"))
+        else:
+            role_choices.append(('org_admin', 'Org Admin'))
+
+        role_choices.append(('executive', 'Elected Officer'))
+        role_choices.append(('committee_head', 'Committee Member'))
+
+        self.fields['role'] = forms.ChoiceField(
+            choices=role_choices,
+            required=True,
+            widget=DisabledRoleSelect(
+                attrs={'class': 'form-select'},
+                disabled_choices=self.disabled_role_codes
+            )
+        )
 
         if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
             user = self.instance.user
@@ -175,7 +203,7 @@ class OfficerForm(forms.ModelForm):
     def clean_position(self):
         position_val = self.cleaned_data.get('position')
         if not position_val:
-            raise forms.ValidationError("Assigning a position is required.")
+            return None
         if isinstance(position_val, Position):
             position_obj = position_val
         else:
@@ -192,7 +220,6 @@ class OfficerForm(forms.ModelForm):
     def clean(self):
         cleaned_data = super().clean()
         role = cleaned_data.get('role')
-        position_obj = cleaned_data.get('position')
 
         org = getattr(self, 'target_org', None)
         if not org and self.user_creator and hasattr(self.user_creator, 'get_organization'):
@@ -200,41 +227,16 @@ class OfficerForm(forms.ModelForm):
         if not org and self.instance and self.instance.pk and getattr(self.instance, 'user', None):
             org = self.instance.user.organization
 
-        is_pres_role = (role == 'president')
-        is_pres_position = False
-        if position_obj and position_obj.title.strip().lower() == 'president':
-            is_pres_position = True
-
-        if is_pres_position:
-            cleaned_data['role'] = 'president'
-            role = 'president'
-
-        if (is_pres_role or is_pres_position) and org:
-            # Check 1: User with role 'president' in this org
-            existing_pres_user = User.objects.filter(organization=org, role='president', is_active=True)
+        if role == 'org_admin' and org:
+            existing_admin = User.objects.filter(organization=org, role='org_admin', is_active=True)
             if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
-                existing_pres_user = existing_pres_user.exclude(pk=self.instance.user.pk)
+                existing_admin = existing_admin.exclude(pk=self.instance.user.pk)
 
-            if existing_pres_user.exists():
-                pres_user = existing_pres_user.first()
-                pres_name = pres_user.get_full_name() or pres_user.username
+            if existing_admin.exists():
+                admin_user = existing_admin.first()
+                admin_name = admin_user.get_full_name() or admin_user.username
                 raise forms.ValidationError(
-                    f"This organization already has a President ({pres_name}). An organization can only have one President."
-                )
-
-            # Check 2: Officer with position titled 'President' in this org
-            existing_pres_officer = Officer.objects.filter(
-                user__organization=org,
-                position__title__iexact='President'
-            )
-            if self.instance and self.instance.pk:
-                existing_pres_officer = existing_pres_officer.exclude(pk=self.instance.pk)
-
-            if existing_pres_officer.exists():
-                pres_officer = existing_pres_officer.first()
-                pres_name = pres_officer.user.get_full_name() or pres_officer.user.username
-                raise forms.ValidationError(
-                    f"This organization already has an officer assigned as President ({pres_name}). An organization can only have one President."
+                    f"This organization already has an Org Admin ({admin_name}). An organization can only have one Org Admin."
                 )
 
         return cleaned_data
