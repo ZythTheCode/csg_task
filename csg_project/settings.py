@@ -75,18 +75,18 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'csg_project.wsgi.application'
 
-NEON_DB_URL = 'postgresql://neondb_owner:npg_r5CSNQZldFE3@ep-shiny-resonance-azn8xni0-pooler.c-3.ap-southeast-1.aws.neon.tech/neondb?sslmode=require'
+NEON_DB_URL = config('DATABASE_URL', default='')
 
 DATABASES = {
     'default': config(
         'DATABASE_URL',
-        default=NEON_DB_URL,
+        default='',
         cast=lambda v: dj_database_url.parse(
             v,
             ssl_require=False if ('localhost' in v or '127.0.0.1' in v) else True,
             conn_max_age=600,
             conn_health_checks=True
-        )
+        ) if v else {}
     )
 }
 
@@ -112,10 +112,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 # Cloudinary persistent media storage (configured for both production and local environments)
 import cloudinary
 
-CLOUDINARY_URL_ENV = config(
-    'CLOUDINARY_URL',
-    default='cloudinary://174948511115198:RfbiAaqkOi5ANpRPAhu2_bj8Jh4@rz2o4b1f'
-).strip()
+CLOUDINARY_URL_ENV = config('CLOUDINARY_URL', default='').strip()
 CLOUDINARY_CLOUD_NAME_ENV = config('CLOUDINARY_CLOUD_NAME', default='').strip()
 
 if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
@@ -175,9 +172,9 @@ _use_tls            = config('EMAIL_USE_TLS', default=False, cast=bool)
 _use_ssl            = config('EMAIL_USE_SSL', default=True, cast=bool)
 EMAIL_USE_TLS       = _use_tls if EMAIL_PORT == 587 else False
 EMAIL_USE_SSL       = _use_ssl if EMAIL_PORT == 465 else True
-EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='csgtasks2026@gmail.com').strip()
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='azybnpcsynwnfxly').strip().replace(' ', '')
-DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='csgtasks2026@gmail.com').strip()
+EMAIL_HOST_USER     = config('EMAIL_HOST_USER', default='').strip()
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='').strip().replace(' ', '')
+DEFAULT_FROM_EMAIL  = config('DEFAULT_FROM_EMAIL', default='').strip()
 EMAIL_TIMEOUT       = 15
 
 REST_FRAMEWORK = {
