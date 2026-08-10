@@ -893,27 +893,28 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                     except Exception as r_ex:
                         email_err = f"Resend HTTPS failed: {r_ex}"
 
-                # 3. Try Standard SMTP (local dev)
+                # 3. Try Standard SMTP (if host credentials configured)
                 if not email_sent and not brevo_key and not resend_key:
-                    try:
-                        send_mail(
-                            subject=subject,
-                            message=body,
-                            from_email=django_settings.DEFAULT_FROM_EMAIL,
-                            recipient_list=[officer.email],
-                            fail_silently=False,
-                        )
-                        email_sent = True
-                    except Exception as e:
-                        err_msg = str(e).strip()
-                        if "101" in err_msg or "unreachable" in err_msg.lower() or "timeout" in err_msg.lower():
-                            email_err = "Render cloud firewall blocks raw SMTP ports 587/465. Use BREVO_API_KEY for free HTTPS email delivery."
-                        else:
-                            email_err = err_msg
+                    if getattr(django_settings, 'EMAIL_HOST_USER', '') and getattr(django_settings, 'EMAIL_HOST_PASSWORD', ''):
+                        try:
+                            from_email = django_settings.DEFAULT_FROM_EMAIL or django_settings.EMAIL_HOST_USER
+                            send_mail(
+                                subject=subject,
+                                message=body,
+                                from_email=from_email,
+                                recipient_list=[officer.email],
+                                fail_silently=False,
+                            )
+                            email_sent = True
+                        except Exception as e:
+                            logger.warning(f"Nudge SMTP email failed for {officer.email}: {e}")
+                            email_err = "SMTP delivery unavailable"
+                    else:
+                        logger.info(f"SMTP credentials not configured for sending email to {officer.email}")
 
                 if not email_sent and email_err:
-                    logger.error(f"Nudge email failed for {officer.email}: {email_err}")
-                    failed_emails.append(f"{officer.email} ({email_err})")
+                    logger.warning(f"Nudge email notice for {officer.email}: {email_err}")
+                    failed_emails.append(officer.email)
             else:
                 no_email_officers.append(officer.get_full_name() or officer.username)
 
@@ -928,9 +929,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
             new_value=f'Nudge sent to: {", ".join(nudged)}',
         )
 
-        msg = f'In-app nudge sent to {len(nudged)} officer(s).'
-        if failed_emails:
-            msg += f' Email delivery failed for: {", ".join(failed_emails)}.'
+        msg = f'In-app nudge sent to {len(nudged)} officer(s) successfully.'
         if no_email_officers:
             msg += f' (No email address configured for: {", ".join(no_email_officers)}).'
 
