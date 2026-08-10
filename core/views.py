@@ -57,11 +57,7 @@ class SettingsView(LoginRequiredMixin, TemplateView):
 
     def get_target_organization(self):
         user = self.request.user
-        if user.organization:
-            return user.organization
-        if user.is_super_admin:
-            return Organization.objects.filter(name__icontains='CSG').first() or Organization.objects.first()
-        return None
+        return user.get_organization(self.request)
 
     def post(self, request, *args, **kwargs):
         user = request.user
