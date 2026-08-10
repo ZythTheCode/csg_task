@@ -42,23 +42,32 @@ class Task(models.Model):
     CATEGORY_CHOICES = [
         ('document', 'Document'),
         ('multimedia', 'Multimedia'),
+        ('finance', 'Finance'),
+        ('for_clarification', 'For Clarification'),
+        ('event', 'Event'),
         ('other', 'Other'),
     ]
     CATEGORY_COLORS = {
         'document': 'info',
         'multimedia': 'purple',
+        'finance': 'success',
+        'for_clarification': 'warning',
+        'event': 'pink',
         'other': 'secondary',
     }
     CATEGORY_ICONS = {
         'document': 'file-text',
         'multimedia': 'film',
+        'finance': 'dollar-sign',
+        'for_clarification': 'help-circle',
+        'event': 'calendar',
         'other': 'box',
     }
 
     task_number = models.CharField(max_length=20, unique=True, editable=False)
     title = models.CharField(max_length=200)
     description = models.TextField()
-    category = models.CharField(max_length=20, choices=CATEGORY_CHOICES, default='document', db_index=True)
+    category = models.CharField(max_length=30, choices=CATEGORY_CHOICES, default='document')
     priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium', db_index=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='not_started', db_index=True)
     due_date = models.DateField(null=True, blank=True, db_index=True)

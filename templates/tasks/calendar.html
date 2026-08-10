@@ -303,6 +303,17 @@
         listMonth: 'List'
       },
       events: eventsUrl,
+      eventContent: function(arg) {
+        var cat = arg.event.extendedProps.category_display || '';
+        var catCode = arg.event.extendedProps.category || 'document';
+        var title = arg.event.title;
+        var container = document.createElement('div');
+        container.className = 'fc-event-custom-content d-flex align-items-center gap-1 overflow-hidden px-1';
+        container.style.lineHeight = '1.25';
+        container.style.fontSize = '11.5px';
+        container.innerHTML = '<span class="badge-status badge-category-' + catCode + '" style="font-size:9.5px;padding:1px 5px;border-radius:4px;flex-shrink:0">' + cat + '</span> <span class="fw-semibold text-truncate">' + title + '</span>';
+        return { domNodes: [container] };
+      },
       eventClick: function(info) {
         info.jsEvent.preventDefault();
         var props = info.event.extendedProps;
