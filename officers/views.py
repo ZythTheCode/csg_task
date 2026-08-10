@@ -80,6 +80,7 @@ class OfficerCreateView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        kwargs['request'] = self.request
         return kwargs
 
     def get_context_data(self, **kwargs):
@@ -96,10 +97,9 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
 
     def get_queryset(self):
         qs = Officer.objects.select_related('user', 'position')
-        if not self.request.user.is_super_admin:
-            org = self.request.user.get_organization(self.request)
-            if org:
-                qs = qs.filter(user__organization=org)
+        org = self.request.user.get_organization(self.request)
+        if org:
+            qs = qs.filter(user__organization=org)
         return qs
 
     def get_success_url(self):
@@ -119,6 +119,7 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        kwargs['request'] = self.request
         return kwargs
 
     def post(self, request, *args, **kwargs):
@@ -260,7 +261,7 @@ class PositionUpdateView(LoginRequiredMixin, UpdateView):
     def get_queryset(self):
         qs = Position.objects.all()
         org = self.request.user.get_organization(self.request)
-        if org and not self.request.user.is_super_admin:
+        if org:
             qs = qs.filter(organization=org)
         return qs
 
@@ -296,7 +297,7 @@ class PositionDeleteView(LoginRequiredMixin, DeleteView):
     def get_queryset(self):
         qs = Position.objects.all()
         org = self.request.user.get_organization(self.request)
-        if org and not self.request.user.is_super_admin:
+        if org:
             qs = qs.filter(organization=org)
         return qs
 

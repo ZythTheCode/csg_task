@@ -23,10 +23,10 @@ class TaskForm(forms.ModelForm):
             'progress': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 100}),
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, request=None, **kwargs):
         super().__init__(*args, **kwargs)
         if user:
-            org = user.get_organization() if hasattr(user, 'get_organization') else getattr(user, 'organization', None)
+            org = user.get_organization(request) if hasattr(user, 'get_organization') else getattr(user, 'organization', None)
             if org:
                 self.fields['assigned_officers'].queryset = User.objects.filter(is_active=True, organization=org).exclude(role__in=['super_admin', 'super_super_admin']).order_by('first_name', 'last_name')
             else:

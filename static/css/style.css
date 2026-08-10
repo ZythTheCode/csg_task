@@ -1059,20 +1059,47 @@ body {
   overflow-y: visible;
   -webkit-overflow-scrolling: touch;
   border-radius: var(--card-radius);
+  width: 100%;
   max-width: 100%;
 }
 
 .table-custom {
-  width: 100%;
-  min-width: 780px;
+  width: 100% !important;
   border-collapse: separate;
   border-spacing: 0;
+  margin-bottom: 0;
 }
+
+/* ── Computer Screens (>= 992px): No Horizontal Scrollbars ── */
+@media (min-width: 992px) {
+  .table-custom-container {
+    overflow: hidden !important;
+  }
+  .table-responsive {
+    overflow-x: hidden !important;
+    overflow-y: visible !important;
+  }
+  .table-custom {
+    min-width: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* ── Mobile & Tablet Screens (< 992px): Enable Touch Horizontal Scrollbar ── */
+@media (max-width: 991.98px) {
+  .table-responsive {
+    overflow-x: auto !important;
+  }
+  .table-custom {
+    min-width: 680px;
+  }
+}
+
 .table-custom thead th {
   background: var(--pink-50); color: var(--slate-600);
   font-size: 11px; font-weight: 700; letter-spacing: 0.5px;
-  text-transform: uppercase; padding: 12px 10px;
-  border-bottom: 1px solid var(--pink-100); white-space: nowrap;
+  text-transform: uppercase; padding: 12px 14px;
+  border-bottom: 1px solid var(--pink-200, rgba(249, 168, 212, 0.4)); white-space: nowrap;
   overflow: hidden; text-overflow: ellipsis;
 }
 .table-custom thead th:first-child,
@@ -1080,19 +1107,20 @@ body {
   padding-left: 20px !important;
 }
 .table-custom tbody tr {
-  transition: background var(--transition-fast);
+  transition: background-color var(--transition-fast);
   position: relative;
   z-index: 1;
 }
-.table-custom tbody tr:hover { background: rgba(252, 231, 243, 0.35); }
+.table-custom tbody tr:nth-child(even) { background-color: rgba(248, 250, 252, 0.6); }
+.table-custom tbody tr:hover { background-color: rgba(252, 231, 243, 0.45) !important; }
 .table-custom tbody tr.show-dropdown,
 .table-custom tbody tr:has(.dropdown-menu.show) {
   z-index: 120 !important;
 }
-.table-custom tbody tr:nth-child(even) { background: rgba(255, 255, 255, 0.4); }
 .table-custom tbody td {
-  padding: 10px 10px; border-bottom: 1px solid rgba(249, 168, 212, 0.15);
+  padding: 12px 14px; border-bottom: 1px solid rgba(249, 168, 212, 0.15);
   font-size: 13px; vertical-align: middle; color: var(--slate-700);
+  background-color: inherit; /* Seamless background inheritance */
   overflow: visible; white-space: nowrap;
 }
 
@@ -1618,24 +1646,50 @@ body.page-transitioning .page-content {
   background-color: rgba(252, 231, 243, 1) !important;
 }
 
-/* ── Dark Mode: Row highlighting & visited overrides ── */
-[data-mode="dark"] .table-custom tbody tr:nth-child(even) {
-  background: rgba(51, 65, 85, 0.2) !important;
+/* ── Dark Mode: Table System & Cell Background Overrides ── */
+[data-mode="dark"] .table-custom-container,
+[data-theme="dark"] .table-custom-container {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border: 1px solid rgba(51, 65, 85, 0.6) !important;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35) !important;
 }
+
+[data-mode="dark"] .table-custom thead th,
+[data-theme="dark"] .table-custom thead th {
+  background: rgba(30, 41, 59, 0.95) !important;
+  color: #94A3B8 !important;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.7) !important;
+}
+
+[data-mode="dark"] .table-custom tbody tr,
+[data-theme="dark"] .table-custom tbody tr {
+  background-color: transparent !important;
+}
+
+[data-mode="dark"] .table-custom tbody tr:nth-child(even),
+[data-theme="dark"] .table-custom tbody tr:nth-child(even) {
+  background-color: rgba(30, 41, 59, 0.45) !important;
+}
+
 [data-mode="dark"] .table-custom tbody tr:hover,
-[data-mode="dark"] .table tbody tr:hover {
-  background: rgba(71, 85, 105, 0.35) !important;
+[data-theme="dark"] .table-custom tbody tr:hover {
+  background-color: rgba(51, 65, 85, 0.6) !important;
 }
+
 [data-mode="dark"] .table-custom tbody tr.task-row-visited {
   background-color: rgba(148, 163, 184, 0.15) !important;
   box-shadow: inset 4px 0 0 var(--primary-light);
 }
+
 [data-mode="dark"] .table-custom tbody tr.task-row-visited:hover {
   background-color: rgba(148, 163, 184, 0.25) !important;
 }
-[data-mode="dark"] .table-custom tbody td {
-  color: #E2E8F0 !important;
-  border-bottom-color: rgba(51, 65, 85, 0.4) !important;
+
+[data-mode="dark"] .table-custom tbody td,
+[data-theme="dark"] .table-custom tbody td {
+  background-color: inherit !important;
+  color: #F8FAFC !important;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5) !important;
 }
 
 /* ══════════════════════════════════════

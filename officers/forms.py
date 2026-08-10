@@ -67,15 +67,30 @@ class OfficerForm(forms.ModelForm):
             'student_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'e.g. 2024-0001'}),
         }
 
-    def __init__(self, *args, user=None, **kwargs):
+    def __init__(self, *args, user=None, request=None, **kwargs):
         super().__init__(*args, **kwargs)
         self.user_creator = user
+        self.request = request
+
+        # Determine target organization based on request active workspace, user_creator, or officer instance
+        target_org = None
+        if self.request and hasattr(self.request.user, 'get_organization'):
+            target_org = self.request.user.get_organization(self.request)
+        elif self.user_creator and hasattr(self.user_creator, 'get_organization'):
+            target_org = self.user_creator.get_organization()
+        elif self.user_creator:
+            target_org = getattr(self.user_creator, 'organization', None)
+
+        if not target_org and self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+            target_org = self.instance.user.organization
+
+        self.target_org = target_org
 
         # Build position choices showing assigned officer names and disabled state
         from .models import Position as PositionModel
         all_positions = PositionModel.objects.all()
-        if self.user_creator and self.user_creator.organization:
-            all_positions = all_positions.filter(organization=self.user_creator.organization)
+        if target_org:
+            all_positions = all_positions.filter(organization=target_org)
         all_positions = all_positions.select_related('officer__user').order_by('title')
 
         assigned_map = {}
@@ -158,10 +173,10 @@ class OfficerForm(forms.ModelForm):
     def clean_role(self):
         role = self.cleaned_data.get('role')
         if role == 'president':
-            org = None
-            if self.user_creator and self.user_creator.organization:
-                org = self.user_creator.organization
-            elif self.instance and self.instance.pk and getattr(self.instance, 'user', None) and self.instance.user.organization:
+            org = getattr(self, 'target_org', None)
+            if not org and self.user_creator and hasattr(self.user_creator, 'get_organization'):
+                org = self.user_creator.get_organization(self.request)
+            if not org and self.instance and self.instance.pk and getattr(self.instance, 'user', None):
                 org = self.instance.user.organization
 
             if org:
@@ -191,6 +206,8 @@ class OfficerForm(forms.ModelForm):
                 username = f"{base_uname}{count}"
                 count += 1
 
+        target_org = getattr(self, 'target_org', None)
+
         if officer.pk and getattr(officer, 'user', None):
             user = officer.user
             user.first_name = first_name
@@ -200,6 +217,8 @@ class OfficerForm(forms.ModelForm):
             user.role = role
             if password:
                 user.set_password(password)
+            if target_org and not user.organization:
+                user.organization = target_org
             if 'profile_picture' in self.changed_data:
                 user.profile_picture = self.cleaned_data.get('profile_picture')
             user.save()
@@ -212,8 +231,8 @@ class OfficerForm(forms.ModelForm):
                 last_name=last_name,
                 role=role
             )
-            if self.user_creator and getattr(self.user_creator, 'organization', None):
-                user.organization = self.user_creator.organization
+            if target_org:
+                user.organization = target_org
             if self.cleaned_data.get('profile_picture'):
                 user.profile_picture = self.cleaned_data.get('profile_picture')
             user.save()

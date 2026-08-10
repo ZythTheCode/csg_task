@@ -45,6 +45,11 @@ class User(AbstractUser):
                 org = Organization.objects.filter(id=active_org_id).first()
                 if org:
                     return org
+        if self.is_super_admin:
+            from organizations.models import Organization
+            csg_org = Organization.objects.filter(models.Q(abbreviation='CSG') | models.Q(name__icontains='Central Student Government')).first()
+            if csg_org:
+                return csg_org
         return self.organization
 
     @property

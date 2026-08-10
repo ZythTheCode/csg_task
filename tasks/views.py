@@ -180,6 +180,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        kwargs['request'] = self.request
         return kwargs
 
     def dispatch(self, request, *args, **kwargs):
@@ -188,7 +189,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.created_by = self.request.user
-        form.instance.organization = self.request.user.organization
+        form.instance.organization = self.request.user.get_organization(self.request)
         response = super().form_valid(form)
         task = self.object
         # Create assignments and notifications
@@ -228,6 +229,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
         kwargs['user'] = self.request.user
+        kwargs['request'] = self.request
         return kwargs
 
     def dispatch(self, request, *args, **kwargs):

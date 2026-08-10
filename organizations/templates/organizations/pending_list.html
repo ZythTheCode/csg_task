@@ -32,23 +32,23 @@
     <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
         <div class="table-custom-container">
             <div class="table-responsive">
-                <table class="table-custom w-100" style="table-layout:fixed">
+                <table class="table-custom w-100">
                     <thead>
                         <tr>
-                            <th class="px-4 py-3" style="width:250px">Organization Name</th>
-                            <th class="px-3 py-3">Description</th>
-                            <th class="px-3 py-3" style="width:160px">Registered On</th>
-                            <th class="px-4 py-3 text-end" style="width:120px">Actions</th>
+                            <th class="px-4 py-3" style="width:18%">Organization Code</th>
+                            <th class="px-3 py-3" style="width:44%">Organization Name</th>
+                            <th class="px-3 py-3" style="width:20%">Registered On</th>
+                            <th class="px-4 py-3 text-end" style="width:18%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for org in pending_orgs %}
                         <tr>
-                            <td class="px-4 py-3"><strong>{{ org.name }}</strong></td>
-                            <td class="px-3 py-3">{{ org.description|default:"No description provided"|truncatewords:12 }}</td>
+                            <td class="px-4 py-3"><strong>{{ org.short_name }}</strong></td>
+                            <td class="px-3 py-3">{{ org.description|default:org.name }}</td>
                             <td class="px-3 py-3" style="font-size:12.5px">{{ org.created_at|date:"M d, Y" }}</td>
                             <td class="px-4 py-3 text-end">
-                                <div class="d-inline-flex gap-1 justify-content-end">
+                                <div class="d-inline-flex gap-1 justify-content-end" style="white-space:nowrap">
                                     <a href="{% url 'approve_organization' org.id %}" class="btn-sm-icon" style="background:#DCFCE7;border-color:#86EFAC;color:#16A34A" title="Approve Organization">
                                         <i data-lucide="check" style="width:14px;height:14px"></i>
                                     </a>
@@ -75,23 +75,23 @@
     <div class="tab-pane fade" id="active" role="tabpanel" aria-labelledby="active-tab">
         <div class="table-custom-container">
             <div class="table-responsive">
-                <table class="table-custom w-100" style="table-layout:fixed">
+                <table class="table-custom w-100">
                     <thead>
                         <tr>
-                            <th class="px-4 py-3" style="width:250px">Organization Name</th>
-                            <th class="px-3 py-3">Description</th>
-                            <th class="px-3 py-3" style="width:160px">Approved On</th>
-                            <th class="px-4 py-3 text-end" style="width:120px">Actions</th>
+                            <th class="px-4 py-3" style="width:18%">Organization Code</th>
+                            <th class="px-3 py-3" style="width:44%">Organization Name</th>
+                            <th class="px-3 py-3" style="width:18%">Approved On</th>
+                            <th class="px-4 py-3 text-end" style="width:20%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for org in approved_orgs %}
                         <tr>
-                            <td class="px-4 py-3"><strong>{{ org.name }}</strong></td>
-                            <td class="px-3 py-3">{{ org.description|default:"No description provided"|truncatewords:12 }}</td>
+                            <td class="px-4 py-3"><strong>{{ org.short_name }}</strong></td>
+                            <td class="px-3 py-3">{{ org.description|default:org.name }}</td>
                             <td class="px-3 py-3" style="font-size:12.5px">{{ org.updated_at|date:"M d, Y" }}</td>
                             <td class="px-4 py-3 text-end">
-                                <div class="d-inline-flex gap-1 justify-content-end">
+                                <div class="d-inline-flex gap-1 justify-content-end" style="white-space:nowrap">
                                     <button type="button" class="btn-sm-icon view-org-info-btn" data-org-id="{{ org.id }}" title="View Organization Information">
                                         <i data-lucide="eye" style="width:14px;height:14px"></i>
                                     </button>
@@ -121,21 +121,23 @@
     <div class="tab-pane fade" id="deleting" role="tabpanel" aria-labelledby="deleting-tab">
         <div class="table-custom-container">
             <div class="table-responsive">
-                <table class="table-custom w-100" style="table-layout:fixed">
+                <table class="table-custom w-100">
                     <thead>
                         <tr>
-                            <th class="px-4 py-3" style="width:250px">Organization Name</th>
-                            <th class="px-3 py-3">Scheduled Deletion</th>
-                            <th class="px-4 py-3 text-end" style="width:120px">Actions</th>
+                            <th class="px-4 py-3" style="width:18%">Organization Code</th>
+                            <th class="px-3 py-3" style="width:38%">Organization Name</th>
+                            <th class="px-3 py-3" style="width:26%">Scheduled Deletion</th>
+                            <th class="px-4 py-3 text-end" style="width:18%">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for org in deleting_orgs %}
                         <tr>
-                            <td class="px-4 py-3"><strong>{{ org.name }}</strong></td>
+                            <td class="px-4 py-3"><strong>{{ org.short_name }}</strong></td>
+                            <td class="px-3 py-3">{{ org.description|default:org.name }}</td>
                             <td class="px-3 py-3" style="font-size:12.5px"><span class="text-danger fw-bold"><i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></i> {{ org.marked_for_deletion_at|date:"M d, Y H:i" }}</span> (Deletes in 24h)</td>
                             <td class="px-4 py-3 text-end">
-                                <div class="d-inline-flex gap-1 justify-content-end align-items-center">
+                                <div class="d-inline-flex gap-1 justify-content-end align-items-center" style="white-space:nowrap">
                                     <form action="{% url 'restore_organization' org.id %}" method="POST" class="d-inline">
                                         {% csrf_token %}
                                         <button type="submit" class="btn-sm-icon" style="background:#FEF3C7;border-color:#FDE68A;color:#D97706" title="Restore Organization">
@@ -150,7 +152,7 @@
                         </tr>
                         {% empty %}
                         <tr>
-                            <td colspan="3">
+                            <td colspan="4">
                                 <div class="empty-state py-4"><i data-lucide="check-circle"></i><h6>No organizations pending deletion</h6></div>
                             </td>
                         </tr>
