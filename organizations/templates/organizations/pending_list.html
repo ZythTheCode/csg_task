@@ -45,7 +45,7 @@
                         {% for org in pending_orgs %}
                         <tr>
                             <td class="px-4 py-3"><strong>{{ org.short_name }}</strong></td>
-                            <td class="px-3 py-3">{{ org.description|default:org.name }}</td>
+                            <td class="px-3 py-3">{{ org.name }}</td>
                             <td class="px-3 py-3" style="font-size:12.5px">{{ org.created_at|date:"M d, Y" }}</td>
                             <td class="px-4 py-3 text-end">
                                 <div class="d-inline-flex gap-1 justify-content-end" style="white-space:nowrap">
@@ -88,7 +88,7 @@
                         {% for org in approved_orgs %}
                         <tr>
                             <td class="px-4 py-3"><strong>{{ org.short_name }}</strong></td>
-                            <td class="px-3 py-3">{{ org.description|default:org.name }}</td>
+                            <td class="px-3 py-3">{{ org.name }}</td>
                             <td class="px-3 py-3" style="font-size:12.5px">{{ org.updated_at|date:"M d, Y" }}</td>
                             <td class="px-4 py-3 text-end">
                                 <div class="d-inline-flex gap-1 justify-content-end" style="white-space:nowrap">
@@ -134,7 +134,7 @@
                         {% for org in deleting_orgs %}
                         <tr>
                             <td class="px-4 py-3"><strong>{{ org.short_name }}</strong></td>
-                            <td class="px-3 py-3">{{ org.description|default:org.name }}</td>
+                            <td class="px-3 py-3">{{ org.name }}</td>
                             <td class="px-3 py-3" style="font-size:12.5px"><span class="text-danger fw-bold"><i data-lucide="alert-triangle" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></i> {{ org.marked_for_deletion_at|date:"M d, Y H:i" }}</span> (Deletes in 24h)</td>
                             <td class="px-4 py-3 text-end">
                                 <div class="d-inline-flex gap-1 justify-content-end align-items-center" style="white-space:nowrap">

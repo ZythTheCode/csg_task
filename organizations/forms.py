@@ -14,17 +14,36 @@ class OrganizationRegistrationForm(forms.ModelForm):
         model = Organization
         fields = ['name', 'abbreviation', 'description']
 
+    def clean_name(self):
+        name = self.cleaned_data.get('name', '').strip()
+        if Organization.objects.filter(name__iexact=name).exists():
+            raise forms.ValidationError('An organization with this name already exists.')
+        return name
+
+    def clean_abbreviation(self):
+        abbreviation = self.cleaned_data.get('abbreviation', '').strip()
+        if abbreviation and Organization.objects.filter(abbreviation__iexact=abbreviation).exists():
+            raise forms.ValidationError('An organization with this abbreviation already exists.')
+        return abbreviation
+
     def clean_admin_username(self):
         username = self.cleaned_data.get('admin_username')
-        if User.objects.filter(username=username).exists():
+        if User.objects.filter(username__iexact=username).exists():
             raise forms.ValidationError('This username is already taken.')
         return username
 
     def clean_admin_email(self):
         email = self.cleaned_data.get('admin_email')
-        if User.objects.filter(email=email).exists():
+        if User.objects.filter(email__iexact=email).exists():
             raise forms.ValidationError('This email is already registered.')
         return email
+
+    def clean_admin_student_id(self):
+        from officers.models import Officer
+        student_id = self.cleaned_data.get('admin_student_id', '').strip()
+        if student_id and Officer.objects.filter(student_id__iexact=student_id).exists():
+            raise forms.ValidationError('This Student ID is already registered to an existing officer.')
+        return student_id
 
     def save(self, commit=True):
         org = super().save(commit=False)

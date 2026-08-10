@@ -200,6 +200,16 @@ class OfficerForm(forms.ModelForm):
             self.fields['role'].initial = user.role
             self.fields['profile_picture'].initial = user.profile_picture
 
+    def clean_student_id(self):
+        student_id = self.cleaned_data.get('student_id', '').strip()
+        if student_id:
+            qs = Officer.objects.filter(student_id__iexact=student_id)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError("This Student ID is already registered to an existing officer.")
+        return student_id
+
     def clean_position(self):
         position_val = self.cleaned_data.get('position')
         if not position_val:
