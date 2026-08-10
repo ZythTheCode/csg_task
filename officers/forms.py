@@ -13,6 +13,24 @@ class PositionForm(forms.ModelForm):
             'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 3}),
         }
 
+    def __init__(self, *args, request=None, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+
+    def clean_title(self):
+        title = self.cleaned_data.get('title', '').strip()
+        if title.lower() == 'president':
+            org = getattr(self.instance, 'organization', None)
+            if not org and self.request and hasattr(self.request.user, 'get_organization'):
+                org = self.request.user.get_organization(self.request)
+            if org:
+                existing = Position.objects.filter(organization=org, title__iexact='president')
+                if self.instance and self.instance.pk:
+                    existing = existing.exclude(pk=self.instance.pk)
+                if existing.exists():
+                    raise forms.ValidationError("A position titled 'President' already exists for this organization. Only one President position is allowed per organization.")
+        return title
+
 
 class DisabledPositionSelect(forms.Select):
     def __init__(self, attrs=None, choices=(), disabled_choices=()):
@@ -171,23 +189,55 @@ class OfficerForm(forms.ModelForm):
 
         return position_obj
 
-    def clean_role(self):
-        role = self.cleaned_data.get('role')
-        if role == 'president':
-            org = getattr(self, 'target_org', None)
-            if not org and self.user_creator and hasattr(self.user_creator, 'get_organization'):
-                org = self.user_creator.get_organization(self.request)
-            if not org and self.instance and self.instance.pk and getattr(self.instance, 'user', None):
-                org = self.instance.user.organization
+    def clean(self):
+        cleaned_data = super().clean()
+        role = cleaned_data.get('role')
+        position_obj = cleaned_data.get('position')
 
-            if org:
-                existing_pres = User.objects.filter(organization=org, role='president', is_active=True)
-                if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
-                    existing_pres = existing_pres.exclude(pk=self.instance.user.pk)
-                if existing_pres.exists():
-                    pres_name = existing_pres.first().get_full_name() or existing_pres.first().username
-                    raise forms.ValidationError(f"This organization already has a President ({pres_name}). An organization can only have one President.")
-        return role
+        org = getattr(self, 'target_org', None)
+        if not org and self.user_creator and hasattr(self.user_creator, 'get_organization'):
+            org = self.user_creator.get_organization(self.request)
+        if not org and self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+            org = self.instance.user.organization
+
+        is_pres_role = (role == 'president')
+        is_pres_position = False
+        if position_obj and position_obj.title.strip().lower() == 'president':
+            is_pres_position = True
+
+        if is_pres_position:
+            cleaned_data['role'] = 'president'
+            role = 'president'
+
+        if (is_pres_role or is_pres_position) and org:
+            # Check 1: User with role 'president' in this org
+            existing_pres_user = User.objects.filter(organization=org, role='president', is_active=True)
+            if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+                existing_pres_user = existing_pres_user.exclude(pk=self.instance.user.pk)
+
+            if existing_pres_user.exists():
+                pres_user = existing_pres_user.first()
+                pres_name = pres_user.get_full_name() or pres_user.username
+                raise forms.ValidationError(
+                    f"This organization already has a President ({pres_name}). An organization can only have one President."
+                )
+
+            # Check 2: Officer with position titled 'President' in this org
+            existing_pres_officer = Officer.objects.filter(
+                user__organization=org,
+                position__title__iexact='President'
+            )
+            if self.instance and self.instance.pk:
+                existing_pres_officer = existing_pres_officer.exclude(pk=self.instance.pk)
+
+            if existing_pres_officer.exists():
+                pres_officer = existing_pres_officer.first()
+                pres_name = pres_officer.user.get_full_name() or pres_officer.user.username
+                raise forms.ValidationError(
+                    f"This organization already has an officer assigned as President ({pres_name}). An organization can only have one President."
+                )
+
+        return cleaned_data
 
     def save(self, commit=True):
         officer = super().save(commit=False)

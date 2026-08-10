@@ -237,6 +237,11 @@ class PositionCreateView(LoginRequiredMixin, CreateView):
             return redirect('officers:position_list')
         return super().dispatch(request, *args, **kwargs)
 
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
+
     def form_valid(self, form):
         org = self.request.user.get_organization(self.request)
         form.instance.organization = org or self.request.user.organization
@@ -275,6 +280,11 @@ class PositionUpdateView(LoginRequiredMixin, UpdateView):
             messages.warning(request, 'This position has already been deleted or no longer exists.')
             return redirect('officers:position_list')
         return super().dispatch(request, *args, **kwargs)
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['request'] = self.request
+        return kwargs
 
     def form_valid(self, form):
         resp = super().form_valid(form)
