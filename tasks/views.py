@@ -665,15 +665,20 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
             logger.warning(f"Django storage open failed for {attachment.file.name}: {ex}")
 
         # 3. Generate Cloudinary authenticated private download URLs & direct URLs
-        pub_id, ext = os.path.splitext(clean_name)
-        fmt = ext.lstrip('.')
+        file_ext = (os.path.splitext(filename)[1] or os.path.splitext(clean_name)[1]).lstrip('.')
+        pub_id = clean_name
+        if file_ext and pub_id.endswith('.' + file_ext):
+            pub_id = pub_id[:-len(file_ext)-1]
 
         urls_to_try = []
         try:
             import cloudinary, cloudinary.utils
-            if pub_id and fmt:
-                urls_to_try.append(cloudinary.utils.private_download_url(pub_id, format=fmt, resource_type='raw', attachment=True))
-                urls_to_try.append(cloudinary.utils.private_download_url(pub_id, format=fmt, resource_type='image', attachment=True))
+            if pub_id:
+                if file_ext:
+                    urls_to_try.append(cloudinary.utils.private_download_url(pub_id, format=file_ext, resource_type='raw', attachment=True))
+                    urls_to_try.append(cloudinary.utils.private_download_url(pub_id, format=file_ext, resource_type='image', attachment=True))
+                urls_to_try.append(cloudinary.utils.private_download_url(clean_name, format='', resource_type='raw', attachment=True))
+                urls_to_try.append(cloudinary.utils.private_download_url(clean_name, format='', resource_type='image', attachment=True))
         except Exception as ex:
             logger.warning(f"Failed generating Cloudinary private download URL: {ex}")
 
