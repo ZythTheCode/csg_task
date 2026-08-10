@@ -826,7 +826,7 @@ class DeleteAttachmentView(LoginRequiredMixin, View):
 class DownloadAttachmentView(LoginRequiredMixin, View):
     """Secure attachment downloader forcing direct device file download."""
     def get(self, request, pk):
-        import os, logging, urllib.parse, requests
+        import os, logging, urllib.parse, mimetypes, requests
         logger = logging.getLogger(__name__)
         attachment = get_object_or_404(TaskAttachment, pk=pk)
 
@@ -852,72 +852,50 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
                 logger.warning(f"Failed serving local attachment file: {e}")
 
         # 2. Try Django Storage API (att.file.open / read binary bytes)
+        content = None
         try:
             attachment.file.open('rb')
             content = attachment.file.read()
             attachment.file.close()
 
-            # Ensure content is valid binary data and NOT an HTML/JSON error response
-            if content and not (content.startswith(b'<!DOCTYPE html') or content.startswith(b'<html') or b'401 Unauthorized' in content[:500]):
-                response = HttpResponse(content, content_type='application/octet-stream')
-                response['Content-Disposition'] = content_disposition
-                return response
+            if content and (content.startswith(b'<!DOCTYPE html') or content.startswith(b'<html') or b'401 Unauthorized' in content[:500]):
+                content = None
         except Exception as ex:
             logger.warning(f"Django storage open failed for {attachment.file.name}: {ex}")
 
-        # 3. Direct Cloudinary / Storage URL with fl_attachment flag
-        file_url = None
-        try:
-            if hasattr(attachment.file, 'url') and attachment.file.url:
-                file_url = attachment.file.url
-        except Exception:
-            pass
-
-        urls_to_try = []
-        if file_url:
-            urls_to_try.append(file_url)
-
-        file_ext = (os.path.splitext(filename)[1] or os.path.splitext(clean_name)[1]).lstrip('.')
-        pub_id = clean_name
-        if file_ext and pub_id.endswith('.' + file_ext):
-            pub_id = pub_id[:-len(file_ext)-1]
-
-        try:
-            import cloudinary, cloudinary.utils
-            if pub_id:
-                if file_ext:
-                    urls_to_try.append(cloudinary.utils.private_download_url(pub_id, format=file_ext, resource_type='raw', attachment=True))
-                    urls_to_try.append(cloudinary.utils.private_download_url(pub_id, format=file_ext, resource_type='image', attachment=True))
-                urls_to_try.append(cloudinary.utils.private_download_url(clean_name, format='', resource_type='raw', attachment=True))
-                urls_to_try.append(cloudinary.utils.private_download_url(clean_name, format='', resource_type='image', attachment=True))
-        except Exception as ex:
-            logger.warning(f"Failed generating Cloudinary private download URL: {ex}")
-
-        for target_url in urls_to_try:
+        # 3. Try Cloudinary API resource lookup if content missing
+        if not content:
             try:
-                import cloudinary
-                cfg = cloudinary.config()
-                auth = (cfg.api_key, cfg.api_secret) if (cfg.api_key and cfg.api_secret) else None
+                import cloudinary, cloudinary.api
+                pub_id = clean_name
+                for r_type in ['raw', 'image']:
+                    try:
+                        res_info = cloudinary.api.resource(pub_id, resource_type=r_type)
+                        sec_url = res_info.get('secure_url')
+                        if sec_url:
+                            resp = requests.get(sec_url, timeout=10)
+                            if resp.status_code == 200 and resp.content:
+                                content = resp.content
+                                break
+                    except Exception:
+                        pass
+            except Exception as ex:
+                logger.warning(f"Cloudinary resource lookup failed: {ex}")
 
-                resp = requests.get(target_url, auth=auth, stream=True, timeout=10)
-                if resp.status_code != 200:
-                    resp = requests.get(target_url, stream=True, timeout=10)
+        if content:
+            # Cache locally for future instant access
+            try:
+                cache_path = full_local_path if full_local_path else clean_local_path
+                os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                with open(cache_path, 'wb') as cf:
+                    cf.write(content)
+            except Exception:
+                pass
 
-                if resp.status_code == 200:
-                    content = resp.content
-                    if content and not (content.startswith(b'<!DOCTYPE html') or content.startswith(b'<html') or b'401 Unauthorized' in content[:500]):
-                        response = HttpResponse(content, content_type='application/octet-stream')
-                        response['Content-Disposition'] = content_disposition
-                        return response
-            except Exception as net_ex:
-                logger.warning(f"Failed fetching attachment from {target_url}: {net_ex}")
+            response = HttpResponse(content, content_type='application/octet-stream')
+            response['Content-Disposition'] = content_disposition
+            return response
 
-        # Fallback redirect to direct Cloudinary URL with forced attachment flag
-        if file_url:
-            forced_download_url = file_url.replace('/upload/', '/upload/fl_attachment/') if '/upload/' in file_url else file_url
-            return redirect(forced_download_url)
-
-        # 4. Fallback if file cannot be retrieved
         messages.error(request, f"Unable to download attachment '{filename}'. The file may be unavailable.")
         return redirect('tasks:detail', pk=attachment.task.pk)
 
@@ -936,20 +914,7 @@ class ViewAttachmentView(LoginRequiredMixin, View):
         guessed_type, _ = mimetypes.guess_type(filename)
         content_type = guessed_type or 'application/pdf'
 
-        # 1. Direct Cloudinary or Remote File URL
-        file_url = None
-        try:
-            if hasattr(attachment.file, 'url') and attachment.file.url:
-                file_url = attachment.file.url
-        except Exception:
-            pass
-
-        # If Cloudinary URL or remote link, redirect to direct URL for instant inline browser viewing
-        if file_url and (file_url.startswith('http://') or file_url.startswith('https://')):
-            clean_url = file_url.replace('/fl_attachment/', '/').replace('/fl_attachment', '/')
-            return redirect(clean_url)
-
-        # 2. Try local file system
+        # 1. Try local file system first
         clean_name = attachment.file.name.replace('media/', '', 1) if attachment.file.name.startswith('media/') else attachment.file.name
         full_local_path = os.path.join(django_settings.MEDIA_ROOT, attachment.file.name)
         clean_local_path = os.path.join(django_settings.MEDIA_ROOT, clean_name)
@@ -968,18 +933,50 @@ class ViewAttachmentView(LoginRequiredMixin, View):
             except Exception as e:
                 logger.warning(f"Failed viewing local attachment file: {e}")
 
-        # 3. Try Django Storage API (open/read)
+        # 2. Try Django Storage API (open/read binary bytes)
+        content = None
         try:
             attachment.file.open('rb')
             content = attachment.file.read()
             attachment.file.close()
 
-            if content:
-                response = HttpResponse(content, content_type=content_type)
-                response['Content-Disposition'] = content_disposition
-                return response
+            if content and (content.startswith(b'<!DOCTYPE html') or content.startswith(b'<html') or b'401 Unauthorized' in content[:500]):
+                content = None
         except Exception as ex:
             logger.warning(f"Django storage open failed for {attachment.file.name}: {ex}")
+
+        # 3. Try Cloudinary API resource lookup if content missing
+        if not content:
+            try:
+                import cloudinary, cloudinary.api
+                pub_id = clean_name
+                for r_type in ['raw', 'image']:
+                    try:
+                        res_info = cloudinary.api.resource(pub_id, resource_type=r_type)
+                        sec_url = res_info.get('secure_url')
+                        if sec_url:
+                            resp = requests.get(sec_url, timeout=10)
+                            if resp.status_code == 200 and resp.content:
+                                content = resp.content
+                                break
+                    except Exception:
+                        pass
+            except Exception as ex:
+                logger.warning(f"Cloudinary resource lookup failed: {ex}")
+
+        if content:
+            # Cache locally for future instant access
+            try:
+                cache_path = full_local_path if full_local_path else clean_local_path
+                os.makedirs(os.path.dirname(cache_path), exist_ok=True)
+                with open(cache_path, 'wb') as cf:
+                    cf.write(content)
+            except Exception:
+                pass
+
+            response = HttpResponse(content, content_type=content_type)
+            response['Content-Disposition'] = content_disposition
+            return response
 
         messages.error(request, f"Unable to view attachment '{filename}'. The file may be unavailable.")
         return redirect('tasks:detail', pk=attachment.task.pk)

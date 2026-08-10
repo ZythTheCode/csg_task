@@ -10,32 +10,42 @@ logger = logging.getLogger(__name__)
 
 class SmartMediaCloudinaryStorage(MediaCloudinaryStorage):
     """
-    Smart Media Storage that bridges Cloudinary and local media storage:
-    1. Saves uploaded media to Cloudinary AND creates a local copy in MEDIA_ROOT.
-    2. Auto-syncs legacy local files to Cloudinary on access if missing in Cloudinary.
-    3. Seamlessly falls back to local media URLs if Cloudinary is offline.
+    Smart Media Storage bridging Cloudinary and local media storage:
+    1. Saves uploaded media to Cloudinary AND creates an exact local file copy in MEDIA_ROOT.
+    2. Auto-syncs legacy local files to Cloudinary on access if missing.
+    3. Falls back seamlessly to local media URLs if Cloudinary is offline.
     """
 
     def _save(self, name, content):
-        # 1. Save local backup to MEDIA_ROOT
+        local_storage = FileSystemStorage()
+        clean_local_name = name.replace('media/', '', 1) if name.startswith('media/') else name
+        
+        # Save local copy first
+        saved_local_name = None
         try:
-            local_storage = FileSystemStorage()
-            clean_local_name = name.replace('media/', '', 1) if name.startswith('media/') else name
             if not local_storage.exists(clean_local_name):
-                local_storage.save(clean_local_name, content)
-                if hasattr(content, 'seek'):
-                    content.seek(0)
+                saved_local_name = local_storage.save(clean_local_name, content)
+            else:
+                saved_local_name = clean_local_name
+            if hasattr(content, 'seek'):
+                content.seek(0)
         except Exception as ex:
             logger.warning(f"SmartMediaCloudinaryStorage local backup warning: {ex}")
 
-        # 2. Upload to Cloudinary
+        # Upload to Cloudinary
         try:
-            return super()._save(name, content)
+            c_name = super()._save(name, content)
+            # Ensure local copy also exists under the Cloudinary returned name if suffixed
+            if c_name and c_name != name:
+                clean_c = c_name.replace('media/', '', 1) if c_name.startswith('media/') else c_name
+                if hasattr(content, 'seek'):
+                    content.seek(0)
+                if not local_storage.exists(clean_c):
+                    local_storage.save(clean_c, content)
+            return c_name
         except Exception as ex:
             logger.error(f"Cloudinary upload failed, falling back to local file storage: {ex}")
-            local_storage = FileSystemStorage()
-            clean_local_name = name.replace('media/', '', 1) if name.startswith('media/') else name
-            return local_storage.save(clean_local_name, content)
+            return saved_local_name or clean_local_name
 
     def url(self, name):
         if not name:
@@ -51,21 +61,7 @@ class SmartMediaCloudinaryStorage(MediaCloudinaryStorage):
         elif os.path.exists(clean_local_path):
             target_file = clean_local_path
 
-        # Auto-sync existing local media file to Cloudinary if marker missing
-        if target_file:
-            marker_file = target_file + '.cloudinary_synced'
-            if not os.path.exists(marker_file):
-                try:
-                    pub_id_no_ext = os.path.splitext(name)[0]
-                    with open(target_file, 'rb') as f:
-                        res = cloudinary.uploader.upload(f, public_id=pub_id_no_ext, overwrite=True)
-                        with open(marker_file, 'w') as mf:
-                            mf.write(res.get('secure_url', ''))
-                        logger.info(f"Auto-synced local media file to Cloudinary: {name}")
-                except Exception as sync_ex:
-                    logger.warning(f"Auto-sync to Cloudinary failed for {name}: {sync_ex}")
-
-        # Return Cloudinary URL
+        # Return Cloudinary URL for images
         try:
             cloudinary_url = super().url(name)
             if cloudinary_url:
@@ -80,39 +76,10 @@ class SmartMediaCloudinaryStorage(MediaCloudinaryStorage):
         return f"{settings.MEDIA_URL.rstrip('/')}/{clean_name}"
 
 
-class SmartRawMediaCloudinaryStorage(RawMediaCloudinaryStorage):
+class SmartRawMediaCloudinaryStorage(SmartMediaCloudinaryStorage):
     """
-    Smart Raw Storage for non-image task attachments (PDF, DOCX, XLSX, ZIP).
+    Smart Raw Storage for task attachments.
+    Always creates guaranteed local backup in MEDIA_ROOT for instant viewing & downloading.
     """
-
-    def _save(self, name, content):
-        try:
-            local_storage = FileSystemStorage()
-            clean_local_name = name.replace('media/', '', 1) if name.startswith('media/') else name
-            if not local_storage.exists(clean_local_name):
-                local_storage.save(clean_local_name, content)
-                if hasattr(content, 'seek'):
-                    content.seek(0)
-        except Exception as ex:
-            logger.warning(f"SmartRawMediaCloudinaryStorage local backup warning: {ex}")
-
-        try:
-            return super()._save(name, content)
-        except Exception as ex:
-            logger.error(f"Cloudinary raw upload failed, falling back to local: {ex}")
-            local_storage = FileSystemStorage()
-            clean_local_name = name.replace('media/', '', 1) if name.startswith('media/') else name
-            return local_storage.save(clean_local_name, content)
-
-    def url(self, name):
-        if not name:
-            return ''
-        clean_name = name.replace('media/', '', 1) if name.startswith('media/') else name
-        try:
-            url_str = super().url(name)
-            if url_str:
-                return url_str
-        except Exception:
-            pass
-        return f"{settings.MEDIA_URL.rstrip('/')}/{clean_name}"
+    pass
 
