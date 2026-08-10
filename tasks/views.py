@@ -1,5 +1,5 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
-from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View
+from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View, TemplateView
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse, FileResponse
@@ -372,7 +372,127 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         return ctx
 
 
+class TaskCalendarView(LoginRequiredMixin, TemplateView):
+    template_name = 'tasks/calendar.html'
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        org = self.request.user.get_organization(self.request)
+        scope = self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks')
+
+        q = self.request.GET.get('q', '')
+        priority = self.request.GET.get('priority', '')
+        status = self.request.GET.get('status', '')
+
+        ctx['page_title'] = 'Task Calendar View'
+        ctx['current_org'] = org
+        ctx['status_choices'] = Task.STATUS_CHOICES
+        ctx['priority_choices'] = Task.PRIORITY_CHOICES
+        ctx['current_filters'] = {
+            'q': q,
+            'status': status,
+            'priority': priority,
+            'scope': scope
+        }
+        return ctx
+
+
+class TaskCalendarEventsView(LoginRequiredMixin, View):
+    def get(self, request):
+        org = request.user.get_organization(request)
+        if org:
+            qs = Task.objects.filter(is_archived=False, organization=org)
+        else:
+            qs = Task.objects.filter(is_archived=False)
+
+        scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
+        if scope == 'my_tasks':
+            qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
+
+        # Filters
+        q = request.GET.get('q', '')
+        if q:
+            qs = qs.filter(Q(title__icontains=q) | Q(task_number__icontains=q) | Q(description__icontains=q))
+
+        status = request.GET.get('status', '')
+        if status:
+            if status == 'active':
+                qs = qs.exclude(status='completed')
+            elif status == 'in_progress':
+                qs = qs.exclude(status__in=['not_started', 'completed'])
+            else:
+                qs = qs.filter(status=status)
+
+        priority = request.GET.get('priority', '')
+        if priority:
+            qs = qs.filter(priority=priority)
+
+        qs = qs.select_related('organization', 'created_by').prefetch_related('assigned_officers')
+
+        events = []
+        for task in qs:
+            task_date = task.due_date.isoformat() if task.due_date else (task.created_at.date().isoformat() if task.created_at else None)
+            if not task_date:
+                continue
+
+            bg_color = '#3b82f6'
+            border_color = '#2563eb'
+            if task.status == 'completed':
+                bg_color = '#10b981'
+                border_color = '#059669'
+            elif task.priority == 'urgent':
+                bg_color = '#ef4444'
+                border_color = '#dc2626'
+            elif task.priority == 'high':
+                bg_color = '#f97316'
+                border_color = '#ea580c'
+            elif task.priority == 'medium':
+                bg_color = '#3b82f6'
+                border_color = '#2563eb'
+            elif task.priority == 'low':
+                bg_color = '#64748b'
+                border_color = '#475569'
+
+            officers = [
+                {
+                    'id': u.id,
+                    'name': u.get_full_name() or u.username,
+                    'initials': u.position_initials,
+                    'pic_url': u.profile_picture.url if u.profile_picture else None
+                } for u in task.assigned_officers.all()
+            ]
+
+            events.append({
+                'id': task.id,
+                'title': f"[{task.task_number}] {task.title}",
+                'start': task_date,
+                'allDay': True,
+                'backgroundColor': bg_color,
+                'borderColor': border_color,
+                'textColor': '#ffffff',
+                'extendedProps': {
+                    'task_id': task.id,
+                    'task_number': task.task_number,
+                    'title': task.title,
+                    'description': task.description or 'No description provided.',
+                    'status': task.status,
+                    'status_display': task.get_status_display(),
+                    'priority': task.priority,
+                    'priority_display': task.get_priority_display(),
+                    'progress': task.progress,
+                    'due_date': task.due_date.strftime('%B %d, %Y') if task.due_date else 'No Due Date',
+                    'org_name': task.organization.name if task.organization else 'N/A',
+                    'created_by': task.created_by.get_full_name() if task.created_by else 'System',
+                    'officers': officers,
+                    'detail_url': f"/tasks/{task.id}/"
+                }
+            })
+
+        return JsonResponse(events, safe=False)
+
+
 class TaskMoveStatusView(LoginRequiredMixin, View):
+
     def post(self, request, pk):
         task = get_object_or_404(Task, pk=pk)
         if not request.user.can_update_task_progress(task):

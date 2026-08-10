@@ -12,6 +12,9 @@ urlpatterns = [
     path('<int:pk>/delete/', views.TaskDeleteView.as_view(), name='delete'),
     path('bulk-delete/', views.TaskBulkDeleteView.as_view(), name='bulk_delete'),
     path('board/', views.TaskBoardView.as_view(), name='board'),
+    path('calendar/', views.TaskCalendarView.as_view(), name='calendar'),
+    path('calendar/events/', views.TaskCalendarEventsView.as_view(), name='calendar_events'),
+
     path('<int:pk>/move/', views.TaskMoveStatusView.as_view(), name='move'),
     path('<int:pk>/progress/', views.UpdateProgressView.as_view(), name='update_progress'),
     path('<int:pk>/complete/', views.MarkCompleteView.as_view(), name='complete'),

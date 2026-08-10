@@ -77,18 +77,23 @@ WSGI_APPLICATION = 'csg_project.wsgi.application'
 
 NEON_DB_URL = config('DATABASE_URL', default='')
 
-DATABASES = {
-    'default': config(
-        'DATABASE_URL',
-        default='',
-        cast=lambda v: dj_database_url.parse(
-            v,
-            ssl_require=False if ('localhost' in v or '127.0.0.1' in v) else True,
+if NEON_DB_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            NEON_DB_URL,
+            ssl_require=False if ('localhost' in NEON_DB_URL or '127.0.0.1' in NEON_DB_URL) else True,
             conn_max_age=600,
             conn_health_checks=True
-        ) if v else {}
-    )
-}
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
+
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},

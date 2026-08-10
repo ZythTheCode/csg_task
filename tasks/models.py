@@ -182,7 +182,8 @@ def get_task_attachment_storage():
             return SmartRawMediaCloudinaryStorage()
     except Exception:
         pass
-    return None
+    from django.core.files.storage import default_storage
+    return default_storage
 
 
 class TaskAttachment(models.Model):

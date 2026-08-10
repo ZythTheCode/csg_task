@@ -1,0 +1,381 @@
+{% extends 'base.html' %}
+{% load task_filters %}
+{% block title %}Task Calendar | {{ current_org.name|default:"Organization" }}{% endblock %}
+
+{% block extra_css %}
+<!-- FullCalendar 6.1.10 CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css">
+<style>
+  .calendar-glass-card {
+    background: rgba(255, 255, 255, 0.85);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(226, 232, 240, 0.8);
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
+    padding: 24px;
+  }
+  .fc-theme-standard td, .fc-theme-standard th {
+    border-color: #f1f5f9 !important;
+  }
+  .fc-header-toolbar {
+    margin-bottom: 1.5rem !important;
+  }
+  .fc-toolbar-title {
+    font-size: 1.25rem !important;
+    font-weight: 700 !important;
+    color: var(--slate-800) !important;
+    letter-spacing: -0.3px;
+  }
+  .fc-button-primary {
+    background-color: #fff !important;
+    color: var(--slate-700) !important;
+    border: 1px solid var(--slate-200) !important;
+    border-radius: 12px !important;
+    font-weight: 600 !important;
+    font-size: 0.825rem !important;
+    padding: 6px 14px !important;
+    box-shadow: none !important;
+  }
+  .fc-button-primary:hover, .fc-button-primary:focus {
+    background-color: var(--slate-100) !important;
+    color: var(--primary) !important;
+    border-color: var(--slate-300) !important;
+  }
+  .fc-button-active {
+    background-color: var(--primary) !important;
+    color: #fff !important;
+    border-color: var(--primary) !important;
+  }
+  .fc-event {
+    border-radius: 8px !important;
+    padding: 3px 8px !important;
+    font-size: 0.8rem !important;
+    font-weight: 600 !important;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  }
+  .fc-event:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+  }
+  .fc-daygrid-day-number {
+    font-weight: 700;
+    color: var(--slate-700);
+    text-decoration: none !important;
+    padding: 6px 10px !important;
+  }
+  .fc-day-today {
+    background-color: rgba(59, 130, 246, 0.04) !important;
+  }
+  .task-modal-header {
+    border-bottom: 1px solid #f1f5f9;
+    padding: 1.25rem 1.5rem;
+    background: #f8fafc;
+    border-radius: 16px 16px 0 0;
+  }
+  .officer-avatar-sm {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #fff;
+  }
+  .officer-avatar-fallback {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #fff;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
+  <div>
+    <div class="d-flex align-items-center gap-2 mb-1">
+      <h5 class="mb-0 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Task Calendar</h5>
+      {% if current_org %}
+        <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2.5 py-1 rounded-pill" style="font-size:11.5px;font-weight:700">
+          <i data-lucide="building" class="me-1" style="width:12px;height:12px"></i>{{ current_org.name }}
+        </span>
+      {% endif %}
+    </div>
+    <p class="text-muted mb-0" style="font-size:13px">View and track all scheduled organizational tasks in interactive calendar format</p>
+  </div>
+
+  <div class="d-flex gap-2 align-items-center flex-wrap">
+    <!-- Scope Switcher -->
+    <div class="btn-group p-1 me-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+      <button type="button" onclick="setScope('my_tasks')" class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px">
+        <i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks
+      </button>
+      <button type="button" onclick="setScope('all')" class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px">
+        <i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks
+      </button>
+    </div>
+
+    <!-- View Switcher -->
+    <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+      <a href="{% url 'tasks:list' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px">
+        <i data-lucide="list" class="me-1" style="width:14px;height:14px"></i> List
+      </a>
+      <a href="{% url 'tasks:board' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px">
+        <i data-lucide="kanban" class="me-1" style="width:14px;height:14px"></i> Board
+      </a>
+      <a href="{% url 'tasks:calendar' %}" class="btn btn-sm btn-primary-custom" style="font-size:12.5px;padding:4px 14px">
+        <i data-lucide="calendar" class="me-1" style="width:14px;height:14px"></i> Calendar
+      </a>
+    </div>
+
+    {% if user.has_task_override or user.can_manage_tasks %}
+    <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i data-lucide="plus" style="width:16px;height:16px"></i> New Task</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Filters Card -->
+<div class="glass-card glass-card-filters mb-4">
+  <div class="p-3">
+    <form method="get" class="row g-2 align-items-center" id="calendarFilterForm">
+      <input type="hidden" name="scope" id="scopeInput" value="{{ current_filters.scope }}">
+      <div class="col-12 col-sm-6 col-lg-4 position-relative">
+        <div class="input-group">
+          <span class="input-group-text border-end-0" style="background:#fff;border-radius:12px 0 0 12px;border-color:var(--slate-200)">
+            <i data-lucide="search" class="text-muted" style="width:16px;height:16px"></i>
+          </span>
+          <input type="text" name="q" value="{{ current_filters.q }}" id="calendarSearchInput" class="form-control border-start-0" placeholder="Search tasks by title or code..." autocomplete="off" style="border-radius:0 12px 12px 0;font-size:13.5px">
+        </div>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <select name="status" id="statusSelect" class="form-select" style="font-size:13.5px">
+          <option value="">All Statuses</option>
+          <option value="in_progress" {% if current_filters.status == 'in_progress' %}selected{% endif %}>In Progress (Active)</option>
+          <option value="" disabled>──────────</option>
+          {% for val, label in status_choices %}
+            <option value="{{ val }}" {% if current_filters.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-3">
+        <select name="priority" id="prioritySelect" class="form-select" style="font-size:13.5px">
+          <option value="">All Priorities</option>
+          {% for val, label in priority_choices %}
+            <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="col-12 col-sm-6 col-lg-2 d-flex gap-2">
+        <button type="submit" class="btn btn-primary-custom w-100" style="font-size:13px;padding:8px">Filter</button>
+        <a href="{% url 'tasks:calendar' %}" class="btn btn-secondary-custom" style="font-size:13px;padding:8px 12px" title="Reset Filters"><i data-lucide="rotate-ccw" style="width:14px;height:14px"></i></a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Calendar Container Card -->
+<div class="calendar-glass-card">
+  <div id="taskCalendar"></div>
+</div>
+
+<!-- Expandable Task Detail Modal -->
+<div class="modal fade" id="taskCalendarDetailModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden">
+      <div class="task-modal-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+          <span id="modalTaskNumber" class="badge bg-dark text-white px-2.5 py-1 rounded-pill" style="font-size:12px;font-weight:700"></span>
+          <h6 id="modalTaskTitle" class="mb-0 fw-bold" style="font-size:16px;color:var(--slate-800)"></h6>
+        </div>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+
+      <div class="modal-body p-4">
+        <!-- Status, Priority, Org Badges -->
+        <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
+          <span id="modalStatusBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
+          <span id="modalPriorityBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
+          <span id="modalOrgBadge" class="badge bg-light text-secondary border px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:600"></span>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mb-4 p-3 rounded-3" style="background:#f8fafc;border:1px solid #f1f5f9">
+          <div class="d-flex justify-content-between align-items-center mb-1">
+            <span class="fw-semibold text-muted" style="font-size:12.5px">Task Completion Progress</span>
+            <span id="modalProgressText" class="fw-bold text-primary" style="font-size:13px"></span>
+          </div>
+          <div class="progress" style="height:8px;border-radius:10px">
+            <div id="modalProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%"></div>
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="mb-4">
+          <h6 class="fw-bold text-dark mb-2" style="font-size:13px">Description</h6>
+          <div id="modalTaskDesc" class="p-3 rounded-3 text-secondary" style="background:#fff;border:1px solid #e2e8f0;font-size:13.5px;line-height:1.6;white-space:pre-wrap"></div>
+        </div>
+
+        <!-- Metadata Grid -->
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #f1f5f9">
+              <span class="text-muted d-block mb-1" style="font-size:11.5px;font-weight:600;text-transform:uppercase">Due Date</span>
+              <span id="modalDueDate" class="fw-bold text-dark" style="font-size:13.5px"><i data-lucide="calendar" class="me-1 text-primary" style="width:14px;height:14px"></i></span>
+            </div>
+          </div>
+
+          <div class="col-sm-6">
+            <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #f1f5f9">
+              <span class="text-muted d-block mb-1" style="font-size:11.5px;font-weight:600;text-transform:uppercase">Created By</span>
+              <span id="modalCreatedBy" class="fw-bold text-dark" style="font-size:13.5px"><i data-lucide="user" class="me-1 text-primary" style="width:14px;height:14px"></i></span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Assigned Officers -->
+        <div class="mt-4">
+          <h6 class="fw-bold text-dark mb-2" style="font-size:13px">Assigned Officers</h6>
+          <div id="modalOfficersList" class="d-flex flex-wrap gap-2"></div>
+        </div>
+      </div>
+
+      <div class="modal-footer border-top-0 px-4 pb-4 pt-0">
+        <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Close</button>
+        <a id="modalDetailLink" href="#" class="btn btn-primary-custom" style="padding:8px 20px">
+          <i data-lucide="external-link" class="me-1" style="width:14px;height:14px"></i> Open Full Task Details
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar 6.1.10 JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.css"></script>
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.10/index.global.min.js"></script>
+
+<script>
+  function setScope(val) {
+    document.getElementById('scopeInput').value = val;
+    document.getElementById('calendarFilterForm').submit();
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    var calendarEl = document.getElementById('taskCalendar');
+    
+    // Construct event API URL with current query parameters
+    var params = new URLSearchParams(window.location.search);
+    var eventsUrl = "{% url 'tasks:calendar_events' %}?" + params.toString();
+
+    var calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      headerToolbar: {
+        left: 'prev,next today',
+        center: 'title',
+        right: 'dayGridMonth,timeGridWeek,listMonth'
+      },
+      buttonText: {
+        today: 'Today',
+        dayGridMonth: 'Month',
+        timeGridWeek: 'Week',
+        listMonth: 'List'
+      },
+      events: eventsUrl,
+      eventClick: function(info) {
+        info.jsEvent.preventDefault();
+        var props = info.event.extendedProps;
+
+        // Populate Modal Fields
+        document.getElementById('modalTaskNumber').textContent = props.task_number || 'TASK';
+        document.getElementById('modalTaskTitle').textContent = props.title || '';
+        document.getElementById('modalTaskDesc').textContent = props.description || 'No description available.';
+        document.getElementById('modalDueDate').innerHTML = '<i data-lucide="calendar" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.due_date || 'No Due Date');
+        document.getElementById('modalCreatedBy').innerHTML = '<i data-lucide="user" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.created_by || 'System');
+        document.getElementById('modalOrgBadge').textContent = props.org_name || 'Organization';
+        document.getElementById('modalDetailLink').setAttribute('href', props.detail_url);
+
+        // Status Badge
+        var statusBadge = document.getElementById('modalStatusBadge');
+        statusBadge.textContent = props.status_display || props.status;
+        statusBadge.className = 'badge px-3 py-1.5 rounded-pill ';
+        if (props.status === 'completed') {
+          statusBadge.classList.add('bg-success-subtle', 'text-success', 'border', 'border-success-subtle');
+        } else if (props.status === 'overdue') {
+          statusBadge.classList.add('bg-danger-subtle', 'text-danger', 'border', 'border-danger-subtle');
+        } else {
+          statusBadge.classList.add('bg-primary-subtle', 'text-primary', 'border', 'border-primary-subtle');
+        }
+
+        // Priority Badge
+        var priorityBadge = document.getElementById('modalPriorityBadge');
+        priorityBadge.textContent = (props.priority_display || props.priority) + ' Priority';
+        priorityBadge.className = 'badge px-3 py-1.5 rounded-pill ';
+        if (props.priority === 'urgent') {
+          priorityBadge.classList.add('bg-danger', 'text-white');
+        } else if (props.priority === 'high') {
+          priorityBadge.classList.add('bg-warning', 'text-dark');
+        } else if (props.priority === 'medium') {
+          priorityBadge.classList.add('bg-info', 'text-white');
+        } else {
+          priorityBadge.classList.add('bg-secondary', 'text-white');
+        }
+
+        // Progress Bar
+        var progress = props.progress || 0;
+        document.getElementById('modalProgressText').textContent = progress + '%';
+        var progressBar = document.getElementById('modalProgressBar');
+        progressBar.style.width = progress + '%';
+        progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated ';
+        if (progress >= 100) {
+          progressBar.classList.add('bg-success');
+        } else if (progress > 50) {
+          progressBar.classList.add('bg-primary');
+        } else {
+          progressBar.classList.add('bg-warning');
+        }
+
+        // Officers List
+        var officersContainer = document.getElementById('modalOfficersList');
+        officersContainer.innerHTML = '';
+        if (props.officers && props.officers.length > 0) {
+          props.officers.forEach(function(off) {
+            var badge = document.createElement('span');
+            badge.className = 'badge bg-light text-dark border p-1.5 pe-3 d-inline-flex align-items-center gap-2 rounded-pill';
+            if (off.pic_url) {
+              badge.innerHTML = '<img src="' + off.pic_url + '" class="officer-avatar-sm" alt="' + off.name + '"><span style="font-size:12.5px;font-weight:600">' + off.name + '</span>';
+            } else {
+              badge.innerHTML = '<span class="officer-avatar-fallback">' + (off.initials || 'O') + '</span><span style="font-size:12.5px;font-weight:600">' + off.name + '</span>';
+            }
+            officersContainer.appendChild(badge);
+          });
+        } else {
+          officersContainer.innerHTML = '<span class="text-muted style="font-size:12.5px">No officers assigned</span>';
+        }
+
+        // Re-initialize Lucide Icons inside modal
+        if (window.lucide) {
+          lucide.createIcons();
+        }
+
+        // Show Modal
+        var modal = new bootstrap.Modal(document.getElementById('taskCalendarDetailModal'));
+        modal.show();
+      }
+    });
+
+    calendar.render();
+  });
+</script>
+{% endblock %}
