@@ -646,39 +646,47 @@ class DownloadAttachmentView(LoginRequiredMixin, View):
             except Exception as e:
                 logger.warning(f"Failed serving local attachment file: {e}")
 
-        # 2. Stream directly from Cloudinary (Backend-to-Backend using API credentials or URL variants)
+        # 2. Generate Cloudinary authenticated private download URLs
+        pub_id, ext = os.path.splitext(clean_name)
+        fmt = ext.lstrip('.')
+
+        raw_private_url = None
+        img_private_url = None
+
         try:
-            import cloudinary
-            cfg = cloudinary.config()
-            auth = (cfg.api_key, cfg.api_secret) if (cfg.api_key and cfg.api_secret) else None
-
-            urls_to_try = []
-            if hasattr(attachment.file, 'url') and attachment.file.url:
-                urls_to_try.append(attachment.file.url)
-
-            if cfg.cloud_name:
-                pub_id = clean_name
-                urls_to_try.append(f"https://res.cloudinary.com/{cfg.cloud_name}/raw/upload/{pub_id}")
-                urls_to_try.append(f"https://res.cloudinary.com/{cfg.cloud_name}/image/upload/{pub_id}")
-
-            for target_url in urls_to_try:
-                try:
-                    # Attempt fetch with authentication first, then without
-                    resp = requests.get(target_url, auth=auth, stream=True, timeout=10)
-                    if resp.status_code != 200:
-                        resp = requests.get(target_url, stream=True, timeout=10)
-
-                    if resp.status_code == 200:
-                        content_type = resp.headers.get('Content-Type', 'application/octet-stream')
-                        response = HttpResponse(resp.content, content_type=content_type)
-                        response['Content-Disposition'] = f'attachment; filename="{attachment.filename}"'
-                        return response
-                except Exception as net_ex:
-                    logger.warning(f"Failed fetching attachment from {target_url}: {net_ex}")
+            import cloudinary, cloudinary.utils
+            if pub_id and fmt:
+                raw_private_url = cloudinary.utils.private_download_url(pub_id, format=fmt, resource_type='raw', attachment=True)
+                img_private_url = cloudinary.utils.private_download_url(pub_id, format=fmt, resource_type='image', attachment=True)
         except Exception as ex:
-            logger.error(f"Cloudinary attachment streaming failed: {ex}")
+            logger.warning(f"Failed generating Cloudinary private download URL: {ex}")
 
-        # 3. Last resort fallback redirect
+        # 3. Stream backend-to-backend
+        urls_to_try = []
+        if raw_private_url:
+            urls_to_try.append(raw_private_url)
+        if img_private_url:
+            urls_to_try.append(img_private_url)
+        if hasattr(attachment.file, 'url') and attachment.file.url:
+            urls_to_try.append(attachment.file.url)
+
+        for target_url in urls_to_try:
+            try:
+                resp = requests.get(target_url, stream=True, timeout=10)
+                if resp.status_code == 200:
+                    content_type = resp.headers.get('Content-Type', 'application/octet-stream')
+                    response = HttpResponse(resp.content, content_type=content_type)
+                    response['Content-Disposition'] = f'attachment; filename="{attachment.filename}"'
+                    return response
+            except Exception as net_ex:
+                logger.warning(f"Failed fetching attachment from {target_url}: {net_ex}")
+
+        # 4. Authenticated Fallback Redirect
+        if raw_private_url:
+            return redirect(raw_private_url)
+        if img_private_url:
+            return redirect(img_private_url)
+
         return redirect(attachment.file.url)
 
 

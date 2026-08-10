@@ -178,8 +178,8 @@ def get_task_attachment_storage():
     try:
         from django.conf import settings
         if 'cloudinary_storage' in getattr(settings, 'INSTALLED_APPS', []):
-            from core.storage import SmartRawMediaCloudinaryStorage
-            return SmartRawMediaCloudinaryStorage()
+            from core.storage import SmartMediaCloudinaryStorage
+            return SmartMediaCloudinaryStorage()
     except Exception:
         pass
     return None
