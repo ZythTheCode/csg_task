@@ -85,17 +85,7 @@ class Task(models.Model):
             
         if not self.task_number:
             year = timezone.now().year
-            
-            # Determine org prefix
-            org_prefix = "CSG"
-            if self.organization:
-                import re
-                raw_abbr = self.organization.abbreviation or self.organization.short_name or "CSG"
-                org_prefix = re.sub(r'[^A-Z0-9]', '', raw_abbr.upper())
-                if not org_prefix:
-                    org_prefix = "ORG"
-                    
-            last = Task.objects.filter(task_number__startswith=f'{org_prefix}-{year}-').order_by('-task_number').first()
+            last = Task.objects.filter(task_number__startswith=f'{year}-').order_by('-task_number').first()
             if last:
                 try:
                     seq = int(last.task_number.split('-')[-1]) + 1
@@ -103,7 +93,7 @@ class Task(models.Model):
                     seq = 1
             else:
                 seq = 1
-            self.task_number = f'{org_prefix}-{year}-{seq:04d}'
+            self.task_number = f'{year}-{seq:04d}'
         super().save(*args, **kwargs)
 
     @property
