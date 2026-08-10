@@ -19,6 +19,7 @@ urlpatterns = [
     path('<int:pk>/comments/', views.AddCommentView.as_view(), name='add_comment'),
     path('<int:pk>/attachments/', views.AddAttachmentView.as_view(), name='add_attachment'),
     path('attachments/<int:pk>/delete/', views.DeleteAttachmentView.as_view(), name='delete_attachment'),
+    path('attachments/<int:pk>/download/', views.DownloadAttachmentView.as_view(), name='download_attachment'),
     path('export/pdf/', views.ExportTasksPDFView.as_view(), name='export_pdf'),
     path('export/excel/', views.ExportTasksExcelView.as_view(), name='export_excel'),
     path('<int:pk>/nudge/', views.NudgeOfficersView.as_view(), name='nudge'),

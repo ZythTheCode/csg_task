@@ -141,7 +141,7 @@
             <small class="text-muted">{{ att.created_at|date:"M d" }}</small>
           </div>
           <div class="d-flex gap-2">
-            <a href="{{ att.file.url }}" class="btn-sm-icon" target="_blank" title="Download"><i data-lucide="download" style="width:14px;height:14px"></i></a>
+            <a href="{% url 'tasks:download_attachment' att.pk %}" class="btn-sm-icon" title="Download"><i data-lucide="download" style="width:14px;height:14px"></i></a>
             <form method="post" action="{% url 'tasks:delete_attachment' att.pk %}" class="d-inline" data-confirm="Are you sure you want to delete attachment <strong>{{ att.filename }}</strong>?" data-confirm-title="Delete Attachment" data-confirm-btn="Delete">
               {% csrf_token %}
               <button type="submit" class="btn-sm-icon" style="color:#EF4444" title="Delete"><i data-lucide="trash-2" style="width:14px;height:14px"></i></button>

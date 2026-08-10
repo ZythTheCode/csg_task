@@ -2,7 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View
 from django.urls import reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Case, When, Value, IntegerField
@@ -436,7 +436,7 @@ class TaskDetailJSONView(LoginRequiredMixin, View):
             {
                 'id': att.pk,
                 'filename': att.filename,
-                'url': att.file.url,
+                'url': f'/tasks/attachments/{att.pk}/download/',
                 'created_at': att.created_at.strftime('%b %d, %Y')
             }
             for att in task.attachments.all()
@@ -619,6 +619,68 @@ class DeleteAttachmentView(LoginRequiredMixin, View):
         attachment.delete()
         messages.success(request, 'Attachment deleted.')
         return redirect('tasks:detail', pk=task_pk)
+
+
+class DownloadAttachmentView(LoginRequiredMixin, View):
+    """Secure attachment downloader handling both local media and Cloudinary storage."""
+    def get(self, request, pk):
+        import os, logging, requests
+        logger = logging.getLogger(__name__)
+        attachment = get_object_or_404(TaskAttachment, pk=pk)
+
+        # 1. Try local media storage backup first
+        clean_name = attachment.file.name.replace('media/', '', 1) if attachment.file.name.startswith('media/') else attachment.file.name
+        full_local_path = os.path.join(django_settings.MEDIA_ROOT, attachment.file.name)
+        clean_local_path = os.path.join(django_settings.MEDIA_ROOT, clean_name)
+
+        target_path = None
+        if os.path.exists(full_local_path):
+            target_path = full_local_path
+        elif os.path.exists(clean_local_path):
+            target_path = clean_local_path
+
+        if target_path and os.path.isfile(target_path):
+            try:
+                response = FileResponse(open(target_path, 'rb'), as_attachment=True, filename=attachment.filename)
+                return response
+            except Exception as e:
+                logger.warning(f"Failed serving local attachment file: {e}")
+
+        # 2. Stream directly from Cloudinary (Backend-to-Backend using API credentials or URL variants)
+        try:
+            import cloudinary
+            cfg = cloudinary.config()
+            auth = (cfg.api_key, cfg.api_secret) if (cfg.api_key and cfg.api_secret) else None
+
+            urls_to_try = []
+            if hasattr(attachment.file, 'url') and attachment.file.url:
+                urls_to_try.append(attachment.file.url)
+
+            if cfg.cloud_name:
+                pub_id = clean_name
+                urls_to_try.append(f"https://res.cloudinary.com/{cfg.cloud_name}/raw/upload/{pub_id}")
+                urls_to_try.append(f"https://res.cloudinary.com/{cfg.cloud_name}/image/upload/{pub_id}")
+
+            for target_url in urls_to_try:
+                try:
+                    # Attempt fetch with authentication first, then without
+                    resp = requests.get(target_url, auth=auth, stream=True, timeout=10)
+                    if resp.status_code != 200:
+                        resp = requests.get(target_url, stream=True, timeout=10)
+
+                    if resp.status_code == 200:
+                        content_type = resp.headers.get('Content-Type', 'application/octet-stream')
+                        response = HttpResponse(resp.content, content_type=content_type)
+                        response['Content-Disposition'] = f'attachment; filename="{attachment.filename}"'
+                        return response
+                except Exception as net_ex:
+                    logger.warning(f"Failed fetching attachment from {target_url}: {net_ex}")
+        except Exception as ex:
+            logger.error(f"Cloudinary attachment streaming failed: {ex}")
+
+        # 3. Last resort fallback redirect
+        return redirect(attachment.file.url)
+
 
 
 def _get_filtered_tasks_for_export(request):

@@ -103,3 +103,16 @@ class SmartRawMediaCloudinaryStorage(RawMediaCloudinaryStorage):
             local_storage = FileSystemStorage()
             clean_local_name = name.replace('media/', '', 1) if name.startswith('media/') else name
             return local_storage.save(clean_local_name, content)
+
+    def url(self, name):
+        if not name:
+            return ''
+        clean_name = name.replace('media/', '', 1) if name.startswith('media/') else name
+        try:
+            url_str = super().url(name)
+            if url_str:
+                return url_str
+        except Exception:
+            pass
+        return f"{settings.MEDIA_URL.rstrip('/')}/{clean_name}"
+
