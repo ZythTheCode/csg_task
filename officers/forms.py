@@ -103,6 +103,7 @@ class OfficerForm(forms.ModelForm):
         self.request = request
 
         # Determine target organization based on request active workspace, user_creator, or officer instance
+        from organizations.models import Organization
         target_org = None
         if self.request and hasattr(self.request.user, 'get_organization'):
             target_org = self.request.user.get_organization(self.request)
@@ -114,7 +115,27 @@ class OfficerForm(forms.ModelForm):
         if not target_org and self.instance and self.instance.pk and getattr(self.instance, 'user', None):
             target_org = self.instance.user.organization
 
+        if not target_org:
+            target_org = Organization.objects.filter(abbreviation='CSG').first() or Organization.objects.first()
+
         self.target_org = target_org
+
+        # Optional organization select for Super Admin
+        is_super = False
+        if self.request and hasattr(self.request.user, 'is_super_admin'):
+            is_super = self.request.user.is_super_admin
+        elif self.user_creator and hasattr(self.user_creator, 'is_super_admin'):
+            is_super = self.user_creator.is_super_admin
+
+        if is_super:
+            org_qs = Organization.objects.all().order_by('name')
+            org_choices = [(org.pk, f"{org.name} ({org.abbreviation})") for org in org_qs]
+            self.fields['organization'] = forms.ChoiceField(
+                choices=org_choices,
+                required=False,
+                initial=target_org.pk if target_org else None,
+                widget=forms.Select(attrs={'class': 'form-select'})
+            )
 
         # Build position choices showing assigned officer names and disabled state
         from .models import Position as PositionModel
@@ -160,9 +181,10 @@ class OfficerForm(forms.ModelForm):
             )
         )
 
-        # Check if an Org Admin already exists in this target_org
+        # Check if an Org Admin or President already exists in this target_org
         self.disabled_role_codes = set()
         org_admin_user = None
+        president_user = None
         if target_org:
             existing_org_admin = User.objects.filter(organization=target_org, role='org_admin', is_active=True)
             if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
@@ -171,7 +193,14 @@ class OfficerForm(forms.ModelForm):
                 org_admin_user = existing_org_admin.first()
                 self.disabled_role_codes.add('org_admin')
 
-        # Define role choices with Org Admin instead of President
+            existing_president = User.objects.filter(organization=target_org, role='president', is_active=True)
+            if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+                existing_president = existing_president.exclude(pk=self.instance.user.pk)
+            if existing_president.exists():
+                president_user = existing_president.first()
+                self.disabled_role_codes.add('president')
+
+        # Define role choices
         role_choices = []
         if 'org_admin' in self.disabled_role_codes and org_admin_user:
             admin_name = org_admin_user.get_full_name() or org_admin_user.username
@@ -179,12 +208,25 @@ class OfficerForm(forms.ModelForm):
         else:
             role_choices.append(('org_admin', 'Org Admin'))
 
+        if 'president' in self.disabled_role_codes and president_user:
+            pres_name = president_user.get_full_name() or president_user.username
+            role_choices.append(('president', f"President ({pres_name})"))
+        else:
+            role_choices.append(('president', 'President'))
+
         role_choices.append(('executive', 'Elected Officer'))
         role_choices.append(('committee_head', 'Committee Member'))
+
+        initial_role = None
+        if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+            initial_role = self.instance.user.role
+        else:
+            initial_role = 'executive' if 'org_admin' in self.disabled_role_codes else 'org_admin'
 
         self.fields['role'] = forms.ChoiceField(
             choices=role_choices,
             required=True,
+            initial=initial_role,
             widget=DisabledRoleSelect(
                 attrs={'class': 'form-select'},
                 disabled_choices=self.disabled_role_codes
@@ -200,15 +242,28 @@ class OfficerForm(forms.ModelForm):
             self.fields['role'].initial = user.role
             self.fields['profile_picture'].initial = user.profile_picture
 
+    def clean_username(self):
+        val = self.cleaned_data.get('username')
+        username = val.strip() if val else ''
+        if username:
+            qs = User.objects.filter(username__iexact=username)
+            if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+                qs = qs.exclude(pk=self.instance.user.pk)
+            if qs.exists():
+                raise forms.ValidationError("This username is already taken. Please choose another username.")
+        return username
+
     def clean_student_id(self):
-        student_id = self.cleaned_data.get('student_id', '').strip()
+        val = self.cleaned_data.get('student_id')
+        student_id = val.strip() if val else ''
         if student_id:
             qs = Officer.objects.filter(student_id__iexact=student_id)
             if self.instance and self.instance.pk:
                 qs = qs.exclude(pk=self.instance.pk)
             if qs.exists():
                 raise forms.ValidationError("This Student ID is already registered to an existing officer.")
-        return student_id
+            return student_id
+        return None
 
     def clean_position(self):
         position_val = self.cleaned_data.get('position')
@@ -231,6 +286,14 @@ class OfficerForm(forms.ModelForm):
         cleaned_data = super().clean()
         role = cleaned_data.get('role')
 
+        selected_org_pk = cleaned_data.get('organization')
+        if selected_org_pk:
+            from organizations.models import Organization
+            try:
+                self.target_org = Organization.objects.get(pk=selected_org_pk)
+            except Organization.DoesNotExist:
+                pass
+
         org = getattr(self, 'target_org', None)
         if not org and self.user_creator and hasattr(self.user_creator, 'get_organization'):
             org = self.user_creator.get_organization(self.request)
@@ -249,6 +312,18 @@ class OfficerForm(forms.ModelForm):
                     f"This organization already has an Org Admin ({admin_name}). An organization can only have one Org Admin."
                 )
 
+        if role == 'president' and org:
+            existing_pres = User.objects.filter(organization=org, role='president', is_active=True)
+            if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+                existing_pres = existing_pres.exclude(pk=self.instance.user.pk)
+
+            if existing_pres.exists():
+                pres_user = existing_pres.first()
+                pres_name = pres_user.get_full_name() or pres_user.username
+                raise forms.ValidationError(
+                    f"This organization already has a President ({pres_name}). An organization can only have one President."
+                )
+
         return cleaned_data
 
     def save(self, commit=True):
@@ -264,27 +339,53 @@ class OfficerForm(forms.ModelForm):
             base_uname = f"{first_name[0].lower()}{last_name.lower().replace(' ', '')}" if first_name and last_name else "user"
             username = base_uname
             count = 1
-            existing_user_id = officer.user.pk if (officer.pk and getattr(officer, 'user', None)) else None
+            existing_user_id = None
+            if officer.pk and hasattr(officer, 'user'):
+                try:
+                    if officer.user:
+                        existing_user_id = officer.user.pk
+                except Exception:
+                    pass
+
             while User.objects.filter(username=username).exclude(pk=existing_user_id).exists():
                 username = f"{base_uname}{count}"
                 count += 1
 
         target_org = getattr(self, 'target_org', None)
+        if not target_org:
+            from organizations.models import Organization
+            target_org = Organization.objects.filter(abbreviation='CSG').first() or Organization.objects.first()
 
-        if officer.pk and getattr(officer, 'user', None):
-            user = officer.user
-            user.first_name = first_name
-            user.last_name = last_name
-            user.username = username
-            user.email = email
-            user.role = role
-            if password:
-                user.set_password(password)
-            if target_org and not user.organization:
-                user.organization = target_org
-            if 'profile_picture' in self.changed_data:
-                user.profile_picture = self.cleaned_data.get('profile_picture')
-            user.save()
+        if officer.pk and hasattr(officer, 'user'):
+            try:
+                user = officer.user
+                user.first_name = first_name
+                user.last_name = last_name
+                user.username = username
+                user.email = email
+                user.role = role
+                if password:
+                    user.set_password(password)
+                if target_org:
+                    user.organization = target_org
+                if 'profile_picture' in self.changed_data:
+                    user.profile_picture = self.cleaned_data.get('profile_picture')
+                user.save()
+            except Exception:
+                user = User.objects.create_user(
+                    username=username,
+                    email=email,
+                    password=password or 'admin123',
+                    first_name=first_name,
+                    last_name=last_name,
+                    role=role
+                )
+                if target_org:
+                    user.organization = target_org
+                if self.cleaned_data.get('profile_picture'):
+                    user.profile_picture = self.cleaned_data.get('profile_picture')
+                user.save()
+                officer.user = user
         else:
             user = User.objects.create_user(
                 username=username,

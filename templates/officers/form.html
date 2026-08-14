@@ -29,6 +29,16 @@
           <form method="post" enctype="multipart/form-data">
             {% csrf_token %}
 
+            {% if form.non_field_errors %}
+            <div class="alert alert-danger border-0 p-3 mb-4" style="border-radius:12px;background:#FFF1F2;border:1px solid #FECDD3;color:#991B1B">
+              {% for error in form.non_field_errors %}
+              <div class="d-flex align-items-center gap-2" style="font-size:13px;font-weight:600">
+                <i class="bi bi-exclamation-octagon-fill text-danger"></i> {{ error }}
+              </div>
+              {% endfor %}
+            </div>
+            {% endif %}
+
             <!-- Section 1: User Identity & Profile Photo -->
             <div class="mb-4">
               <h6 class="fw-bold text-dark mb-3 pb-2 border-bottom" style="font-size:13px">
@@ -69,6 +79,7 @@
                   </button>
                   {% endif %}
                   <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" style="display:none" onchange="handleProfilePhotoSelect(this, 'avatarPreviewForm', 'avatarFallbackForm')">
+                  {% if form.profile_picture.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.profile_picture.errors.0 }}</div>{% endif %}
                 </div>
               </div>
 
@@ -103,6 +114,14 @@
                 <i class="bi bi-diagram-3 me-1 text-primary"></i> 2. System Role & Position Assignment
               </h6>
               <div class="row g-3">
+                {% if form.organization %}
+                <div class="col-md-6">
+                  <label class="form-label fw-semibold" style="font-size:12px">Target Organization <span class="text-danger">*</span></label>
+                  {{ form.organization }}
+                  <small class="text-muted d-block" style="font-size:11px">Organization for this officer account.</small>
+                  {% if form.organization.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.organization.errors.0 }}</div>{% endif %}
+                </div>
+                {% endif %}
                 <div class="col-md-6">
                   <label class="form-label fw-semibold" style="font-size:12px">System Role <span class="text-danger">*</span></label>
                   {{ form.role }}
@@ -118,6 +137,7 @@
                 <div class="col-md-6">
                   <label class="form-label fw-semibold" style="font-size:12px">Student ID</label>
                   {{ form.student_id }}
+                  {% if form.student_id.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.student_id.errors.0 }}</div>{% endif %}
                 </div>
                 <div class="col-md-6">
                   <label class="form-label fw-semibold" style="font-size:12px">Account Password</label>

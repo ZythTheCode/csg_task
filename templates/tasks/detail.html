@@ -199,12 +199,11 @@
         {% for officer in task.assigned_officers.all %}
         <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:var(--pink-50);border-radius:12px">
           <div>
-            <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ officer.get_full_name|default:officer.username }}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)">
+              {{ officer.get_full_name|default:officer.username }} {% if officer.position_title %}<span class="text-muted fw-semibold" style="font-size:12px">({{ officer.position_title }})</span>{% endif %}
+            </div>
             <div style="font-size:11px;color:var(--slate-500)">{{ officer.email }}</div>
           </div>
-          <span class="badge bg-light text-primary border" style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px">
-            {{ officer.position_title }}
-          </span>
         </div>
         {% empty %}
         <p class="text-muted" style="font-size:13px">No officers assigned.</p>

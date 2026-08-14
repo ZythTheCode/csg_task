@@ -395,12 +395,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const assignedList = document.getElementById('modalTaskAssignedList');
         if (data.assigned_officers && data.assigned_officers.length > 0) {
-          assignedList.innerHTML = data.assigned_officers.map(off => `
-            <div class="d-flex align-items-center justify-content-between p-2" style="background:var(--pink-50);border-radius:8px">
-              <span class="badge bg-light text-primary border" style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px">${off.position_title || off.role}</span>
-              <span style="font-size:12.5px;font-weight:700;color:var(--primary)">${off.name}</span>
-            </div>
-          `).join('');
+          assignedList.innerHTML = data.assigned_officers.map(off => {
+            const posStr = (off.position_title || off.position) ? ` (${off.position_title || off.position})` : '';
+            return `
+              <div class="d-flex align-items-center p-2" style="background:var(--pink-50);border-radius:8px">
+                <span style="font-size:12.5px;font-weight:700;color:var(--slate-800)">${off.name}${posStr}</span>
+              </div>
+            `;
+          }).join('');
         } else {
           assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
         }

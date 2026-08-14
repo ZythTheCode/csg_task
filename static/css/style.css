@@ -1646,26 +1646,31 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 
 @media (max-width: 767.98px) {
-  .topbar-title { font-size: 14.5px; max-width: 180px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .page-breadcrumb { font-size: 10px; }
-  .topbar-right { gap: 8px; }
+  .topbar-title { font-size: 14.5px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .page-breadcrumb { font-size: 10px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-right { gap: 6px; }
+  .topbar-right .dropdown button { max-width: 130px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .stat-card { padding: 18px 14px; }
   .stat-card .stat-value { font-size: 24px; }
   .stat-card .stat-icon { width: 42px; height: 42px; font-size: 19px; margin-bottom: 10px; }
-  .table-custom-container { border-radius: 14px; }
+  .table-custom-container { border-radius: 14px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
   .table-custom thead th { padding: 10px 8px; font-size: 10.5px; }
   .table-custom tbody td { padding: 8px 8px; font-size: 12px; }
   .chart-container { height: 200px !important; }
   .kanban-board-container { gap: 12px; overflow-x: auto; padding-bottom: 8px; }
   .kanban-column { flex: 0 0 85vw; min-width: 270px; }
   .btn-primary-custom, .btn-secondary-custom, .btn-danger-custom, .btn-outline-custom { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
+  .badge { max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 }
 
 @media (max-width: 575.98px) {
-  .page-content { padding: 14px 10px; }
-  .topbar { height: 60px; padding: 0 12px; }
-  .topbar-avatar { width: 34px; height: 34px; font-size: 12px; }
-  .topbar-icon-btn { width: 38px; height: 38px; font-size: 14px; }
+  body { overflow-x: hidden; }
+  .main-wrapper { overflow-x: hidden; }
+  .page-content { padding: 12px 10px; overflow-x: hidden; }
+  .topbar { height: 60px; padding: 0 10px; }
+  .topbar-avatar { width: 32px; height: 32px; font-size: 11.5px; }
+  .topbar-icon-btn { width: 36px; height: 36px; font-size: 13.5px; }
+  .sidebar-brand-text h6, .sidebar-brand-text small { max-width: 130px !important; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
   .stat-card { padding: 12px 10px; }
   .stat-card .stat-value { font-size: 20px; }
   .stat-card .stat-label { font-size: 11px; }
@@ -1677,15 +1682,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .login-card { padding: 24px 16px; border-radius: 18px; }
   .toast-container { left: 12px; right: 12px; top: 68px; min-width: auto; }
   .filter-chip { padding: 4px 10px; font-size: 11.5px; }
-  .btn-primary-custom, .btn-secondary-custom, .btn-danger-custom, .btn-outline-custom { padding: 8px 14px; font-size: 12px; min-height: 40px; }
-  .form-control, .form-select { min-height: 40px; font-size: 13px !important; }
+  .btn-primary-custom, .btn-secondary-custom, .btn-danger-custom, .btn-outline-custom { padding: 8px 12px; font-size: 12px; min-height: 38px; }
+  .form-control, .form-select { min-height: 38px; font-size: 13px !important; }
+  .glass-card { border-radius: 14px; padding: 16px; }
+  .notif-item-container { flex-direction: column; align-items: flex-start; gap: 10px; }
+  .notif-side-meta { align-items: flex-start; margin-left: 0; margin-top: 4px; }
 }
 
 @media (max-width: 380px) {
   .stat-card { padding: 10px 8px; }
   .stat-card .stat-value { font-size: 18px; }
   .stat-card .stat-icon { width: 36px; height: 36px; font-size: 16px; margin-bottom: 8px; }
-  .topbar-title { max-width: 130px; }
+  .topbar-title { max-width: 120px; }
 }
 
 

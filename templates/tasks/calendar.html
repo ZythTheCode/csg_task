@@ -14,7 +14,42 @@
     border-radius: 20px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.04);
     padding: 24px;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
   }
+
+  /* ── 1. REMOVE HYPERLINK UNDERLINES ACROSS ALL CALENDAR VIEWS ── */
+  .fc a,
+  .fc a:hover,
+  .fc a:focus,
+  .fc-col-header-cell-cushion,
+  .fc-daygrid-day-number,
+  .fc-event,
+  .fc-event-title,
+  .fc-event-main,
+  .fc-list-day-text,
+  .fc-list-day-side-text,
+  .fc-list-event-title,
+  .fc-list-event-title a,
+  .fc-timegrid-slot-label-cushion,
+  .fc-timegrid-axis-cushion {
+    text-decoration: none !important;
+  }
+
+  /* ── 2. PROMINENT TODAY CELL HIGHLIGHT ── */
+  .fc-day-today {
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(99, 102, 241, 0.12) 100%) !important;
+    border-left: 4px solid #3b82f6 !important;
+  }
+  .fc-day-today .fc-daygrid-day-number {
+    background: #3b82f6 !important;
+    color: #ffffff !important;
+    border-radius: 8px !important;
+    padding: 2px 8px !important;
+    margin: 3px;
+    display: inline-block;
+    box-shadow: 0 2px 6px rgba(59, 130, 246, 0.35);
+  }
+
   .fc-theme-standard td, .fc-theme-standard th {
     border-color: #f1f5f9 !important;
   }
@@ -63,11 +98,7 @@
   .fc-daygrid-day-number {
     font-weight: 700;
     color: var(--slate-700);
-    text-decoration: none !important;
     padding: 6px 10px !important;
-  }
-  .fc-day-today {
-    background-color: rgba(59, 130, 246, 0.04) !important;
   }
   .task-modal-header {
     border-bottom: 1px solid #f1f5f9;
@@ -94,6 +125,106 @@
     align-items: center;
     justify-content: center;
     border: 2px solid #fff;
+  }
+
+  /* ── 3. NIGHT MODE / DARK MODE HIGH CONTRAST STYLING ── */
+  [data-mode="dark"] .calendar-glass-card {
+    background: rgba(30, 41, 59, 0.95) !important;
+    border-color: #334155 !important;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  }
+  [data-mode="dark"] .fc-theme-standard td,
+  [data-mode="dark"] .fc-theme-standard th,
+  [data-mode="dark"] .fc-scrollgrid,
+  [data-mode="dark"] .fc-theme-standard .fc-scrollgrid {
+    border-color: #334155 !important;
+  }
+  [data-mode="dark"] .fc-toolbar-title {
+    color: #f8fafc !important;
+  }
+  [data-mode="dark"] .fc-button-primary {
+    background-color: #1e293b !important;
+    color: #cbd5e1 !important;
+    border-color: #475569 !important;
+  }
+  [data-mode="dark"] .fc-button-primary:hover,
+  [data-mode="dark"] .fc-button-primary:focus {
+    background-color: #334155 !important;
+    color: #ffffff !important;
+    border-color: #64748b !important;
+  }
+  [data-mode="dark"] .fc-button-active {
+    background-color: var(--primary) !important;
+    color: #ffffff !important;
+    border-color: var(--primary) !important;
+  }
+  [data-mode="dark"] .fc-col-header-cell {
+    background-color: #0f172a !important;
+  }
+  [data-mode="dark"] .fc-col-header-cell-cushion {
+    color: #f1f5f9 !important;
+    font-weight: 700 !important;
+  }
+  [data-mode="dark"] .fc-daygrid-day-number {
+    color: #e2e8f0 !important;
+  }
+  [data-mode="dark"] .fc-day-other .fc-daygrid-day-number {
+    color: #64748b !important;
+  }
+  [data-mode="dark"] .fc-day-today {
+    background: linear-gradient(135deg, rgba(37, 99, 235, 0.3) 0%, rgba(79, 70, 229, 0.25) 100%) !important;
+    border-left: 4px solid #60a5fa !important;
+  }
+  [data-mode="dark"] .fc-day-today .fc-daygrid-day-number {
+    background: #2563eb !important;
+    color: #ffffff !important;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.6);
+  }
+  [data-mode="dark"] .fc-timegrid-slot {
+    border-color: #334155 !important;
+  }
+  [data-mode="dark"] .fc-timegrid-slot-label-cushion,
+  [data-mode="dark"] .fc-timegrid-axis-cushion {
+    color: #cbd5e1 !important;
+  }
+  [data-mode="dark"] .fc-list-day-cushion {
+    background-color: #0f172a !important;
+  }
+  [data-mode="dark"] .fc-list-day-text,
+  [data-mode="dark"] .fc-list-day-side-text {
+    color: #f8fafc !important;
+  }
+  [data-mode="dark"] .fc-list-event:hover td {
+    background-color: #334155 !important;
+  }
+  [data-mode="dark"] .fc-list-event-title,
+  [data-mode="dark"] .fc-list-event-title a {
+    color: #f1f5f9 !important;
+  }
+  [data-mode="dark"] #taskCalendarDetailModal .modal-content {
+    background-color: #1e293b !important;
+    color: #f8fafc !important;
+    border: 1px solid #334155 !important;
+  }
+  [data-mode="dark"] #taskCalendarDetailModal .task-modal-header {
+    background: #0f172a !important;
+    border-bottom-color: #334155 !important;
+  }
+  [data-mode="dark"] #taskCalendarDetailModal .task-modal-header h6 {
+    color: #f8fafc !important;
+  }
+  [data-mode="dark"] #taskCalendarDetailModal .rounded-3[style*="background:#f8fafc"] {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #f8fafc !important;
+  }
+  [data-mode="dark"] #taskCalendarDetailModal #calModalTaskDesc {
+    background: #0f172a !important;
+    border-color: #334155 !important;
+    color: #cbd5e1 !important;
+  }
+  [data-mode="dark"] #taskCalendarDetailModal .fw-bold.text-dark {
+    color: #f8fafc !important;
   }
 </style>
 {% endblock %}
@@ -204,8 +335,8 @@
     <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden">
       <div class="task-modal-header d-flex justify-content-between align-items-center">
         <div class="d-flex align-items-center gap-2">
-          <span id="modalTaskNumber" class="badge bg-dark text-white px-2.5 py-1 rounded-pill" style="font-size:12px;font-weight:700"></span>
-          <h6 id="modalTaskTitle" class="mb-0 fw-bold" style="font-size:16px;color:var(--slate-800)"></h6>
+          <span id="calModalTaskNumber" class="badge bg-dark text-white px-2.5 py-1 rounded-pill" style="font-size:12px;font-weight:700"></span>
+          <h6 id="calModalTaskTitle" class="mb-0 fw-bold" style="font-size:16px;color:var(--slate-800)"></h6>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -213,27 +344,27 @@
       <div class="modal-body p-4">
         <!-- Status, Priority, Org Badges -->
         <div class="d-flex flex-wrap align-items-center gap-2 mb-3">
-          <span id="modalCategoryBadge" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
-          <span id="modalStatusBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
-          <span id="modalPriorityBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
-          <span id="modalOrgBadge" class="badge bg-light text-secondary border px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:600"></span>
+          <span id="calModalCategoryBadge" class="badge bg-primary-subtle text-primary border border-primary-subtle px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
+          <span id="calModalStatusBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
+          <span id="calModalPriorityBadge" class="badge px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:700"></span>
+          <span id="calModalOrgBadge" class="badge bg-light text-secondary border px-3 py-1.5 rounded-pill" style="font-size:12px;font-weight:600"></span>
         </div>
 
         <!-- Progress Bar -->
         <div class="mb-4 p-3 rounded-3" style="background:#f8fafc;border:1px solid #f1f5f9">
           <div class="d-flex justify-content-between align-items-center mb-1">
             <span class="fw-semibold text-muted" style="font-size:12.5px">Task Completion Progress</span>
-            <span id="modalProgressText" class="fw-bold text-primary" style="font-size:13px"></span>
+            <span id="calModalProgressText" class="fw-bold text-primary" style="font-size:13px"></span>
           </div>
           <div class="progress" style="height:8px;border-radius:10px">
-            <div id="modalProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%"></div>
+            <div id="calModalProgressBar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width:0%"></div>
           </div>
         </div>
 
         <!-- Description -->
         <div class="mb-4">
           <h6 class="fw-bold text-dark mb-2" style="font-size:13px">Description</h6>
-          <div id="modalTaskDesc" class="p-3 rounded-3 text-secondary" style="background:#fff;border:1px solid #e2e8f0;font-size:13.5px;line-height:1.6;white-space:pre-wrap"></div>
+          <div id="calModalTaskDesc" class="p-3 rounded-3 text-secondary" style="background:#fff;border:1px solid #e2e8f0;font-size:13.5px;line-height:1.6;white-space:pre-wrap"></div>
         </div>
 
         <!-- Metadata Grid -->
@@ -241,14 +372,14 @@
           <div class="col-sm-6">
             <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #f1f5f9">
               <span class="text-muted d-block mb-1" style="font-size:11.5px;font-weight:600;text-transform:uppercase">Due Date</span>
-              <span id="modalDueDate" class="fw-bold text-dark" style="font-size:13.5px"><i data-lucide="calendar" class="me-1 text-primary" style="width:14px;height:14px"></i></span>
+              <span id="calModalDueDate" class="fw-bold text-dark" style="font-size:13.5px"><i data-lucide="calendar" class="me-1 text-primary" style="width:14px;height:14px"></i></span>
             </div>
           </div>
 
           <div class="col-sm-6">
             <div class="p-3 rounded-3" style="background:#f8fafc;border:1px solid #f1f5f9">
               <span class="text-muted d-block mb-1" style="font-size:11.5px;font-weight:600;text-transform:uppercase">Created By</span>
-              <span id="modalCreatedBy" class="fw-bold text-dark" style="font-size:13.5px"><i data-lucide="user" class="me-1 text-primary" style="width:14px;height:14px"></i></span>
+              <span id="calModalCreatedBy" class="fw-bold text-dark" style="font-size:13.5px"><i data-lucide="user" class="me-1 text-primary" style="width:14px;height:14px"></i></span>
             </div>
           </div>
         </div>
@@ -256,13 +387,13 @@
         <!-- Assigned Officers -->
         <div class="mt-4">
           <h6 class="fw-bold text-dark mb-2" style="font-size:13px">Assigned Officers</h6>
-          <div id="modalOfficersList" class="d-flex flex-wrap gap-2"></div>
+          <div id="calModalOfficersList" class="d-flex flex-wrap gap-2"></div>
         </div>
       </div>
 
       <div class="modal-footer border-top-0 px-4 pb-4 pt-0">
         <button type="button" class="btn btn-secondary-custom" data-bs-dismiss="modal">Close</button>
-        <a id="modalDetailLink" href="#" class="btn btn-primary-custom" style="padding:8px 20px">
+        <a id="calModalDetailLink" href="#" class="btn btn-primary-custom" style="padding:8px 20px">
           <i data-lucide="external-link" class="me-1" style="width:14px;height:14px"></i> Open Full Task Details
         </a>
       </div>
@@ -318,21 +449,22 @@
         info.jsEvent.preventDefault();
         var props = info.event.extendedProps;
 
-        // Populate Modal Fields
-        document.getElementById('modalTaskNumber').textContent = props.task_number || 'TASK';
-        document.getElementById('modalTaskTitle').textContent = props.title || '';
-        document.getElementById('modalTaskDesc').textContent = props.description || 'No description available.';
-        document.getElementById('modalDueDate').innerHTML = '<i data-lucide="calendar" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.due_date || 'No Due Date');
-        document.getElementById('modalCreatedBy').innerHTML = '<i data-lucide="user" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.created_by || 'System');
+        // Populate Modal Fields dynamically (using unique calModal... IDs)
+        document.getElementById('calModalTaskNumber').textContent = props.task_number || 'TASK';
+        document.getElementById('calModalTaskTitle').textContent = props.title || info.event.title || 'Untitled Task';
+        document.getElementById('calModalTaskDesc').textContent = props.description || 'No description available.';
+        document.getElementById('calModalDueDate').innerHTML = '<i data-lucide="calendar" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.due_date || 'No Due Date');
+        document.getElementById('calModalCreatedBy').innerHTML = '<i data-lucide="user" class="me-1 text-primary" style="width:14px;height:14px"></i>' + (props.created_by || 'System');
+        
         // Category Badge
-        var catBadge = document.getElementById('modalCategoryBadge');
+        var catBadge = document.getElementById('calModalCategoryBadge');
         catBadge.textContent = props.category_display || 'Document';
         catBadge.className = 'badge-status badge-category-' + (props.category || 'document');
-        document.getElementById('modalOrgBadge').textContent = props.org_name || 'Organization';
-        document.getElementById('modalDetailLink').setAttribute('href', props.detail_url);
+        document.getElementById('calModalOrgBadge').textContent = props.org_name || 'Organization';
+        document.getElementById('calModalDetailLink').setAttribute('href', props.detail_url);
 
         // Status Badge
-        var statusBadge = document.getElementById('modalStatusBadge');
+        var statusBadge = document.getElementById('calModalStatusBadge');
         statusBadge.textContent = props.status_display || props.status;
         statusBadge.className = 'badge px-3 py-1.5 rounded-pill ';
         if (props.status === 'completed') {
@@ -344,7 +476,7 @@
         }
 
         // Priority Badge
-        var priorityBadge = document.getElementById('modalPriorityBadge');
+        var priorityBadge = document.getElementById('calModalPriorityBadge');
         priorityBadge.textContent = (props.priority_display || props.priority) + ' Priority';
         priorityBadge.className = 'badge px-3 py-1.5 rounded-pill ';
         if (props.priority === 'urgent') {
@@ -359,8 +491,8 @@
 
         // Progress Bar
         var progress = props.progress || 0;
-        document.getElementById('modalProgressText').textContent = progress + '%';
-        var progressBar = document.getElementById('modalProgressBar');
+        document.getElementById('calModalProgressText').textContent = progress + '%';
+        var progressBar = document.getElementById('calModalProgressBar');
         progressBar.style.width = progress + '%';
         progressBar.className = 'progress-bar progress-bar-striped progress-bar-animated ';
         if (progress >= 100) {
@@ -371,22 +503,24 @@
           progressBar.classList.add('bg-warning');
         }
 
-        // Officers List
-        var officersContainer = document.getElementById('modalOfficersList');
+        // Officers List (Format: Name (Position))
+        var officersContainer = document.getElementById('calModalOfficersList');
         officersContainer.innerHTML = '';
         if (props.officers && props.officers.length > 0) {
           props.officers.forEach(function(off) {
-            var badge = document.createElement('span');
+            var badge = document.createElement('div');
             badge.className = 'badge bg-light text-dark border p-1.5 pe-3 d-inline-flex align-items-center gap-2 rounded-pill';
+            var posStr = off.position ? ' (' + off.position + ')' : '';
+            var fullNameWithPos = off.name + posStr;
             if (off.pic_url) {
-              badge.innerHTML = '<img src="' + off.pic_url + '" class="officer-avatar-sm" alt="' + off.name + '"><span style="font-size:12.5px;font-weight:600">' + off.name + '</span>';
+              badge.innerHTML = '<img src="' + off.pic_url + '" class="officer-avatar-sm" alt="' + off.name + '"><span style="font-size:12.5px;font-weight:600">' + fullNameWithPos + '</span>';
             } else {
-              badge.innerHTML = '<span class="officer-avatar-fallback">' + (off.initials || 'O') + '</span><span style="font-size:12.5px;font-weight:600">' + off.name + '</span>';
+              badge.innerHTML = '<span class="officer-avatar-fallback">' + (off.initials || 'O') + '</span><span style="font-size:12.5px;font-weight:600">' + fullNameWithPos + '</span>';
             }
             officersContainer.appendChild(badge);
           });
         } else {
-          officersContainer.innerHTML = '<span class="text-muted style="font-size:12.5px">No officers assigned</span>';
+          officersContainer.innerHTML = '<span class="text-muted" style="font-size:12.5px">No officers assigned</span>';
         }
 
         // Re-initialize Lucide Icons inside modal
@@ -394,8 +528,9 @@
           lucide.createIcons();
         }
 
-        // Show Modal
-        var modal = new bootstrap.Modal(document.getElementById('taskCalendarDetailModal'));
+        // Show Modal safely using getOrCreateInstance
+        var modalEl = document.getElementById('taskCalendarDetailModal');
+        var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
         modal.show();
       }
     });

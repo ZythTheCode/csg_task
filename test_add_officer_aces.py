@@ -13,7 +13,7 @@ from django.test import RequestFactory
 rf = RequestFactory()
 request = rf.get('/officers/create/')
 admin = User.objects.filter(role='super_admin').first()
-aces_org = Organization.objects.get(abbreviation='ACES')
+aces_org = Organization.objects.filter(abbreviation__iexact='ace').first() or Organization.objects.first()
 
 request.user = admin
 request.session = {'active_org_id': aces_org.pk}

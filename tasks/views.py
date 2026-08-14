@@ -475,6 +475,7 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
                 {
                     'id': u.id,
                     'name': u.get_full_name() or u.username,
+                    'position': u.position_title,
                     'initials': u.position_initials,
                     'pic_url': u.profile_picture.url if u.profile_picture else None
                 } for u in task.assigned_officers.all()

@@ -129,5 +129,5 @@ class User(AbstractUser):
 
     @property
     def can_manage_officers(self):
-        return self.role in ['super_admin', 'org_admin']
+        return self.role in ['super_admin', 'org_admin', 'president']
 
