@@ -26,6 +26,8 @@ class TaskForm(forms.ModelForm):
 
     def __init__(self, *args, user=None, request=None, **kwargs):
         super().__init__(*args, **kwargs)
+        if 'status' in self.fields:
+            self.fields['status'].choices = [(k, v) for k, v in Task.STATUS_CHOICES if k not in ['completed', 'overdue']]
         if user:
             org = user.get_organization(request) if hasattr(user, 'get_organization') else getattr(user, 'organization', None)
             if org:
@@ -44,6 +46,11 @@ class TaskProgressForm(forms.ModelForm):
             'progress': forms.NumberInput(attrs={'class': 'form-control', 'min': 0, 'max': 100}),
             'status': forms.Select(attrs={'class': 'form-select'}),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if 'status' in self.fields:
+            self.fields['status'].choices = [(k, v) for k, v in Task.STATUS_CHOICES if k not in ['completed', 'overdue']]
 
 
 class CommentForm(forms.ModelForm):

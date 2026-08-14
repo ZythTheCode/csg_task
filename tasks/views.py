@@ -50,34 +50,36 @@ class TaskListView(LoginRequiredMixin, ListView):
         else:
             qs = Task.objects.filter(is_archived=False)
 
-        scope = self.request.GET.get('scope', 'my_tasks')
-        if scope == 'my_tasks':
-            qs = qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
-
-        # Overdue handling is now purely visual/dynamic
         today = timezone.now().date()
-
-        # Search
         q = self.request.GET.get('q', '')
         if q:
             qs = qs.filter(Q(title__icontains=q) | Q(task_number__icontains=q) | Q(description__icontains=q))
 
-        # Filters
         status = self.request.GET.get('status', '')
+        scope = self.request.GET.get('scope', 'my_tasks')
+
         if status == 'completed':
             qs = qs.filter(status='completed')
-        elif status == 'active':
-            qs = qs.exclude(status='completed')
-        elif status == 'overdue':
-            qs = qs.filter(due_date__lt=today).exclude(status='completed')
-        elif status == 'in_progress':
-            qs = qs.exclude(status__in=['not_started', 'completed'])
-        elif status == 'all_status' or status == 'all':
-            pass
-        elif status:
-            qs = qs.filter(status=status)
+        elif scope == 'my_tasks':
+            qs = qs.filter(Q(assigned_officers=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
+            if status == 'active' or not status:
+                qs = qs.exclude(status='completed')
+            elif status == 'overdue':
+                qs = qs.filter(due_date__lt=today).exclude(status='completed')
+            elif status == 'in_progress':
+                qs = qs.exclude(status__in=['not_started', 'completed'])
+            elif status and status not in ['all_status', 'all']:
+                qs = qs.filter(status=status)
         else:
-            qs = qs.exclude(status='completed')
+            # scope == 'all': All Tasks under Active Tasks shows all active tasks of the organization
+            if status == 'active' or not status:
+                qs = qs.exclude(status='completed')
+            elif status == 'overdue':
+                qs = qs.filter(due_date__lt=today).exclude(status='completed')
+            elif status == 'in_progress':
+                qs = qs.exclude(status__in=['not_started', 'completed'])
+            elif status and status not in ['all_status', 'all']:
+                qs = qs.filter(status=status)
 
         due_this_week = self.request.GET.get('due_this_week', '')
         if due_this_week == 'true':
@@ -446,7 +448,7 @@ class TaskBoardView(LoginRequiredMixin, ListView):
 
         scope = self.request.GET.get('scope', 'my_tasks')
         if scope == 'my_tasks':
-            base_qs = base_qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
+            base_qs = base_qs.filter(Q(assigned_officers=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
 
         q = self.request.GET.get('q', '')
         if q:
@@ -466,7 +468,7 @@ class TaskBoardView(LoginRequiredMixin, ListView):
 
         columns = []
         for status_code, status_label in Task.STATUS_CHOICES:
-            if status_code == 'overdue':
+            if status_code in ['overdue', 'completed']:
                 continue
             col_tasks = base_qs.filter(status=status_code).prefetch_related('assigned_officers', 'created_by')
             columns.append({
@@ -524,9 +526,9 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
         else:
             qs = Task.objects.filter(is_archived=False)
 
-        scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
+        scope = request.GET.get('scope', 'my_tasks')
         if scope == 'my_tasks':
-            qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user) | Q(assignments__officer=request.user)).distinct()
+            qs = qs.filter(Q(assigned_officers=request.user) | Q(assignments__officer=request.user)).distinct()
 
         # Filters
         q = request.GET.get('q', '')

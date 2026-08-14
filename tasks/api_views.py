@@ -63,20 +63,27 @@ class DashboardChartsAPIView(APIView):
         for p, label in Task.PRIORITY_CHOICES:
             priority_data[label] = base_qs.filter(priority=p).count()
 
-        # Monthly completed (last 6 months)
+        # Monthly completed (starting in August 2026)
         monthly_labels = []
         monthly_data = []
-        for i in range(5, -1, -1):
-            year = today.year
-            month = today.month - i
-            while month <= 0:
-                month += 12
-                year -= 1
-            month_start = datetime.date(year, month, 1)
-            if month == 12:
-                month_end = datetime.date(year + 1, 1, 1) - datetime.timedelta(days=1)
+
+        start_year = 2026
+        start_month = 8  # August 2026
+
+        num_months = max(6, (today.year - start_year) * 12 + (today.month - start_month + 1))
+        curr_year = start_year
+        curr_month = start_month
+
+        for _ in range(num_months):
+            month_start = datetime.date(curr_year, curr_month, 1)
+            if curr_month == 12:
+                month_end = datetime.date(curr_year + 1, 1, 1) - datetime.timedelta(days=1)
+                next_year = curr_year + 1
+                next_month = 1
             else:
-                month_end = datetime.date(year, month + 1, 1) - datetime.timedelta(days=1)
+                month_end = datetime.date(curr_year, curr_month + 1, 1) - datetime.timedelta(days=1)
+                next_year = curr_year
+                next_month = curr_month + 1
 
             from django.db.models import Q
             count = base_qs.filter(
@@ -87,6 +94,9 @@ class DashboardChartsAPIView(APIView):
             ).count()
             monthly_labels.append(month_start.strftime('%b %Y'))
             monthly_data.append(count)
+
+            curr_year = next_year
+            curr_month = next_month
 
         # Position abbreviation lookup
         POSITION_ABBREV = {

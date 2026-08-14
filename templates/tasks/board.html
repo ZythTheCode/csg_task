@@ -22,15 +22,6 @@
     </div>
 
     <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i data-lucide="plus" style="width:16px;height:16px"></i> New Task</a>
-    <div class="dropdown">
-      <button class="btn btn-secondary-custom btn-sm dropdown-toggle" data-bs-toggle="dropdown" data-bs-boundary="window">
-        <i data-lucide="download" style="width:14px;height:14px"></i> Export
-      </button>
-      <ul class="dropdown-menu shadow-sm border-0" style="border-radius:16px;padding:8px">
-        <li><a class="dropdown-item rounded-2 py-2" href="{% url 'tasks:export_pdf' %}"><i data-lucide="file-text" class="me-2 text-danger" style="width:16px;height:16px"></i>Export PDF</a></li>
-        <li><a class="dropdown-item rounded-2 py-2" href="{% url 'tasks:export_excel' %}"><i data-lucide="file-spreadsheet" class="me-2 text-success" style="width:16px;height:16px"></i>Export Excel</a></li>
-      </ul>
-    </div>
   </div>
 </div>
 

@@ -35,14 +35,18 @@ class ReportsDashboardView(LoginRequiredMixin, TemplateView):
         filters = self._get_filters()
         tasks = self._get_filtered_tasks(filters)
         ctx['tasks'] = tasks
+        ctx['active_tasks'] = tasks.exclude(status='completed')
+        ctx['completed_tasks'] = tasks.filter(status='completed')
         ctx['filters'] = filters
         ctx['task_count'] = tasks.count()
+        ctx['active_count'] = ctx['active_tasks'].count()
+        ctx['completed_count'] = ctx['completed_tasks'].count()
         ctx['scope'] = filters['scope']
 
         # Summary stats
         ctx['summary'] = {
             'total': tasks.count(),
-            'completed': tasks.filter(status='completed').count(),
+            'completed': ctx['completed_count'],
             'overdue': tasks.filter(due_date__lt=timezone.now().date()).exclude(status='completed').count(),
             'in_progress': tasks.exclude(status__in=['not_started', 'completed']).count(),
         }

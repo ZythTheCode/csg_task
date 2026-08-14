@@ -9,28 +9,23 @@
   </div>
   <div class="d-flex gap-2 align-items-center flex-wrap">
     <!-- Scope Switcher -->
+    {% if current_filters.status != 'completed' %}
     <div class="btn-group p-1 me-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <button type="button" onclick="setScope('my_tasks')" class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks</button>
       <button type="button" onclick="setScope('all')" class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks</button>
     </div>
+    {% endif %}
 
     <!-- View Switcher -->
+    {% if current_filters.status != 'completed' %}
     <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}" class="btn btn-sm btn-primary-custom" style="font-size:12.5px;padding:4px 14px"><i data-lucide="list" class="me-1" style="width:14px;height:14px"></i> List</a>
       <a href="{% url 'tasks:board' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px"><i data-lucide="kanban" class="me-1" style="width:14px;height:14px"></i> Board</a>
       <a href="{% url 'tasks:calendar' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px"><i data-lucide="calendar" class="me-1" style="width:14px;height:14px"></i> Calendar</a>
     </div>
+    {% endif %}
 
     <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i data-lucide="plus" style="width:16px;height:16px"></i> New Task</a>
-    <div class="dropdown">
-      <button class="btn btn-secondary-custom btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-        <i data-lucide="download" style="width:14px;height:14px"></i> Export
-      </button>
-      <ul class="dropdown-menu shadow-sm border-0" style="border-radius:16px;padding:8px">
-        <li><a class="dropdown-item rounded-2 py-2" href="{% url 'tasks:export_pdf' %}?{{ request.GET.urlencode }}"><i data-lucide="file-text" class="me-2 text-danger" style="width:16px;height:16px"></i>Export PDF</a></li>
-        <li><a class="dropdown-item rounded-2 py-2" href="{% url 'tasks:export_excel' %}?{{ request.GET.urlencode }}"><i data-lucide="file-spreadsheet" class="me-2 text-success" style="width:16px;height:16px"></i>Export Excel</a></li>
-      </ul>
-    </div>
   </div>
 </div>
 
@@ -81,11 +76,11 @@
       </div>
       <div class="col-12 col-sm-6 col-lg-2">
         <select name="status" class="form-select" style="font-size:13.5px">
-          <option value="active" {% if current_filters.status != 'completed' %}selected{% endif %}>Active Tasks (Default)</option>
-          <option value="completed" {% if current_filters.status == 'completed' %}selected{% endif %}>Completed Tasks Section</option>
-          <option value="" disabled>──────────</option>
+          <option value="">All Statuses</option>
           {% for val, label in status_choices %}
+          {% if val != 'completed' and val != 'overdue' %}
           <option value="{{ val }}" {% if current_filters.status == val %}selected{% endif %}>{{ label }}</option>
+          {% endif %}
           {% endfor %}
         </select>
       </div>
@@ -422,6 +417,9 @@
 window.setScope = function(scopeVal) {
   const url = new URL(window.location.href);
   url.searchParams.set('scope', scopeVal);
+  if (scopeVal === 'all') {
+    url.searchParams.delete('status');
+  }
   url.searchParams.delete('page');
   window.location.href = url.toString();
 };
