@@ -54,10 +54,26 @@
                 {% endfor %}
               </div>
             </div>
+            {% if is_edit %}
+            <div class="col-12 mt-3">
+              <div class="p-3 border rounded-3 bg-light" style="border-left:4px solid var(--primary) !important">
+                <label class="form-label fw-bold text-dark mb-1" style="font-size:13px"><i class="bi bi-shield-lock-fill text-primary me-1"></i>Confirm Organization Admin Password to Save Task Changes <span class="text-danger">*</span></label>
+                <small class="d-block text-muted mb-2" style="font-size:11.5px">For security authorization, enter the Organization Admin password to save changes to task {{ form.instance.task_number }}.</small>
+                <input type="password" name="admin_password" id="adminPasswordInput" class="form-control {% if admin_password_error %}is-invalid{% endif %}" placeholder="Enter Organization Admin password to authorize edit" required style="border-radius:12px">
+                {% if admin_password_error %}
+                <div class="invalid-feedback d-block fw-bold mt-1" style="font-size:12px">{{ admin_password_error }}</div>
+                {% endif %}
+              </div>
+            </div>
+            {% endif %}
           </div>
           <hr class="my-4" style="border-color:rgba(249, 168, 212, 0.2)">
           <div class="d-flex gap-2">
+            {% if is_edit %}
+            <button type="button" id="saveEditBtn" class="btn-primary-custom"><i data-lucide="check" style="width:16px;height:16px"></i>{{ form_action }}</button>
+            {% else %}
             <button type="submit" class="btn-primary-custom"><i data-lucide="check" style="width:16px;height:16px"></i>{{ form_action }}</button>
+            {% endif %}
             <a href="{% url 'tasks:list' %}" class="btn btn-secondary-custom">Cancel</a>
           </div>
         </form>
@@ -65,10 +81,41 @@
     </div>
   </div>
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
 <script>
-if (window.lucide) lucide.createIcons();
+document.addEventListener('DOMContentLoaded', function() {
+  if (window.lucide) lucide.createIcons();
+
+  const saveEditBtn = document.getElementById('saveEditBtn');
+  const adminPasswordInput = document.getElementById('adminPasswordInput');
+
+  if (saveEditBtn) {
+    saveEditBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const taskNum = '{{ form.instance.task_number|default:"" }}';
+      const taskMsg = taskNum ? `task <strong>${taskNum}</strong>` : 'this task';
+      showConfirmModal({
+        title: 'Edit Task',
+        subtitle: 'Please review before proceeding',
+        message: `Are you sure you want to save changes to ${taskMsg}?`,
+        btnText: 'Save Changes',
+        btnClass: 'btn-primary',
+        icon: 'bi-pencil-fill',
+        iconBg: '#E0E7FF',
+        iconColor: '#4338CA',
+        requirePassword: true,
+        onConfirm: function(pwd) {
+          if (adminPasswordInput) {
+            adminPasswordInput.value = pwd;
+          }
+          saveEditBtn.closest('form').submit();
+        }
+      });
+    });
+  }
+});
 </script>
 {% endblock %}

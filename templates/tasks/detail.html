@@ -9,14 +9,18 @@
   <div class="d-flex gap-2">
     {% if can_edit_task %}
     <a href="{% url 'tasks:edit' task.pk %}" class="btn btn-secondary-custom btn-sm"><i data-lucide="edit-3" style="width:14px;height:14px"></i>Edit</a>
+    <form method="post" action="{% url 'tasks:delete' task.pk %}" class="d-inline" data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This action cannot be undone." data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger" data-confirm-icon="bi-trash-fill" data-require-password="true">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger btn-sm" style="border-radius:30px;font-weight:700;padding:8px 18px"><i data-lucide="trash-2" style="width:14px;height:14px"></i> Delete</button>
+    </form>
     {% endif %}
     {% if user.has_task_override and task.assigned_officers.exists %}
     <button type="button" class="btn btn-warning btn-sm" id="nudgeBtn" style="border-radius:30px;font-weight:700;color:#fff;padding:8px 18px">
       <i data-lucide="bell" style="width:14px;height:14px"></i> Nudge
     </button>
     {% endif %}
-    {% if task.status == 'waiting_approval' and can_update_progress %}
-    <form method="post" action="{% url 'tasks:complete' task.pk %}" class="d-inline" data-confirm="Are you sure you want to mark task <strong>{{ task.task_number }}</strong> as complete?" data-confirm-title="Mark Task Complete" data-confirm-btn="Mark Complete" data-confirm-class="btn-success" data-confirm-icon="bi-check-circle-fill" data-confirm-icon-bg="#dcfce7" data-confirm-icon-color="#16a34a">
+    {% if task.status != 'completed' and can_update_progress %}
+    <form method="post" action="{% url 'tasks:complete' task.pk %}" class="d-inline" data-confirm="Are you sure you want to mark task <strong>{{ task.task_number }}</strong> as complete?" data-confirm-title="Mark Task Complete" data-confirm-btn="Mark Complete" data-confirm-class="btn-success" data-confirm-icon="bi-check-circle-fill" data-confirm-icon-bg="#dcfce7" data-confirm-icon-color="#16a34a" data-require-password="true">
       {% csrf_token %}
       <button type="submit" class="btn btn-success btn-sm" style="border-radius:30px;font-weight:700;padding:8px 18px"><i data-lucide="check-circle" style="width:14px;height:14px"></i> Mark Complete</button>
     </form>

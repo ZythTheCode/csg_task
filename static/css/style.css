@@ -460,9 +460,9 @@
 }
 
 [data-mode="dark"] .btn-sm-icon, [data-theme="dark"] .btn-sm-icon {
-  background: rgba(30,41,59,0.8) !important;
-  border-color: rgba(71,85,105,0.5) !important;
-  color: #CBD5E1 !important;
+  background: rgba(30,41,59,0.8);
+  border-color: rgba(71,85,105,0.5);
+  color: #CBD5E1;
 }
 
 [data-mode="dark"] .filter-bar, [data-mode="dark"] .search-bar-wrapper,
@@ -1333,7 +1333,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
 }
 .btn-sm-icon:hover {
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: #fff; border-color: transparent;
+  color: #fff !important; border-color: transparent;
   box-shadow: 0 4px 12px rgba(255, 79, 163, 0.3);
 }
 

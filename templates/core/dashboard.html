@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load task_filters %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center align-items-start gap-3 mb-4">
@@ -18,28 +19,28 @@
 <div class="row g-2 g-sm-3 mb-4">
   <div class="col-6 col-sm-6 col-md-3">
     <a href="{% url 'tasks:list' %}?status=active&scope={{ scope }}" class="stat-card primary text-decoration-none" id="stat-active" title="View all tasks that are currently active (not completed)">
-      <div class="stat-icon"><i data-lucide="clipboard-list"></i></div>
+      <div class="stat-icon"><i class="bi bi-clipboard-data-fill"></i></div>
       <div class="stat-value" id="val-active">{{ active_tasks }}</div>
       <div class="stat-label">Active Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
     <a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none" title="View all successfully completed tasks">
-      <div class="stat-icon"><i data-lucide="check-circle-2"></i></div>
+      <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
       <div class="stat-value" id="val-completed">{{ completed_tasks }}</div>
       <div class="stat-label">Completed Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
     <a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none" title="View tasks that have passed their deadline">
-      <div class="stat-icon"><i data-lucide="alert-circle"></i></div>
+      <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
       <div class="stat-value" id="val-overdue">{{ overdue_tasks }}</div>
       <div class="stat-label">Overdue Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
     <a href="{% url 'tasks:list' %}?due_this_week=true&scope={{ scope }}" class="stat-card warning text-decoration-none" title="View tasks that are due within the next 7 days">
-      <div class="stat-icon"><i data-lucide="calendar"></i></div>
+      <div class="stat-icon"><i class="bi bi-calendar-event-fill"></i></div>
       <div class="stat-value" id="val-upcoming">{{ upcoming_tasks }}</div>
       <div class="stat-label">Due This Week</div>
     </a>
@@ -152,10 +153,27 @@
             </div>
           </td>
           <td>
-            <div class="d-flex align-items-center gap-1">
-              <a href="{% url 'tasks:detail' task.pk %}" class="btn-sm-icon" title="View"><i data-lucide="eye" style="width:14px;height:14px"></i></a>
-              {% if user.can_manage_tasks %}
-              <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon" title="Edit"><i data-lucide="edit-3" style="width:14px;height:14px"></i></a>
+            <div class="d-flex align-items-center gap-1 justify-content-end">
+              {% can_update_task_progress user task as can_complete %}
+              {% if task.status != 'completed' and can_complete %}
+              <form method="post" action="{% url 'tasks:complete' task.pk %}" class="d-inline" data-confirm="Mark task <strong>{{ task.task_number }}</strong> as complete?" data-confirm-title="Complete Task" data-confirm-btn="Mark Complete" data-confirm-class="btn-success" data-confirm-icon="bi-check-circle-fill" data-confirm-icon-bg="#dcfce7" data-confirm-icon-color="#16a34a" data-require-password="true">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn-sm-icon border-0 p-1 me-0.5" style="background:#DCFCE7 !important;border-color:#BBF7D0 !important;color:#16A34A !important" title="Mark Task as Completed">
+                  <i class="bi bi-check-circle-fill" style="font-size:14px;color:#16A34A"></i>
+                </button>
+              </form>
+              {% endif %}
+              <a href="{% url 'tasks:detail' task.pk %}" class="btn-sm-icon" title="View"><i class="bi bi-eye-fill" style="font-size:14px;color:#475569"></i></a>
+              {% can_edit_task user task as edit_perm %}
+              {% if edit_perm %}
+              <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon" title="Edit"><i class="bi bi-pencil-fill" style="font-size:13px;color:#475569"></i></a>
+              <form method="post" action="{% url 'tasks:delete' task.pk %}" class="d-inline" data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This action cannot be undone." data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger" data-confirm-icon="bi-trash-fill" data-require-password="true">
+                {% csrf_token %}
+                <button type="submit" class="btn-sm-icon border-0 p-1" style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important" title="Delete Task">
+                  <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
+                </button>
+              </form>
               {% endif %}
             </div>
           </td>

@@ -1,6 +1,6 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, DetailView, CreateView, UpdateView, DeleteView, View, TemplateView
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
 from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib import messages
@@ -17,6 +17,23 @@ from accounts.models import User
 import io
 
 
+def check_org_admin_password(user, password):
+    if not password:
+        return False
+    if user.check_password(password):
+        return True
+    org = user.get_organization() if hasattr(user, 'get_organization') else getattr(user, 'organization', None)
+    if org:
+        admin_users = User.objects.filter(is_active=True, organization=org, role__in=['super_admin', 'org_admin', 'president'])
+    else:
+        admin_users = User.objects.filter(is_active=True, role__in=['super_admin', 'org_admin', 'president'])
+    
+    for admin in admin_users:
+        if admin.check_password(password):
+            return True
+    return False
+
+
 class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     template_name = 'tasks/list.html'
@@ -24,15 +41,18 @@ class TaskListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
+        from tasks.services import TaskService
+        TaskService.cleanup_expired_completed_tasks()
+
         org = self.request.user.get_organization(self.request)
         if org:
             qs = Task.objects.filter(is_archived=False, organization=org)
         else:
             qs = Task.objects.filter(is_archived=False)
 
-        scope = self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks')
+        scope = self.request.GET.get('scope', 'my_tasks')
         if scope == 'my_tasks':
-            qs = qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
+            qs = qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
 
         # Overdue handling is now purely visual/dynamic
         today = timezone.now().date()
@@ -44,15 +64,20 @@ class TaskListView(LoginRequiredMixin, ListView):
 
         # Filters
         status = self.request.GET.get('status', '')
-        if status:
-            if status == 'active':
-                qs = qs.exclude(status='completed')
-            elif status == 'overdue':
-                qs = qs.filter(due_date__lt=today).exclude(status='completed')
-            elif status == 'in_progress':
-                qs = qs.exclude(status__in=['not_started', 'completed'])
-            else:
-                qs = qs.filter(status=status)
+        if status == 'completed':
+            qs = qs.filter(status='completed')
+        elif status == 'active':
+            qs = qs.exclude(status='completed')
+        elif status == 'overdue':
+            qs = qs.filter(due_date__lt=today).exclude(status='completed')
+        elif status == 'in_progress':
+            qs = qs.exclude(status__in=['not_started', 'completed'])
+        elif status == 'all_status' or status == 'all':
+            pass
+        elif status:
+            qs = qs.filter(status=status)
+        else:
+            qs = qs.exclude(status='completed')
 
         due_this_week = self.request.GET.get('due_this_week', '')
         if due_this_week == 'true':
@@ -147,7 +172,7 @@ class TaskListView(LoginRequiredMixin, ListView):
             'priority': self.request.GET.get('priority', ''),
             'officer': self.request.GET.getlist('officer'),
             'sort': self.request.GET.get('sort', '-created_at'),
-            'scope': self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks'),
+            'scope': self.request.GET.get('scope', 'my_tasks'),
         }
         return ctx
 
@@ -253,6 +278,13 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         return reverse_lazy('tasks:detail', kwargs={'pk': self.object.pk})
 
     def form_valid(self, form):
+        admin_password = self.request.POST.get('admin_password', '')
+        if not check_org_admin_password(self.request.user, admin_password):
+            ctx = self.get_context_data(form=form)
+            ctx['admin_password_error'] = 'Incorrect admin password. Password verification is required to save task edits.'
+            messages.error(self.request, 'Incorrect admin password. Task changes were not saved.')
+            return self.render_to_response(ctx)
+
         old = Task.objects.get(pk=self.object.pk)
         response = super().form_valid(form)
         task = self.object
@@ -276,7 +308,16 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = f'Edit Task: {self.object.task_number}'
         ctx['form_action'] = 'Save Changes'
+        ctx['is_edit'] = True
         return ctx
+
+
+class VerifyPasswordView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        password = request.POST.get('password', '')
+        if check_org_admin_password(request.user, password):
+            return JsonResponse({'status': 'ok'})
+        return JsonResponse({'status': 'error', 'error': 'Incorrect Organization Admin password.'}, status=400)
 
 
 class TaskDeleteView(LoginRequiredMixin, DeleteView):
@@ -295,6 +336,13 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
             return redirect('tasks:list')
         return super().dispatch(request, *args, **kwargs)
 
+    def post(self, request, *args, **kwargs):
+        password = request.POST.get('password', '')
+        if not check_org_admin_password(request.user, password):
+            messages.error(request, 'Incorrect admin password. Task deletion cancelled.')
+            return redirect('tasks:list')
+        return self.delete(request, *args, **kwargs)
+
     def delete(self, request, *args, **kwargs):
         try:
             task = self.get_object()
@@ -311,8 +359,9 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
 
 class TaskBulkDeleteView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
-        if not request.user.has_task_override:
-            messages.error(request, 'Permission denied. Bulk deletion requires administrative override.')
+        password = request.POST.get('password', '')
+        if not check_org_admin_password(request.user, password):
+            messages.error(request, 'Incorrect admin password. Bulk task deletion cancelled.')
             return redirect('tasks:list')
 
         task_ids = request.POST.getlist('task_ids')
@@ -324,6 +373,62 @@ class TaskBulkDeleteView(LoginRequiredMixin, View):
             messages.warning(request, 'No tasks selected for deletion.')
 
         return redirect('tasks:list')
+
+
+class TaskBulkCompleteView(LoginRequiredMixin, View):
+    def post(self, request, *args, **kwargs):
+        password = request.POST.get('password', '')
+        if not check_org_admin_password(request.user, password):
+            messages.error(request, 'Incorrect admin password. Bulk task completion cancelled.')
+            return redirect('tasks:list')
+
+        task_ids = request.POST.getlist('task_ids')
+        if not task_ids:
+            messages.warning(request, 'No tasks selected.')
+            return redirect('tasks:list')
+
+        org = request.user.get_organization(request)
+        if org and not request.user.is_super_admin:
+            qs = Task.objects.filter(pk__in=task_ids, is_archived=False).filter(Q(organization=org) | Q(organization__isnull=True) | Q(created_by=request.user))
+        else:
+            qs = Task.objects.filter(pk__in=task_ids, is_archived=False)
+
+        updated_count = 0
+        now_date = timezone.now().date()
+        status_dict = dict(Task.STATUS_CHOICES)
+
+        for task in qs:
+            old_status = task.status
+            if old_status != 'completed':
+                task.status = 'completed'
+                task.completion_date = now_date
+                task.progress = 100
+                task.save()
+                updated_count += 1
+
+                TaskHistory.objects.create(
+                    task=task,
+                    changed_by=request.user,
+                    field_changed='Status',
+                    old_value=status_dict.get(old_status, old_status),
+                    new_value='Completed'
+                )
+                for assignment in task.assignments.all():
+                    Notification.objects.create(
+                        recipient=assignment.officer,
+                        title='Task Completed',
+                        message=f'Task "{task.title}" has been marked as completed.',
+                        notification_type='task_completed',
+                        related_task=task
+                    )
+
+        if updated_count > 0:
+            messages.success(request, f'Successfully marked {updated_count} task(s) as completed.')
+        else:
+            messages.info(request, 'No tasks were updated (either already completed or permission denied).')
+
+        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('tasks:list')
+        return redirect(next_url)
 
 
 class TaskBoardView(LoginRequiredMixin, ListView):
@@ -339,9 +444,9 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         else:
             base_qs = Task.objects.filter(is_archived=False)
 
-        scope = self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks')
+        scope = self.request.GET.get('scope', 'my_tasks')
         if scope == 'my_tasks':
-            base_qs = base_qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
+            base_qs = base_qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
 
         q = self.request.GET.get('q', '')
         if q:
@@ -389,7 +494,7 @@ class TaskCalendarView(LoginRequiredMixin, TemplateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         org = self.request.user.get_organization(self.request)
-        scope = self.request.GET.get('scope', 'all' if self.request.user.has_task_override else 'my_tasks')
+        scope = self.request.GET.get('scope', 'my_tasks')
 
         q = self.request.GET.get('q', '')
         category = self.request.GET.get('category', '')
@@ -421,7 +526,7 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
 
         scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
         if scope == 'my_tasks':
-            qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
+            qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user) | Q(assignments__officer=request.user)).distinct()
 
         # Filters
         q = request.GET.get('q', '')
@@ -519,10 +624,15 @@ class TaskMoveStatusView(LoginRequiredMixin, View):
         if not request.user.can_update_task_progress(task):
             return JsonResponse({'error': 'Permission denied. You are not authorized to move this task.'}, status=403)
         new_status = request.POST.get('status')
+        password = request.POST.get('password', '')
         valid_statuses = [code for code, label in Task.STATUS_CHOICES]
 
         if new_status not in valid_statuses:
             return JsonResponse({'error': 'Invalid status'}, status=400)
+
+        if new_status == 'completed' or task.status == 'completed':
+            if not check_org_admin_password(request.user, password):
+                return JsonResponse({'error': 'Incorrect Organization Admin password. Task status update cancelled.'}, status=400)
 
         old_status = task.status
         if old_status != new_status:
@@ -686,30 +796,64 @@ class UpdateProgressView(LoginRequiredMixin, View):
 class MarkCompleteView(LoginRequiredMixin, View):
     def post(self, request, pk):
         task = Task.objects.filter(pk=pk).first()
+        is_ajax = request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == 'true'
+
         if not task:
+            if is_ajax:
+                return JsonResponse({'error': 'This task has already been deleted or no longer exists.'}, status=404)
             messages.warning(request, 'This task has already been deleted or no longer exists.')
             return redirect('tasks:list')
+
         if not request.user.can_update_task_progress(task):
+            if is_ajax:
+                return JsonResponse({'error': 'Permission denied. You are not authorized to mark this task complete.'}, status=403)
             messages.error(request, 'Permission denied. You are not authorized to mark this task complete.')
             return redirect('tasks:detail', pk=pk)
-        task.status = 'completed'
-        task.completion_date = timezone.now().date()
-        task.progress = 100
-        task.save()
-        TaskHistory.objects.create(
-            task=task, changed_by=request.user,
-            field_changed='Status', old_value='waiting_approval', new_value='completed'
-        )
-        for assignment in task.assignments.all():
-            Notification.objects.create(
-                recipient=assignment.officer,
-                title='Task Completed',
-                message=f'Task "{task.title}" has been marked as completed.',
-                notification_type='task_completed',
-                related_task=task
+
+        password = request.POST.get('password', '')
+        if not check_org_admin_password(request.user, password):
+            if is_ajax:
+                return JsonResponse({'error': 'Incorrect admin password. Password verification is required to complete task.'}, status=400)
+            messages.error(request, 'Incorrect admin password. Task completion cancelled.')
+            next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('tasks:detail', kwargs={'pk': pk})
+            return redirect(next_url)
+
+        old_status = task.status
+        if old_status != 'completed':
+            task.status = 'completed'
+            task.completion_date = timezone.now().date()
+            task.progress = 100
+            task.save()
+
+            TaskHistory.objects.create(
+                task=task,
+                changed_by=request.user,
+                field_changed='Status',
+                old_value=dict(Task.STATUS_CHOICES).get(old_status, old_status),
+                new_value='Completed'
             )
+            for assignment in task.assignments.all():
+                Notification.objects.create(
+                    recipient=assignment.officer,
+                    title='Task Completed',
+                    message=f'Task "{task.title}" has been marked as completed.',
+                    notification_type='task_completed',
+                    related_task=task
+                )
+
+        if is_ajax:
+            return JsonResponse({
+                'status': 'ok',
+                'task_id': task.pk,
+                'task_number': task.task_number,
+                'new_status': task.status,
+                'new_status_display': task.get_status_display(),
+                'progress': 100
+            })
+
         messages.success(request, f'Task {task.task_number} marked as completed.')
-        return redirect('tasks:detail', pk=pk)
+        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER') or reverse('tasks:detail', kwargs={'pk': pk})
+        return redirect(next_url)
 
 
 class ArchiveTaskView(LoginRequiredMixin, View):

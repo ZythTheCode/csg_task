@@ -91,8 +91,7 @@ class User(AbstractUser):
 
     @property
     def can_manage_tasks(self):
-        # Used for broad legacy checks (e.g. archiving tasks, bulk delete, etc.)
-        return self.has_task_override
+        return self.is_authenticated
 
     @property
     def can_view_reports(self):

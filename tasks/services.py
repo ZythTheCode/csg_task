@@ -1,4 +1,4 @@
-from django.db import transaction
+from django.db import models, transaction
 from django.utils import timezone
 from tasks.models import Task, TaskAssignment, TaskHistory, TaskAttachment, TaskComment
 from core.services.audit import log_activity
@@ -64,12 +64,28 @@ class TaskService:
     @transaction.atomic
     def bulk_delete_tasks(task_ids, user, request=None):
         tasks = Task.objects.filter(id__in=task_ids)
-        if not user.is_super_admin:
-            tasks = tasks.filter(organization=user.organization)
+        org = user.get_organization(request)
+        if org and not getattr(user, 'is_super_admin', False):
+            tasks = tasks.filter(models.Q(organization=org) | models.Q(organization__isnull=True) | models.Q(created_by=user))
 
         count = tasks.count()
         task_numbers = list(tasks.values_list('task_number', flat=True))
         tasks.delete()
 
         log_activity(request, 'TASK_BULK_DELETE', f"Bulk deleted {count} tasks: {', '.join(task_numbers)}", resource_type='Task')
+        return count
+
+    @staticmethod
+    def cleanup_expired_completed_tasks():
+        import datetime
+        today = timezone.now().date()
+        cutoff_date = today - datetime.timedelta(days=7)
+        expired = Task.objects.filter(
+            status='completed',
+            completion_date__isnull=False,
+            completion_date__lte=cutoff_date
+        )
+        count = expired.count()
+        if count > 0:
+            expired.delete()
         return count

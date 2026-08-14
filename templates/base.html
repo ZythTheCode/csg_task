@@ -116,49 +116,49 @@
   <nav class="sidebar-nav">
     <div class="nav-section-label">Main</div>
     <a href="{% url 'core:dashboard' %}" class="sidebar-link {% if request.resolver_match.url_name == 'dashboard' and request.resolver_match.app_name == 'core' %}active{% endif %}" title="Dashboard">
-      <i data-lucide="layout-dashboard"></i> <span class="sidebar-link-text">Dashboard</span>
+      <i class="bi bi-grid-1x2-fill"></i> <span class="sidebar-link-text">Dashboard</span>
     </a>
     <a href="{% url 'tasks:list' %}" class="sidebar-link {% if request.resolver_match.app_name == 'tasks' %}active{% endif %}" title="Tasks">
-      <i data-lucide="check-square"></i> <span class="sidebar-link-text">Tasks</span>
+      <i class="bi bi-check2-square"></i> <span class="sidebar-link-text">Tasks</span>
     </a>
     <a href="{% url 'monitoring:dashboard' %}" class="sidebar-link {% if request.resolver_match.app_name == 'monitoring' %}active{% endif %}" title="Monitoring">
-      <i data-lucide="bar-chart-3"></i> <span class="sidebar-link-text">Monitoring</span>
+      <i class="bi bi-bar-chart-line-fill"></i> <span class="sidebar-link-text">Monitoring</span>
     </a>
     {% if user.can_view_reports %}
     <a href="{% url 'reports:dashboard' %}" class="sidebar-link {% if request.resolver_match.app_name == 'reports' %}active{% endif %}" title="Reports">
-      <i data-lucide="file-text"></i> <span class="sidebar-link-text">Reports</span>
+      <i class="bi bi-file-earmark-text-fill"></i> <span class="sidebar-link-text">Reports</span>
     </a>
     {% endif %}
     <a href="{% url 'officers:list' %}" class="sidebar-link {% if request.resolver_match.url_name == 'list' and request.resolver_match.app_name == 'officers' %}active{% endif %}" title="Officers">
-      <i data-lucide="users"></i> <span class="sidebar-link-text">Officers</span>
+      <i class="bi bi-people-fill"></i> <span class="sidebar-link-text">Officers</span>
     </a>
 
     {% if user.can_manage_officers %}
     <div class="nav-section-label">Management</div>
     <a href="{% url 'officers:position_list' %}" class="sidebar-link {% if 'position' in request.resolver_match.url_name %}active{% endif %}" title="Positions">
-      <i data-lucide="briefcase"></i> <span class="sidebar-link-text">Positions</span>
+      <i class="bi bi-briefcase-fill"></i> <span class="sidebar-link-text">Positions</span>
     </a>
     {% endif %}
 
     {% if user.is_super_admin %}
     <a href="{% url 'pending_organizations' %}" class="sidebar-link {% if request.resolver_match.url_name == 'pending_organizations' %}active{% endif %}" title="Organizations">
-      <i data-lucide="building"></i> <span class="sidebar-link-text">Organizations</span>
+      <i class="bi bi-building-fill"></i> <span class="sidebar-link-text">Organizations</span>
     </a>
     {% endif %}
 
     <div class="nav-section-label">Account</div>
     <a href="{% url 'notifications:list' %}" class="sidebar-link {% if request.resolver_match.app_name == 'notifications' %}active{% endif %}" title="Notifications">
-      <i data-lucide="bell"></i> <span class="sidebar-link-text">Notifications</span>
+      <i class="bi bi-bell-fill"></i> <span class="sidebar-link-text">Notifications</span>
       {% if unread_notifications_count > 0 %}
       <span class="badge-count">{{ unread_notifications_count }}</span>
       {% endif %}
     </a>
     <a href="{% url 'accounts:profile' %}" class="sidebar-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}" title="Profile">
-      <i data-lucide="user"></i> <span class="sidebar-link-text">Profile</span>
+      <i class="bi bi-person-fill"></i> <span class="sidebar-link-text">Profile</span>
     </a>
     {% if user.is_super_admin or user.is_president or user.is_org_admin %}
     <a href="{% url 'core:settings' %}" class="sidebar-link {% if request.resolver_match.url_name == 'settings' %}active{% endif %}" title="Settings">
-      <i data-lucide="settings"></i> <span class="sidebar-link-text">Settings</span>
+      <i class="bi bi-gear-fill"></i> <span class="sidebar-link-text">Settings</span>
     </a>
     {% endif %}
   </nav>
@@ -284,8 +284,12 @@
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body px-4 py-3" style="font-size:14px;color:#475569;line-height:1.6" id="confirmModalBody">
-        Are you sure you want to perform this action?
+      <div class="modal-body px-4 py-3" style="font-size:14px;color:#475569;line-height:1.6">
+        <div id="confirmModalBody">Are you sure you want to perform this action?</div>
+        <div id="confirmModalPasswordWrapper" class="mt-3 d-none">
+          <label class="form-label fw-bold text-dark mb-1" style="font-size:12.5px"><i class="bi bi-shield-lock-fill text-danger me-1"></i>Enter Organization Admin Password to Confirm <span class="text-danger">*</span></label>
+          <input type="password" id="confirmModalPasswordInput" class="form-control" placeholder="Enter Organization Admin Password" autocomplete="current-password" style="border-radius:12px;font-size:13px">
+        </div>
       </div>
       <div class="modal-footer border-0 px-4 pb-4 pt-2 gap-2">
         <button type="button" class="btn btn-secondary-custom px-4" data-bs-dismiss="modal">Cancel</button>
@@ -333,8 +337,56 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('sidebarOverlay').classList.remove('show');
   };
 
-  // Smooth page transition navigation
+  // Intercept click on any Edit Task link to require password modal FIRST
   document.addEventListener('click', function(e) {
+    const editLink = e.target.closest('a[href*="/edit/"]');
+    if (editLink) {
+      const href = editLink.getAttribute('href');
+      if (href && !href.startsWith('javascript:') && !editLink.hasAttribute('data-auth-verified')) {
+        e.preventDefault();
+        e.stopPropagation();
+        const taskNumAttr = editLink.getAttribute('data-task-num');
+        const taskMsg = taskNumAttr ? `task <strong>${taskNumAttr}</strong>` : 'this task';
+        window.showConfirmModal({
+          title: 'Edit Task',
+          subtitle: 'Please review before proceeding',
+          message: `Are you sure you want to edit ${taskMsg}?`,
+          btnText: 'Edit Task',
+          btnClass: 'btn-primary',
+          icon: 'bi-pencil-fill',
+          iconBg: '#E0E7FF',
+          iconColor: '#4338CA',
+          requirePassword: true,
+          onConfirm: function(pwd) {
+            const formData = new FormData();
+            formData.append('password', pwd);
+            fetch('/tasks/verify-password/', {
+              method: 'POST',
+              headers: {
+                'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || ''
+              },
+              body: formData
+            })
+            .then(res => res.json())
+            .then(data => {
+              if (data.status === 'ok') {
+                editLink.setAttribute('data-auth-verified', 'true');
+                document.body.classList.add('page-transitioning');
+                setTimeout(() => { window.location.href = href; }, 100);
+              } else {
+                alert(data.error || 'Incorrect Organization Admin password. Access denied.');
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              alert('Error verifying password. Please try again.');
+            });
+          }
+        });
+        return;
+      }
+    }
+
     const link = e.target.closest('a');
     if (!link) return;
     const href = link.getAttribute('href');
@@ -354,43 +406,60 @@ document.addEventListener('DOMContentLoaded', function() {
   // Global Confirmation Modal Logic
   let pendingActionCallback = null;
 
-  window.showConfirmModal = function(options = {}) {
-    const title = options.title || 'Confirm Action';
-    const subtitle = options.subtitle || 'Please review before proceeding';
-    const message = options.message || 'Are you sure you want to proceed?';
-    const icon = options.icon || 'bi-exclamation-triangle-fill';
-    const btnText = options.btnText || 'Confirm';
-    const btnClass = options.btnClass || 'btn-danger';
-    const iconBg = options.iconBg || '#fee2e2';
-    const iconColor = options.iconColor || '#dc2626';
-
-    document.getElementById('globalConfirmModalLabel').textContent = title;
-    document.getElementById('confirmModalSubtitle').textContent = subtitle;
-    document.getElementById('confirmModalBody').innerHTML = message;
-
-    const iconEl = document.getElementById('confirmModalIcon');
-    iconEl.className = 'bi ' + icon;
-
+  window.showConfirmModal = function(options) {
+    options = options || {};
+    document.getElementById('globalConfirmModalLabel').textContent = options.title || 'Confirm Action';
+    document.getElementById('confirmModalSubtitle').textContent = options.subtitle || 'Please review before proceeding';
+    document.getElementById('confirmModalBody').innerHTML = options.message || 'Are you sure you want to perform this action?';
+    
     const iconContainer = document.getElementById('confirmModalIconContainer');
-    iconContainer.style.backgroundColor = iconBg;
-    iconContainer.style.color = iconColor;
+    const icon = document.getElementById('confirmModalIcon');
+    icon.className = 'bi ' + (options.icon || 'bi-exclamation-triangle-fill');
+    iconContainer.style.background = options.iconBg || '#FEE2E2';
+    iconContainer.style.color = options.iconColor || '#EF4444';
+
+    const pwdWrapper = document.getElementById('confirmModalPasswordWrapper');
+    const pwdInput = document.getElementById('confirmModalPasswordInput');
+    if (options.requirePassword) {
+      pwdWrapper.classList.remove('d-none');
+      pwdInput.value = '';
+    } else {
+      pwdWrapper.classList.add('d-none');
+      pwdInput.value = '';
+    }
 
     const btn = document.getElementById('confirmModalBtn');
-    btn.textContent = btnText;
+    btn.textContent = options.btnText || 'Confirm';
+    const btnClass = options.btnClass || 'btn-danger';
     btn.className = 'btn px-4 ' + btnClass;
 
-    pendingActionCallback = options.onConfirm || null;
+    pendingActionCallback = function() {
+      const pwd = pwdInput ? pwdInput.value.trim() : '';
+      if (options.requirePassword && !pwd) {
+        alert('Organization Admin password confirmation is required to perform this action.');
+        return false;
+      }
+      if (typeof options.onConfirm === 'function') {
+        options.onConfirm(pwd);
+      }
+    };
 
     const modalEl = document.getElementById('globalConfirmModal');
     const modal = bootstrap.Modal.getOrCreateInstance(modalEl);
     modal.show();
+    if (options.requirePassword && pwdInput) {
+      setTimeout(() => pwdInput.focus(), 300);
+    }
   };
 
   document.getElementById('confirmModalBtn').addEventListener('click', function() {
+    if (typeof pendingActionCallback === 'function') {
+      const result = pendingActionCallback();
+      if (result === false) return;
+    }
     const modalEl = document.getElementById('globalConfirmModal');
     const modal = bootstrap.Modal.getInstance(modalEl);
     if (modal) modal.hide();
-    if (typeof pendingActionCallback === 'function') pendingActionCallback();
   });
 
   // Intercept forms with data-confirm
@@ -398,6 +467,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const form = e.target;
     if (form.hasAttribute('data-confirm')) {
       e.preventDefault();
+      const reqPwd = form.getAttribute('data-require-password') === 'true' || form.action.includes('/delete');
       window.showConfirmModal({
         title: form.getAttribute('data-confirm-title') || 'Confirm Action',
         message: form.getAttribute('data-confirm-message') || form.getAttribute('data-confirm') || 'Are you sure?',
@@ -406,7 +476,21 @@ document.addEventListener('DOMContentLoaded', function() {
         icon: form.getAttribute('data-confirm-icon') || 'bi-exclamation-triangle-fill',
         iconBg: form.getAttribute('data-confirm-icon-bg') || '#fee2e2',
         iconColor: form.getAttribute('data-confirm-icon-color') || '#dc2626',
-        onConfirm: function() { form.removeAttribute('data-confirm'); form.submit(); }
+        requirePassword: reqPwd,
+        onConfirm: function(pwd) {
+          form.removeAttribute('data-confirm');
+          if (reqPwd) {
+            let pwdField = form.querySelector('input[name="password"]');
+            if (!pwdField) {
+              pwdField = document.createElement('input');
+              pwdField.type = 'hidden';
+              pwdField.name = 'password';
+              form.appendChild(pwdField);
+            }
+            pwdField.value = pwd;
+          }
+          form.submit();
+        }
       });
     }
   });

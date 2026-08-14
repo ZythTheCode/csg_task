@@ -21,11 +21,6 @@
       <a href="{% url 'tasks:calendar' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px"><i data-lucide="calendar" class="me-1" style="width:14px;height:14px"></i> Calendar</a>
     </div>
 
-    {% if user.can_manage_tasks %}
-    <button type="button" id="bulkDeleteBtn" class="btn btn-danger btn-sm d-none" style="border-radius:30px;font-weight:700;padding:8px 18px">
-      <i data-lucide="trash-2" class="me-1" style="width:14px;height:14px"></i> Delete Selected (<span id="selectedCount">0</span>)
-    </button>
-    {% endif %}
     <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i data-lucide="plus" style="width:16px;height:16px"></i> New Task</a>
     <div class="dropdown">
       <button class="btn btn-secondary-custom btn-sm dropdown-toggle" data-bs-toggle="dropdown">
@@ -38,6 +33,31 @@
     </div>
   </div>
 </div>
+
+<!-- Status Navigation Tabs (Active Tasks / Completed Tasks Section) -->
+<div class="d-flex align-items-center gap-2 mb-3">
+  <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.85);border:1px solid var(--slate-200);box-shadow:0 2px 8px rgba(0,0,0,0.04)">
+    <a href="{% url 'tasks:list' %}?status=active{% if current_filters.scope %}&scope={{ current_filters.scope }}{% endif %}" class="btn btn-sm {% if current_filters.status != 'completed' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:6px 20px;text-decoration:none">
+      <i class="bi bi-clock-history me-1.5"></i>Active Tasks
+    </a>
+    <a href="{% url 'tasks:list' %}?status=completed{% if current_filters.scope %}&scope={{ current_filters.scope }}{% endif %}" class="btn btn-sm {% if current_filters.status == 'completed' %}btn-success text-white{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:6px 20px;text-decoration:none">
+      <i class="bi bi-check-circle-fill me-1.5"></i>Completed Tasks Section
+    </a>
+  </div>
+</div>
+
+{% if current_filters.status == 'completed' %}
+<!-- Auto-deletion Banner for Completed Section -->
+<div class="alert alert-info border-0 shadow-sm d-flex align-items-center gap-3 mb-4" style="border-radius:18px;background:linear-gradient(135deg, rgba(59,130,246,0.1), rgba(37,99,235,0.05));color:#1e40af;padding:14px 20px">
+  <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:40px;height:40px;border-radius:12px;background:#DBEAFE;color:#2563EB">
+    <i class="bi bi-info-circle-fill fs-5"></i>
+  </div>
+  <div>
+    <h6 class="fw-bold mb-0" style="font-size:13.5px">Completed Task Section</h6>
+    <small style="font-size:12px;opacity:0.9">Once a task is marked as completed, it is moved to this section. Completed tasks are <strong>automatically deleted from the database after 1 week (7 days)</strong>.</small>
+  </div>
+</div>
+{% endif %}
 
 <!-- Filters -->
 <div class="glass-card glass-card-filters mb-4">
@@ -61,8 +81,8 @@
       </div>
       <div class="col-12 col-sm-6 col-lg-2">
         <select name="status" class="form-select" style="font-size:13.5px">
-          <option value="">All Status</option>
-          <option value="in_progress" {% if current_filters.status == 'in_progress' %}selected{% endif %} style="font-weight:700;color:var(--primary)">In Progress (Active)</option>
+          <option value="active" {% if current_filters.status != 'completed' %}selected{% endif %}>Active Tasks (Default)</option>
+          <option value="completed" {% if current_filters.status == 'completed' %}selected{% endif %}>Completed Tasks Section</option>
           <option value="" disabled>──────────</option>
           {% for val, label in status_choices %}
           <option value="{{ val }}" {% if current_filters.status == val %}selected{% endif %}>{{ label }}</option>
@@ -124,19 +144,59 @@
   </div>
 </div>
 
-<!-- Bulk Delete Form & Table -->
-<form method="post" action="{% url 'tasks:bulk_delete' %}" id="bulkDeleteForm">
+<!-- Bulk Actions Header & Forms -->
+<div class="d-flex align-items-center justify-content-between mb-3 px-1">
+  <div class="d-flex align-items-center gap-2">
+    <h6 class="mb-0 fw-bold" style="color:var(--slate-800);font-size:15px">Task Items</h6>
+    <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600">{{ tasks|length }} task{% if tasks|length != 1 %}s{% endif %}</span>
+  </div>
+  <div class="d-flex align-items-center gap-2" id="bulkActionsToolbar">
+    <button type="button" id="bulkCompleteBtn" class="btn btn-sm btn-success px-3 py-1.5 shadow-sm d-none" style="border-radius:12px;font-weight:700;font-size:12.5px">
+      <i class="bi bi-check-circle-fill me-1"></i>Mark Completed (<span class="selected-count">0</span>)
+    </button>
+    <button type="button" id="bulkDeleteBtn" class="btn btn-sm btn-danger px-3 py-1.5 shadow-sm d-none" style="border-radius:12px;font-weight:700;font-size:12.5px">
+      <i class="bi bi-trash-fill me-1"></i>Delete Selected (<span class="selected-count">0</span>)
+    </button>
+  </div>
+</div>
+
+<form method="post" action="{% url 'tasks:bulk_complete' %}" id="bulkCompleteForm" class="d-none">
   {% csrf_token %}
-  <div class="table-custom-container">
-    <div class="table-responsive">
-      <table class="table-custom table-sortable w-100" id="taskTable">
-        <thead>
-          <tr>
-            {% if user.can_manage_tasks %}
-            <th style="width:32px;text-align:center">
-              <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
-            </th>
-            {% endif %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
+</form>
+
+<form method="post" action="{% url 'tasks:bulk_delete' %}" id="bulkDeleteForm" class="d-none">
+  {% csrf_token %}
+</form>
+
+<form method="post" action="" id="singleDeleteForm" class="d-none">
+  {% csrf_token %}
+</form>
+
+<div class="table-custom-container">
+  <div class="table-responsive">
+    <table class="table-custom table-sortable w-100" id="taskTable">
+      <thead>
+        {% if current_filters.status == 'completed' %}
+        <tr>
+          {% if user.can_manage_tasks %}
+          <th style="width:32px;text-align:center">
+            <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
+          </th>
+          {% endif %}
+          <th style="width:14%">Task No.</th>
+          <th style="width:25%">Title</th>
+          <th style="width:33%">Description</th>
+          <th style="width:20%">Assigned</th>
+          <th style="width:8%;text-align:right" class="pe-4">Actions</th>
+        </tr>
+        {% else %}
+        <tr>
+          {% if user.can_manage_tasks %}
+          <th style="width:32px;text-align:center">
+            <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
+          </th>
+          {% endif %}
             <th style="width:11%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
               <div class="d-inline-flex align-items-center gap-1">
                 <span>Task No.</span>
@@ -176,101 +236,154 @@
             </th>
             <th style="width:9%;text-align:right" class="pe-4">Actions</th>
           </tr>
-        </thead>
-        <tbody>
-          {% for task in tasks %}
-          <tr data-task-id="{{ task.pk }}"
-              data-task-number="{{ task.task_number }}"
-              data-title="{{ task.title|lower }}"
-              data-priority="{% if task.priority == 'urgent' %}1{% elif task.priority == 'high' %}2{% elif task.priority == 'medium' %}3{% else %}4{% endif %}"
-              data-status="{% if task.status == 'not_started' %}1{% elif task.status == 'processing' %}2{% elif task.status == 'to_advisers' %}3{% elif task.status == 'accounting' %}4{% elif task.status == 'oca' %}5{% elif task.status == 'osas' %}6{% elif task.status == 'ppss' %}7{% elif task.status == 'supply' %}8{% elif task.status == 'completed' %}9{% else %}10{% endif %}"
-              data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}"
-              data-progress="{{ task.progress }}">
-            {% if user.can_manage_tasks %}
-            <td style="text-align:center">
-              <input type="checkbox" name="task_ids" value="{{ task.pk }}" class="form-check-input task-checkbox" style="cursor:pointer;margin:0">
-            </td>
+        {% endif %}
+      </thead>
+      <tbody>
+        {% for task in tasks %}
+        <tr data-task-id="{{ task.pk }}"
+            data-task-number="{{ task.task_number }}"
+            data-title="{{ task.title|lower }}"
+            data-priority="{% if task.priority == 'urgent' %}1{% elif task.priority == 'high' %}2{% elif task.priority == 'medium' %}3{% else %}4{% endif %}"
+            data-status="{% if task.status == 'not_started' %}1{% elif task.status == 'processing' %}2{% elif task.status == 'to_advisers' %}3{% elif task.status == 'accounting' %}4{% elif task.status == 'oca' %}5{% elif task.status == 'osas' %}6{% elif task.status == 'ppss' %}7{% elif task.status == 'supply' %}8{% elif task.status == 'completed' %}9{% else %}10{% endif %}"
+            data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}"
+            data-progress="{{ task.progress }}">
+          {% if current_filters.status == 'completed' %}
+          {% if user.can_manage_tasks %}
+          <td style="text-align:center">
+            <input type="checkbox" name="task_ids" value="{{ task.pk }}" class="form-check-input task-checkbox" style="cursor:pointer;margin:0">
+          </td>
+          {% endif %}
+          <td style="white-space:nowrap">
+            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12.5px">{{ task.task_number }}</span>
+          </td>
+          <td>
+            <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="font-weight:700;font-size:13.5px;color:var(--slate-800);text-decoration:none" title="{{ task.title }}">{{ task.title }}</a>
+            <div class="d-flex align-items-center gap-1.5 mt-0.5">
+              <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px">
+                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
+              </span>
+              <span style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</span>
+            </div>
+          </td>
+          <td style="font-size:12.5px;color:var(--slate-600);max-width:350px">
+            {{ task.description|default:"—"|truncatewords:25 }}
+          </td>
+          <td>
+            {% if task.assigned_officers.exists %}
+              {% for officer in task.sorted_assigned_officers %}
+              <div class="mb-1" style="font-size:12px;color:var(--slate-800)">
+                <strong style="color:var(--slate-900)">{{ officer.get_full_name|default:officer.username }}</strong>
+                {% if officer.position_title %}<span class="text-muted">({{ officer.position_title }})</span>{% endif %}
+              </div>
+              {% endfor %}
+            {% else %}
+              <span class="text-muted" style="font-size:12px;font-style:italic">Unassigned</span>
             {% endif %}
-            <td style="white-space:nowrap">
-              <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span>
-            </td>
-            <td>
-              <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="font-weight:700;font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800);text-decoration:none;display:block" title="{{ task.title }}">{{ task.title }}</a>
-              <div class="d-flex align-items-center gap-1.5 mt-0.5">
-                <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px">
-                  <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
+          </td>
+          <td style="white-space:nowrap;text-align:right" class="pe-4">
+            <div class="d-inline-flex gap-1 align-items-center justify-content-end">
+              <button type="button" class="btn-sm-icon single-delete-btn" style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important" title="Delete Task" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+                <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
+              </button>
+            </div>
+          </td>
+          {% else %}
+          {% if user.can_manage_tasks %}
+          <td style="text-align:center">
+            <input type="checkbox" name="task_ids" value="{{ task.pk }}" class="form-check-input task-checkbox" style="cursor:pointer;margin:0">
+          </td>
+          {% endif %}
+          <td style="white-space:nowrap">
+            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span>
+          </td>
+          <td>
+            <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="font-weight:700;font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800);text-decoration:none;display:block" title="{{ task.title }}">{{ task.title }}</a>
+            <div class="d-flex align-items-center gap-1.5 mt-0.5">
+              <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px">
+                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
+              </span>
+              <span style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</span>
+            </div>
+          </td>
+          <td>
+            {% if task.assigned_officers.exists %}
+            <div class="dropdown d-inline-block">
+              <div class="d-flex align-items-center gap-1 flex-nowrap" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="window" style="cursor:pointer" title="Click to view officer names">
+                {% for officer in task.sorted_assigned_officers|slice:":2" %}
+                <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">
+                  {{ officer.position_title|initials }}
                 </span>
-                <span style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</span>
+                {% endfor %}
+                {% if task.assigned_officers.count > 2 %}
+                <span class="badge bg-secondary text-white" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">
+                  +{{ task.assigned_officers.count|add:"-2" }}
+                </span>
+                {% endif %}
               </div>
-            </td>
-            <td>
-              {% if task.assigned_officers.exists %}
-              <div class="dropdown d-inline-block">
-                <div class="d-flex align-items-center gap-1 flex-nowrap" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="window" style="cursor:pointer" title="Click to view officer names">
-                  {% for officer in task.sorted_assigned_officers|slice:":2" %}
-                  <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">
-                    {{ officer.position_title|initials }}
-                  </span>
-                  {% endfor %}
-                  {% if task.assigned_officers.count > 2 %}
-                  <span class="badge bg-secondary text-white" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">
-                    +{{ task.assigned_officers.count|add:"-2" }}
-                  </span>
-                  {% endif %}
-                </div>
-                <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:12px;min-width:230px;border-radius:12px">
-                  <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">Assigned Officers</li>
-                  {% for officer in task.sorted_assigned_officers %}
-                  <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:var(--pink-50);border-radius:6px">
-                    <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
-                    <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
-                  </li>
-                  {% endfor %}
-                </ul>
-              </div>
-              {% else %}
-              <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:12px;min-width:230px;border-radius:12px">
+                <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">Assigned Officers</li>
+                {% for officer in task.sorted_assigned_officers %}
+                <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:var(--pink-50);border-radius:6px">
+                  <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
+                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
+                </li>
+                {% endfor %}
+              </ul>
+            </div>
+            {% else %}
+            <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
+            {% endif %}
+          </td>
+          <td style="white-space:nowrap"><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+          <td style="white-space:nowrap">
+            <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
+          </td>
+          <td style="font-size:12.5px;white-space:nowrap">
+            {% if task.due_date %}
+            <div class="d-flex flex-column align-items-start" style="gap:2px">
+              <span {% if task.is_overdue %}style="color:var(--danger);font-weight:700"{% endif %}>
+                {{ task.due_date|date:"M d, Y" }}
+              </span>
+              {% if task.is_overdue %}
+              <span class="badge bg-danger text-white" style="font-size:9px;padding:3px 6px">Overdue</span>
               {% endif %}
-            </td>
-            <td style="white-space:nowrap"><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
-            <td style="white-space:nowrap">
-              <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
-            </td>
-            <td style="font-size:12.5px;white-space:nowrap">
-              {% if task.due_date %}
-              <div class="d-flex flex-column align-items-start" style="gap:2px">
-                <span {% if task.is_overdue %}style="color:var(--danger);font-weight:700"{% endif %}>
-                  {{ task.due_date|date:"M d, Y" }}
-                </span>
-                {% if task.is_overdue %}
-                <span class="badge bg-danger text-white" style="font-size:9px;padding:3px 6px">Overdue</span>
-                {% endif %}
-              </div>
-              {% else %}—{% endif %}
-            </td>
-            <td style="min-width:100px;white-space:nowrap">
-              <div class="d-flex align-items-center gap-2">
-                <div class="progress-custom flex-grow-1" style="min-width:50px"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>
-                <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
-              </div>
-            </td>
-            <td style="white-space:nowrap;text-align:right" class="pe-4">
-              <div class="d-inline-flex gap-1">
-                {% can_edit_task user task as edit_perm %}
-                <button type="button" class="btn-sm-icon view-task-btn" data-task-id="{{ task.pk }}" title="View Task"><i data-lucide="eye" style="width:14px;height:14px"></i></button>
-                {% if edit_perm %}
-                <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon" title="Edit"><i data-lucide="edit-3" style="width:14px;height:14px"></i></a>
-                <button type="button" class="btn-sm-icon single-delete-btn" style="background:#FFF1F2;border-color:#FECDD3;color:#EF4444" title="Delete" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
-                  <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+            </div>
+            {% else %}—{% endif %}
+          </td>
+          <td style="min-width:100px;white-space:nowrap">
+            <div class="d-flex align-items-center gap-2">
+              <div class="progress-custom flex-grow-1" style="min-width:50px"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>
+              <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
+            </div>
+          </td>
+          <td style="white-space:nowrap;text-align:right" class="pe-4">
+            <div class="d-inline-flex gap-1 align-items-center justify-content-end">
+              {% can_update_task_progress user task as can_complete %}
+              {% if task.status != 'completed' and can_complete %}
+              <form method="post" action="{% url 'tasks:complete' task.pk %}" class="d-inline" data-confirm="Mark task <strong>{{ task.task_number }}</strong> as complete?" data-confirm-title="Complete Task" data-confirm-btn="Mark Complete" data-confirm-class="btn-success" data-confirm-icon="bi-check-circle-fill" data-confirm-icon-bg="#dcfce7" data-confirm-icon-color="#16a34a" data-require-password="true">
+                {% csrf_token %}
+                <input type="hidden" name="next" value="{{ request.get_full_path }}">
+                <button type="submit" class="btn-sm-icon border-0 p-1 me-0.5" style="background:#DCFCE7 !important;border-color:#BBF7D0 !important;color:#16A34A !important" title="Mark Task as Completed">
+                  <i class="bi bi-check-circle-fill" style="font-size:14px;color:#16A34A"></i>
                 </button>
-                {% endif %}
-              </div>
-            </td>
-          </tr>
-          {% empty %}
-          <tr><td colspan="{% if user.can_manage_tasks %}9{% else %}8{% endif %}"><div class="empty-state"><i data-lucide="inbox"></i><h6>No tasks found</h6><p style="font-size:13px">Try adjusting your filters or create a new task.</p></div></td></tr>
-          {% endfor %}
-        </tbody>
+              </form>
+              {% endif %}
+              <button type="button" class="btn-sm-icon view-task-btn" data-task-id="{{ task.pk }}" title="View Task"><i class="bi bi-eye-fill" style="font-size:14px;color:#475569"></i></button>
+              {% can_edit_task user task as edit_perm %}
+              {% if edit_perm %}
+              <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon" title="Edit"><i class="bi bi-pencil-fill" style="font-size:13px;color:#475569"></i></a>
+              <button type="button" class="btn-sm-icon single-delete-btn" style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important" title="Delete" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+                <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
+              </button>
+              {% endif %}
+            </div>
+          </td>
+          {% endif %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="{% if current_filters.status == 'completed' %}4{% elif user.can_manage_tasks %}9{% else %}8{% endif %}"><div class="empty-state"><i data-lucide="inbox"></i><h6>No tasks found</h6><p style="font-size:13px">Try adjusting your filters or create a new task.</p></div></td></tr>
+        {% endfor %}
+      </tbody>
       </table>
     </div>
     {% if is_paginated %}
@@ -313,7 +426,19 @@ window.setScope = function(scopeVal) {
   window.location.href = url.toString();
 };
 
+window.setStatusTab = function(statusVal) {
+  const url = new URL(window.location.href);
+  if (statusVal) {
+    url.searchParams.set('status', statusVal);
+  } else {
+    url.searchParams.delete('status');
+  }
+  url.searchParams.delete('page');
+  window.location.href = url.toString();
+};
+
 document.addEventListener('DOMContentLoaded', function() {
+  if (window.lucide) lucide.createIcons();
   const selectAll = document.getElementById('selectAllTasks');
   const taskCheckboxes = document.querySelectorAll('.task-checkbox');
   const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
@@ -462,6 +587,49 @@ document.addEventListener('DOMContentLoaded', function() {
           }
         }
 
+        const completeBtn = document.getElementById('modalMarkCompleteBtn');
+        if (completeBtn) {
+          if (data.status !== 'completed' && data.can_update_progress) {
+            completeBtn.classList.remove('d-none');
+            completeBtn.onclick = function() {
+              showConfirmModal({
+                title: 'Mark Task Complete',
+                subtitle: 'Confirm Status Change',
+                message: `Are you sure you want to mark task <strong>${data.task_number}</strong> as completed?`,
+                btnText: 'Mark Complete',
+                btnClass: 'btn-success',
+                icon: 'bi-check-circle-fill',
+                iconBg: '#dcfce7',
+                iconColor: '#16a34a',
+                requirePassword: true,
+                onConfirm: function(pwd) {
+                  const formData = new FormData();
+                  formData.append('password', pwd);
+                  fetch(`/tasks/${data.id}/complete/`, {
+                    method: 'POST',
+                    headers: {
+                      'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '',
+                      'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                  })
+                  .then(res => res.json())
+                  .then(resp => {
+                    if (resp.status === 'ok') {
+                      detailModal.hide();
+                      window.location.reload();
+                    } else {
+                      alert(resp.error || 'Failed to mark task complete.');
+                    }
+                  });
+                }
+              });
+            };
+          } else {
+            completeBtn.classList.add('d-none');
+          }
+        }
+
         document.getElementById('modalLoadingSpinner').classList.add('d-none');
         document.getElementById('modalTaskContent').classList.remove('d-none');
       })
@@ -497,71 +665,168 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // Bulk delete logic
-  function updateBulkDeleteState() {
+  // Bulk actions logic
+  const bulkCompleteBtn = document.getElementById('bulkCompleteBtn');
+  const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  const bulkCompleteForm = document.getElementById('bulkCompleteForm');
+  const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+
+  function updateBulkActionsState() {
     const checked = document.querySelectorAll('.task-checkbox:checked');
+    const allBoxes = document.querySelectorAll('.task-checkbox');
+    const selectAllEl = document.getElementById('selectAllTasks');
     const count = checked.length;
-    if (selectedCountEl) selectedCountEl.textContent = count;
-    if (bulkDeleteBtn) {
-      if (count > 0) {
-        bulkDeleteBtn.classList.remove('d-none');
-      } else {
-        bulkDeleteBtn.classList.add('d-none');
-      }
+
+    document.querySelectorAll('.selected-count').forEach(el => el.textContent = count);
+
+    const bDel = document.getElementById('bulkDeleteBtn');
+    const bComp = document.getElementById('bulkCompleteBtn');
+
+    if (bDel) {
+      if (count > 0) bDel.classList.remove('d-none');
+      else bDel.classList.add('d-none');
     }
-    if (selectAll) {
-      selectAll.checked = taskCheckboxes.length > 0 && count === taskCheckboxes.length;
-      selectAll.indeterminate = count > 0 && count < taskCheckboxes.length;
+    if (bComp) {
+      if (count > 0) bComp.classList.remove('d-none');
+      else bComp.classList.add('d-none');
+    }
+    if (selectAllEl) {
+      selectAllEl.checked = allBoxes.length > 0 && count === allBoxes.length;
+      selectAllEl.indeterminate = count > 0 && count < allBoxes.length;
     }
   }
 
-  if (selectAll) {
-    selectAll.addEventListener('change', function() {
-      taskCheckboxes.forEach(cb => cb.checked = this.checked);
-      updateBulkDeleteState();
-    });
-  }
-
-  taskCheckboxes.forEach(cb => {
-    cb.addEventListener('change', updateBulkDeleteState);
+  document.addEventListener('change', function(e) {
+    if (e.target && e.target.id === 'selectAllTasks') {
+      const isChecked = e.target.checked;
+      document.querySelectorAll('.task-checkbox').forEach(cb => cb.checked = isChecked);
+      updateBulkActionsState();
+    } else if (e.target && e.target.classList.contains('task-checkbox')) {
+      updateBulkActionsState();
+    }
   });
 
-  if (bulkDeleteBtn) {
-    bulkDeleteBtn.addEventListener('click', function() {
+  if (bulkCompleteBtn) {
+    bulkCompleteBtn.addEventListener('click', function(e) {
+      e.preventDefault();
       const checked = document.querySelectorAll('.task-checkbox:checked');
       if (checked.length === 0) return;
       showConfirmModal({
-        title: 'Bulk Delete Tasks',
-        subtitle: 'Multiple Task Deletion',
+        title: 'Bulk Mark Tasks Complete',
+        subtitle: 'Batch Status Update Authorization',
+        message: `Are you sure you want to mark <strong>${checked.length} selected task(s)</strong> as completed?`,
+        btnText: `Mark ${checked.length} Completed`,
+        btnClass: 'btn-success',
+        icon: 'bi-check-circle-fill',
+        iconBg: '#dcfce7',
+        iconColor: '#16a34a',
+        requirePassword: true,
+        onConfirm: function(pwd) {
+          if (bulkCompleteForm) {
+            bulkCompleteForm.querySelectorAll('input[name="task_ids"]').forEach(el => el.remove());
+            checked.forEach(cb => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'task_ids';
+              input.value = cb.value;
+              bulkCompleteForm.appendChild(input);
+            });
+            let pwdField = bulkCompleteForm.querySelector('input[name="password"]');
+            if (!pwdField) {
+              pwdField = document.createElement('input');
+              pwdField.type = 'hidden';
+              pwdField.name = 'password';
+              bulkCompleteForm.appendChild(pwdField);
+            }
+            pwdField.value = pwd;
+            bulkCompleteForm.submit();
+          }
+        }
+      });
+    });
+  }
+
+  if (bulkDeleteBtn) {
+    bulkDeleteBtn.addEventListener('click', function(e) {
+      e.preventDefault();
+      const checked = document.querySelectorAll('.task-checkbox:checked');
+      if (checked.length === 0) return;
+      showConfirmModal({
+        title: 'Delete Task',
+        subtitle: 'Please review before proceeding',
         message: `Are you sure you want to delete <strong>${checked.length} selected task(s)</strong>? This action cannot be undone.`,
         btnText: `Delete ${checked.length} Task(s)`,
         btnClass: 'btn-danger',
         icon: 'bi-trash-fill',
-        onConfirm: function() {
-          bulkForm.submit();
+        iconBg: '#fee2e2',
+        iconColor: '#dc2626',
+        requirePassword: true,
+        onConfirm: function(pwd) {
+          if (bulkDeleteForm) {
+            bulkDeleteForm.querySelectorAll('input[name="task_ids"]').forEach(el => el.remove());
+            checked.forEach(cb => {
+              const input = document.createElement('input');
+              input.type = 'hidden';
+              input.name = 'task_ids';
+              input.value = cb.value;
+              bulkDeleteForm.appendChild(input);
+            });
+            let pwdField = bulkDeleteForm.querySelector('input[name="password"]');
+            if (!pwdField) {
+              pwdField = document.createElement('input');
+              pwdField.type = 'hidden';
+              pwdField.name = 'password';
+              bulkDeleteForm.appendChild(pwdField);
+            }
+            pwdField.value = pwd;
+            bulkDeleteForm.submit();
+          }
         }
       });
     });
   }
 
-  document.querySelectorAll('.single-delete-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const taskId = this.getAttribute('data-task-id');
-      const taskNum = this.getAttribute('data-task-num');
+  document.addEventListener('click', function(e) {
+    const singleDeleteBtn = e.target.closest('.single-delete-btn');
+    if (singleDeleteBtn) {
+      e.preventDefault();
+      e.stopPropagation();
+      const taskId = singleDeleteBtn.getAttribute('data-task-id');
+      const taskNum = singleDeleteBtn.getAttribute('data-task-num');
       showConfirmModal({
         title: 'Delete Task',
-        subtitle: 'Task Deletion',
+        subtitle: 'Please review before proceeding',
         message: `Are you sure you want to delete task <strong>${taskNum}</strong>? This action cannot be undone.`,
-        btnText: 'Yes, Delete',
+        btnText: 'Delete Task',
         btnClass: 'btn-danger',
         icon: 'bi-trash-fill',
-        onConfirm: function() {
-          const form = document.getElementById('singleDeleteForm');
+        iconBg: '#fee2e2',
+        iconColor: '#dc2626',
+        requirePassword: true,
+        onConfirm: function(pwd) {
+          let form = document.getElementById('singleDeleteForm');
+          if (!form) {
+            form = document.createElement('form');
+            form.id = 'singleDeleteForm';
+            form.method = 'post';
+            form.className = 'd-none';
+            const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (csrf) form.appendChild(csrf.cloneNode(true));
+            document.body.appendChild(form);
+          }
           form.action = `/tasks/${taskId}/delete/`;
+          let pwdField = form.querySelector('input[name="password"]');
+          if (!pwdField) {
+            pwdField = document.createElement('input');
+            pwdField.type = 'hidden';
+            pwdField.name = 'password';
+            form.appendChild(pwdField);
+          }
+          pwdField.value = pwd;
           form.submit();
         }
       });
-    });
+    }
   });
 
   // Live Search Suggestions Script

@@ -12,6 +12,9 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'monitoring/dashboard.html'
 
     def get_context_data(self, **kwargs):
+        from tasks.services import TaskService
+        TaskService.cleanup_expired_completed_tasks()
+
         ctx = super().get_context_data(**kwargs)
         today = timezone.now().date()
         ctx['page_title'] = 'Monitoring Dashboard'

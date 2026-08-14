@@ -120,8 +120,15 @@
             </span>
             <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{ task.get_priority_display }}</span>
             <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}" title="View Details" style="width:24px;height:24px">
-              <i data-lucide="eye" style="width:12px;height:12px"></i>
+              <i class="bi bi-eye-fill" style="font-size:12px;color:#475569"></i>
             </button>
+            {% can_edit_task user task as edit_perm %}
+            {% if edit_perm %}
+            <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon ms-1" title="Edit Task" style="width:24px;height:24px"><i class="bi bi-pencil-fill" style="font-size:11px;color:#475569"></i></a>
+            <button type="button" class="btn-sm-icon single-delete-btn ms-1" style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important;width:24px;height:24px" title="Delete Task" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+              <i class="bi bi-trash3-fill" style="font-size:11px;color:#EF4444"></i>
+            </button>
+            {% endif %}
           </div>
         </div>
         <h6 class="fw-bold mb-2" style="font-size:13.5px;line-height:1.4">
@@ -424,30 +431,55 @@ document.addEventListener('DOMContentLoaded', function() {
 
       updateColumnCounts();
 
-      const formData = new FormData();
-      formData.append('status', newStatus);
+      function performTaskMove(password = '') {
+        const formData = new FormData();
+        formData.append('status', newStatus);
+        if (password) formData.append('password', password);
 
-      fetch(`/tasks/${taskId}/move/`, {
-        method: 'POST',
-        headers: {
-          'X-CSRFToken': csrfToken
-        },
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        if (data.status === 'ok') {
-          showToast(`Task ${taskNum} moved to ${data.new_status_display}`, 'success');
-        } else {
-          showToast(data.error || 'Failed to update task status.', 'danger');
-          setTimeout(() => location.reload(), 1500);
-        }
-      })
-      .catch(err => {
-        console.error(err);
-        showToast('Server error while moving task.', 'danger');
-        location.reload();
-      });
+        fetch(`/tasks/${taskId}/move/`, {
+          method: 'POST',
+          headers: {
+            'X-CSRFToken': csrfToken
+          },
+          body: formData
+        })
+        .then(res => res.json())
+        .then(data => {
+          if (data.status === 'ok') {
+            showToast(`Task ${taskNum} moved to ${data.new_status_display}`, 'success');
+          } else {
+            showToast(data.error || 'Failed to update task status.', 'danger');
+            setTimeout(() => location.reload(), 1500);
+          }
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Server error while moving task.', 'danger');
+          location.reload();
+        });
+      }
+
+      if (newStatus === 'completed' || oldStatus === 'completed') {
+        showConfirmModal({
+          title: 'Confirm Status Change',
+          subtitle: 'Organization Admin Password Security Check',
+          message: `Moving task <strong>${taskNum}</strong> to <strong>${newStatus}</strong> requires Organization Admin password verification.`,
+          btnText: 'Confirm Move',
+          btnClass: 'btn-success',
+          icon: 'bi-check-circle-fill',
+          iconBg: '#dcfce7',
+          iconColor: '#16a34a',
+          requirePassword: true,
+          onConfirm: function(pwd) {
+            performTaskMove(pwd);
+          },
+          onCancel: function() {
+            location.reload();
+          }
+        });
+      } else {
+        performTaskMove();
+      }
     });
   });
 
@@ -534,6 +566,55 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   }
+
+  // Single Delete button handler on Board
+  document.querySelectorAll('.single-delete-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      const taskId = this.getAttribute('data-task-id');
+      const taskNum = this.getAttribute('data-task-num');
+      showConfirmModal({
+        title: 'Delete Task',
+        subtitle: 'Please review before proceeding',
+        message: `Are you sure you want to delete task <strong>${taskNum}</strong>? This action cannot be undone.`,
+        btnText: 'Delete Task',
+        btnClass: 'btn-danger',
+        icon: 'bi-trash-fill',
+        iconBg: '#fee2e2',
+        iconColor: '#dc2626',
+        requirePassword: true,
+        onConfirm: function(pwd) {
+          let form = document.getElementById('boardSingleDeleteForm');
+          if (!form) {
+            form = document.createElement('form');
+            form.id = 'boardSingleDeleteForm';
+            form.method = 'POST';
+            form.className = 'd-none';
+            document.body.appendChild(form);
+          }
+          form.action = `/tasks/${taskId}/delete/`;
+          let pwdField = form.querySelector('input[name="password"]');
+          if (!pwdField) {
+            pwdField = document.createElement('input');
+            pwdField.type = 'hidden';
+            pwdField.name = 'password';
+            form.appendChild(pwdField);
+          }
+          pwdField.value = pwd;
+          let csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+          if (!csrfInput) {
+            csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = 'csrfmiddlewaretoken';
+            csrfInput.value = csrfToken;
+            form.appendChild(csrfInput);
+          }
+          form.submit();
+        }
+      });
+    });
+  });
 
   if (window.lucide) lucide.createIcons();
   initDraggableCards();

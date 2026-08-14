@@ -55,10 +55,10 @@
   <form method="post" autocomplete="off">
     {% csrf_token %}
     <div class="mb-3">
-      <label class="form-label">Username</label>
+      <label class="form-label">Username or Email</label>
       <div class="input-icon-wrapper">
         <i data-lucide="user"></i>
-        <input type="text" name="username" class="form-control" placeholder="Enter your username" value="{{ form.username.value|default:'' }}" required autofocus>
+        <input type="text" name="username" class="form-control" placeholder="Enter your username or email" value="{{ form.username.value|default:'' }}" required autofocus>
       </div>
       {% if form.username.errors %}
       <div class="text-danger mt-1" style="font-size:12px">{% for e in form.username.errors %}{{ e }}{% endfor %}</div>

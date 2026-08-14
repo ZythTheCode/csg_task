@@ -6,21 +6,21 @@
 <div class="row g-3 mb-4">
   <div class="col-12 col-sm-6 col-md-4">
     <div class="stat-card success">
-      <div class="stat-icon"><i data-lucide="percent"></i></div>
+      <div class="stat-icon"><i class="bi bi-pie-chart-fill"></i></div>
       <div class="stat-value">{{ overall_completion_rate|floatformat:0 }}%</div>
       <div class="stat-label">Overall Completion Rate</div>
     </div>
   </div>
   <div class="col-12 col-sm-6 col-md-4">
     <div class="stat-card primary">
-      <div class="stat-icon"><i data-lucide="check-square"></i></div>
+      <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
       <div class="stat-value">{{ completed_tasks }}/{{ total_tasks }}</div>
       <div class="stat-label">Tasks Completed</div>
     </div>
   </div>
   <div class="col-12 col-sm-6 col-md-4">
     <div class="stat-card danger">
-      <div class="stat-icon"><i data-lucide="alert-triangle"></i></div>
+      <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
       <div class="stat-value">{{ delayed_tasks|length }}</div>
       <div class="stat-label">Delayed Tasks</div>
     </div>

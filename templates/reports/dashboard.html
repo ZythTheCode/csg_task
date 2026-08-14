@@ -21,10 +21,10 @@
 
 <!-- Summary Cards -->
 <div class="row g-2 g-sm-3 mb-4">
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?scope={{ scope }}" class="stat-card primary text-decoration-none" title="View all tasks"><div class="stat-icon"><i data-lucide="clipboard-list"></i></div><div class="stat-value">{{ summary.total }}</div><div class="stat-label">Total Tasks</div></a></div>
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none" title="View all completed tasks"><div class="stat-icon"><i data-lucide="check-circle"></i></div><div class="stat-value">{{ summary.completed }}</div><div class="stat-label">Completed</div></a></div>
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none" title="View all overdue tasks"><div class="stat-icon"><i data-lucide="alert-triangle"></i></div><div class="stat-value">{{ summary.overdue }}</div><div class="stat-label">Overdue</div></a></div>
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=in_progress&scope={{ scope }}" class="stat-card warning text-decoration-none" title="View tasks currently in progress"><div class="stat-icon"><i data-lucide="clock"></i></div><div class="stat-value">{{ summary.in_progress }}</div><div class="stat-label">In Progress</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?scope={{ scope }}" class="stat-card primary text-decoration-none" title="View all tasks"><div class="stat-icon"><i class="bi bi-clipboard-data-fill"></i></div><div class="stat-value">{{ summary.total }}</div><div class="stat-label">Total Tasks</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none" title="View all completed tasks"><div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div><div class="stat-value">{{ summary.completed }}</div><div class="stat-label">Completed</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none" title="View all overdue tasks"><div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="stat-value">{{ summary.overdue }}</div><div class="stat-label">Overdue</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=in_progress&scope={{ scope }}" class="stat-card warning text-decoration-none" title="View tasks currently in progress"><div class="stat-icon"><i class="bi bi-clock-history"></i></div><div class="stat-value">{{ summary.in_progress }}</div><div class="stat-label">In Progress</div></a></div>
 </div>
 
 <!-- Filters -->

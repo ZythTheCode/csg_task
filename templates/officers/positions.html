@@ -67,12 +67,12 @@
             {% if user.can_manage_officers %}
             <div class="d-inline-flex gap-1">
               <a href="{% url 'officers:position_edit' pos.pk %}" class="btn-sm-icon" title="Edit Position">
-                <i data-lucide="edit-3" style="width:14px;height:14px"></i>
+                <i class="bi bi-pencil-fill" style="font-size:13px;color:#475569"></i>
               </a>
               <form method="post" action="{% url 'officers:position_delete' pos.pk %}" class="d-inline" data-confirm="Are you sure you want to delete position &lt;strong&gt;{{ pos.title }}&lt;/strong&gt;?{% if pos.officer and pos.officer.user %}&lt;div class='mt-2 p-2' style='background:#fef3c7;border-radius:8px;font-size:12.5px;color:#92400e'&gt;&lt;i class='bi bi-person-fill me-1'&gt;&lt;/i&gt;&lt;strong&gt;{{ pos.officer.user.get_full_name }}&lt;/strong&gt; currently holds this position and will lose it.&lt;/div&gt;{% endif %}" data-confirm-title="Delete Position" data-confirm-btn="Delete Position">
                 {% csrf_token %}
-                <button type="submit" class="btn-sm-icon ms-1 border-0" style="background:#FFF1F2;border-color:#FECDD3;color:#EF4444" title="Delete Position">
-                  <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+                <button type="submit" class="btn-sm-icon ms-1 border-0" style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important" title="Delete Position">
+                  <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
                 </button>
               </form>
             </div>

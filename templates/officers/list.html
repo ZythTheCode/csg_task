@@ -37,12 +37,12 @@
         <div><div class="fw-bold" style="color:var(--primary)">{{ officer.active_tasks }}</div><div class="text-muted" style="font-size:11px">Active</div></div>
       </div>
       <div class="d-flex justify-content-center gap-2">
-        <a href="{% url 'officers:detail' officer.pk %}" class="btn-sm-icon" title="View"><i data-lucide="eye" style="width:14px;height:14px"></i></a>
+        <a href="{% url 'officers:detail' officer.pk %}" class="btn-sm-icon" title="View"><i class="bi bi-eye-fill" style="font-size:14px;color:#475569"></i></a>
         {% if user.can_manage_officers %}
-        <a href="{% url 'officers:edit' officer.pk %}" class="btn-sm-icon" title="Edit User & Position"><i data-lucide="edit-3" style="width:14px;height:14px"></i></a>
+        <a href="{% url 'officers:edit' officer.pk %}" class="btn-sm-icon" title="Edit User & Position"><i class="bi bi-pencil-fill" style="font-size:13px;color:#475569"></i></a>
         {% if officer.user != user %}
-        <button type="button" class="btn-sm-icon border-0" style="background:#FFF1F2;color:#EF4444" data-bs-toggle="modal" data-bs-target="#deleteOfficerModal{{ officer.pk }}" title="Delete User Account">
-          <i data-lucide="trash-2" style="width:14px;height:14px"></i>
+        <button type="button" class="btn-sm-icon border-0" style="background:#FFF1F2 !important;color:#EF4444 !important" data-bs-toggle="modal" data-bs-target="#deleteOfficerModal{{ officer.pk }}" title="Delete User Account">
+          <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
         </button>
         {% endif %}
         {% endif %}
