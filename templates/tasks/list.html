@@ -45,41 +45,47 @@
 
 {% if current_filters.status == 'completed' %}
 <!-- Toast: Completed tasks auto-deletion reminder (shows once per session) -->
-<div id="completedInfoToastWrapper" class="position-fixed top-0 end-0 p-3 d-none" style="z-index:9999;margin-top:72px;pointer-events:none">
-  <div class="toast align-items-center border-0 shadow" role="alert" aria-live="polite" aria-atomic="true" id="completedInfoToast" data-bs-autohide="true" data-bs-delay="6000" style="border-radius:16px;background:rgba(255,255,255,0.98);backdrop-filter:blur(12px);max-width:340px;border:1px solid rgba(59,130,246,0.15);pointer-events:auto;opacity:0;transform:translateX(20px);transition:opacity 0.35s ease,transform 0.35s ease">
+<div id="completedInfoToastWrapper" class="position-fixed top-0 end-0 p-3 d-none"
+  style="z-index:9999;margin-top:72px;pointer-events:none">
+  <div class="toast align-items-center border-0 shadow" role="alert" aria-live="polite" aria-atomic="true"
+    id="completedInfoToast" data-bs-autohide="true" data-bs-delay="6000"
+    style="border-radius:16px;background:rgba(255,255,255,0.98);backdrop-filter:blur(12px);max-width:340px;border:1px solid rgba(59,130,246,0.15);pointer-events:auto;opacity:0;transform:translateX(20px);transition:opacity 0.35s ease,transform 0.35s ease">
     <div class="d-flex align-items-start gap-2 p-3">
-      <div class="d-flex align-items-center justify-content-center flex-shrink-0" style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#DBEAFE,#BFDBFE);color:#2563EB;margin-top:1px">
+      <div class="d-flex align-items-center justify-content-center flex-shrink-0"
+        style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#DBEAFE,#BFDBFE);color:#2563EB;margin-top:1px">
         <i class="bi bi-info-circle-fill" style="font-size:14px"></i>
       </div>
       <div style="flex:1;min-width:0">
-        <p class="mb-0" style="font-size:12.5px;color:var(--slate-700);line-height:1.45">Completed tasks are <strong style="color:var(--slate-800)">automatically deleted after 7 days</strong>.</p>
+        <p class="mb-0" style="font-size:12.5px;color:var(--slate-700);line-height:1.45">Completed tasks are <strong
+            style="color:var(--slate-800)">automatically deleted after 7 days</strong>.</p>
       </div>
-      <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="toast" aria-label="Close" style="font-size:9px;margin-top:2px;opacity:0.5"></button>
+      <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="toast" aria-label="Close"
+        style="font-size:9px;margin-top:2px;opacity:0.5"></button>
     </div>
   </div>
 </div>
 <script>
-(function() {
-  // Show every time completed section is viewed
-  
-  document.addEventListener('DOMContentLoaded', function() {
-    var wrapper = document.getElementById('completedInfoToastWrapper');
-    var el = document.getElementById('completedInfoToast');
-    wrapper.classList.remove('d-none');
-    var toast = new bootstrap.Toast(el);
-    el.addEventListener('show.bs.toast', function() {
-      setTimeout(function() { el.style.opacity = '1'; el.style.transform = 'translateX(0)'; }, 50);
+  (function () {
+    // Show every time completed section is viewed
+
+    document.addEventListener('DOMContentLoaded', function () {
+      var wrapper = document.getElementById('completedInfoToastWrapper');
+      var el = document.getElementById('completedInfoToast');
+      wrapper.classList.remove('d-none');
+      var toast = new bootstrap.Toast(el);
+      el.addEventListener('show.bs.toast', function () {
+        setTimeout(function () { el.style.opacity = '1'; el.style.transform = 'translateX(0)'; }, 50);
+      });
+      el.addEventListener('hide.bs.toast', function () {
+        el.style.opacity = '0'; el.style.transform = 'translateX(20px)';
+      });
+      el.addEventListener('hidden.bs.toast', function () {
+        wrapper.classList.add('d-none');
+      });
+      toast.show();
+
     });
-    el.addEventListener('hide.bs.toast', function() {
-      el.style.opacity = '0'; el.style.transform = 'translateX(20px)';
-    });
-    el.addEventListener('hidden.bs.toast', function() {
-      wrapper.classList.add('d-none');
-    });
-    toast.show();
-    
-  });
-})();
+  })();
 </script>
 {% endif %}
 
@@ -323,11 +329,13 @@
           </td>
           <td style="white-space:nowrap;text-align:right" class="pe-4">
             <div class="d-inline-flex gap-1 align-items-center justify-content-end">
-              <button type="button" class="btn-sm-icon single-delete-btn"
-                style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
-                title="Delete Task" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
-                <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
-              </button>
+              <form method="post" action="{% url 'tasks:delete' task.pk %}" class="d-inline"
+                data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This cannot be undone."
+                data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
+                data-confirm-icon="bi-trash-fill" data-confirm-icon-bg="#fee2e2" data-confirm-icon-color="#dc2626"
+                data-require-password="true">{% csrf_token %}<button type="submit" class="btn-sm-icon"
+                  style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
+                  title="Delete"><i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i></button></form>
             </div>
           </td>
           {% else %}
@@ -433,13 +441,16 @@
                   class="bi bi-eye-fill" style="font-size:14px;color:#475569"></i></button>
               {% can_edit_task user task as edit_perm %}
               {% if edit_perm %}
-              <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon" title="Edit"><i class="bi bi-pencil-fill"
+              <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon" title="Edit"
+                data-task-num="{{ task.task_number }}"><i class="bi bi-pencil-fill"
                   style="font-size:13px;color:#475569"></i></a>
-              <button type="button" class="btn-sm-icon single-delete-btn"
-                style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
-                title="Delete" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
-                <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
-              </button>
+              <form method="post" action="{% url 'tasks:delete' task.pk %}" class="d-inline"
+                data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This cannot be undone."
+                data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
+                data-confirm-icon="bi-trash-fill" data-confirm-icon-bg="#fee2e2" data-confirm-icon-color="#dc2626"
+                data-require-password="true">{% csrf_token %}<button type="submit" class="btn-sm-icon"
+                  style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
+                  title="Delete"><i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i></button></form>
               {% endif %}
             </div>
           </td>
@@ -490,10 +501,6 @@
 </div>
 </form>
 
-<!-- Single Delete Form (Hidden) -->
-<form method="post" id="singleDeleteForm" action="">
-  {% csrf_token %}
-</form>
 {% endblock %}
 
 {% block extra_js %}
@@ -519,104 +526,112 @@
     window.location.href = url.toString();
   };
 
-  document.addEventListener('DOMContentLoaded', function () {
-    if (window.lucide) lucide.createIcons();
-    const selectAll = document.getElementById('selectAllTasks');
-    const taskCheckboxes = document.querySelectorAll('.task-checkbox');
-    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-    const selectedCountEl = document.getElementById('selectedCount');
-    const bulkForm = document.getElementById('bulkDeleteForm');
+  (function () {
+    function initTaskList() {
+      if (window.lucide) lucide.createIcons();
+      const selectAll = document.getElementById('selectAllTasks');
+      const taskCheckboxes = document.querySelectorAll('.task-checkbox');
+      const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+      const selectedCountEl = document.getElementById('selectedCount');
+      const bulkForm = document.getElementById('bulkDeleteForm');
 
-    // Single active viewed task tracking via sessionStorage
-    let activeViewedTaskId = sessionStorage.getItem('csg_active_viewed_task') || null;
+      // Single active viewed task tracking via sessionStorage
+      let activeViewedTaskId = sessionStorage.getItem('csg_active_viewed_task') || null;
 
-    function markTaskAsVisited(taskId) {
-      activeViewedTaskId = String(taskId);
-      sessionStorage.setItem('csg_active_viewed_task', activeViewedTaskId);
+      function markTaskAsVisited(taskId) {
+        activeViewedTaskId = String(taskId);
+        sessionStorage.setItem('csg_active_viewed_task', activeViewedTaskId);
 
-      // Remove highlight from any previously highlighted rows
-      document.querySelectorAll('#taskTable tbody tr.task-row-visited').forEach(row => {
-        row.classList.remove('task-row-visited');
-      });
+        // Remove highlight from any previously highlighted rows
+        document.querySelectorAll('#taskTable tbody tr.task-row-visited').forEach(row => {
+          row.classList.remove('task-row-visited');
+        });
 
-      // Highlight ONLY the newly opened task row
-      const tr = document.querySelector(`tr[data-task-id="${taskId}"]`);
-      if (tr) {
-        tr.classList.add('task-row-visited');
+        // Highlight ONLY the newly opened task row
+        const tr = document.querySelector(`tr[data-task-id="${taskId}"]`);
+        if (tr) {
+          tr.classList.add('task-row-visited');
+        }
       }
-    }
 
-    // Restore active viewed task row highlight on page load
-    if (activeViewedTaskId) {
-      const tr = document.querySelector(`tr[data-task-id="${activeViewedTaskId}"]`);
-      if (tr) {
-        tr.classList.add('task-row-visited');
+      // Restore active viewed task row highlight on page load
+      if (activeViewedTaskId) {
+        const tr = document.querySelector(`tr[data-task-id="${activeViewedTaskId}"]`);
+        if (tr) {
+          tr.classList.add('task-row-visited');
+        }
       }
-    }
 
-    // Modal logic & scroll position retention
-    const detailModalEl = document.getElementById('taskDetailModal');
-    const detailModal = new bootstrap.Modal(detailModalEl);
-    let savedScrollY = 0;
+      // Modal logic & scroll position retention
+      const detailModalEl = document.getElementById('taskDetailModal');
+      let detailModal = null;
+      if (detailModalEl) {
+        detailModal = new bootstrap.Modal(detailModalEl);
+      }
+      let savedScrollY = 0;
 
-    function openTaskModal(taskId) {
-      savedScrollY = window.scrollY || window.pageYOffset;
-      markTaskAsVisited(taskId);
+      function openTaskModal(taskId) {
+        if (!detailModal) {
+          window.location.href = '/tasks/' + taskId + '/';
+          return;
+        }
+        savedScrollY = window.scrollY || window.pageYOffset;
+        markTaskAsVisited(taskId);
 
-      document.getElementById('modalLoadingSpinner').classList.remove('d-none');
-      document.getElementById('modalTaskContent').classList.add('d-none');
-      detailModal.show();
+        document.getElementById('modalLoadingSpinner').classList.remove('d-none');
+        document.getElementById('modalTaskContent').classList.add('d-none');
+        detailModal.show();
 
-      fetch(`/tasks/${taskId}/json/`)
-        .then(res => res.json())
-        .then(data => {
-          document.getElementById('modalTaskNumber').textContent = data.task_number;
-          document.getElementById('modalTaskTitle').textContent = data.title;
-          document.getElementById('modalTaskDescription').textContent = data.description || 'No description provided.';
+        fetch(`/tasks/${taskId}/json/`)
+          .then(res => res.json())
+          .then(data => {
+            document.getElementById('modalTaskNumber').textContent = data.task_number;
+            document.getElementById('modalTaskTitle').textContent = data.title;
+            document.getElementById('modalTaskDescription').textContent = data.description || 'No description provided.';
 
-          const statusEl = document.getElementById('modalTaskStatus');
-          statusEl.textContent = data.status_display;
-          statusEl.className = `badge-status badge-${data.status}`;
+            const statusEl = document.getElementById('modalTaskStatus');
+            statusEl.textContent = data.status_display;
+            statusEl.className = `badge-status badge-${data.status}`;
 
-          const priorityEl = document.getElementById('modalTaskPriority');
-          priorityEl.textContent = data.priority_display;
-          priorityEl.className = `badge-status badge-priority-${data.priority}`;
+            const priorityEl = document.getElementById('modalTaskPriority');
+            priorityEl.textContent = data.priority_display;
+            priorityEl.className = `badge-status badge-priority-${data.priority}`;
 
-          const pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
-          const progText = document.getElementById('modalTaskProgressText');
-          progText.textContent = `${data.progress}%`;
-          progText.className = `fw-bold text-${pColor}`;
+            const pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
+            const progText = document.getElementById('modalTaskProgressText');
+            progText.textContent = `${data.progress}%`;
+            progText.className = `fw-bold text-${pColor}`;
 
-          const progBar = document.getElementById('modalTaskProgressBar');
-          progBar.style.width = `${data.progress}%`;
-          progBar.className = `progress-bar bg-${pColor}`;
+            const progBar = document.getElementById('modalTaskProgressBar');
+            progBar.style.width = `${data.progress}%`;
+            progBar.className = `progress-bar bg-${pColor}`;
 
-          document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
-          if (data.is_overdue) {
-            document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
-          } else {
-            document.getElementById('modalTaskDueDate').className = 'text-dark';
-          }
-          document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
-          document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
+            document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
+            if (data.is_overdue) {
+              document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
+            } else {
+              document.getElementById('modalTaskDueDate').className = 'text-dark';
+            }
+            document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
+            document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
 
-          const assignedList = document.getElementById('modalTaskAssignedList');
-          if (data.assigned_officers && data.assigned_officers.length > 0) {
-            assignedList.innerHTML = data.assigned_officers.map(off => {
-              const posStr = (off.position_title || off.position) ? ` (${off.position_title || off.position})` : '';
-              return `
+            const assignedList = document.getElementById('modalTaskAssignedList');
+            if (data.assigned_officers && data.assigned_officers.length > 0) {
+              assignedList.innerHTML = data.assigned_officers.map(off => {
+                const posStr = (off.position_title || off.position) ? ` (${off.position_title || off.position})` : '';
+                return `
               <div class="d-flex align-items-center p-2" style="background:var(--pink-50);border-radius:8px">
                 <span style="font-size:12.5px;font-weight:700;color:var(--slate-800)">${off.name}${posStr}</span>
               </div>
             `;
-            }).join('');
-          } else {
-            assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
-          }
+              }).join('');
+            } else {
+              assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
+            }
 
-          const attList = document.getElementById('modalTaskAttachmentsList');
-          if (data.attachments && data.attachments.length > 0) {
-            attList.innerHTML = data.attachments.map(att => `
+            const attList = document.getElementById('modalTaskAttachmentsList');
+            if (data.attachments && data.attachments.length > 0) {
+              attList.innerHTML = data.attachments.map(att => `
             <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
               <div class="pe-2 overflow-hidden">
                 <span class="text-truncate d-block fw-bold text-dark" style="font-size:12px" title="${att.filename}">${att.filename}</span>
@@ -628,13 +643,13 @@
               </div>
             </div>
           `).join('');
-          } else {
-            attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
-          }
+            } else {
+              attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
+            }
 
-          const commentsList = document.getElementById('modalTaskCommentsList');
-          if (data.comments && data.comments.length > 0) {
-            commentsList.innerHTML = data.comments.map(c => `
+            const commentsList = document.getElementById('modalTaskCommentsList');
+            if (data.comments && data.comments.length > 0) {
+              commentsList.innerHTML = data.comments.map(c => `
             <div class="p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <div>
@@ -646,293 +661,293 @@
               <p class="mb-0" style="font-size:12px;color:var(--slate-700)">${c.content}</p>
             </div>
           `).join('');
-          } else {
-            commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
-          }
-
-          document.getElementById('modalFullPageBtn').href = data.detail_url;
-          const editBtn = document.getElementById('modalEditBtn');
-          if (data.edit_url) {
-            editBtn.href = data.edit_url;
-            editBtn.classList.remove('d-none');
-          } else {
-            editBtn.classList.add('d-none');
-          }
-
-          window.currentModalTaskData = data;
-          const nudgeBtn = document.getElementById('modalNudgeBtn');
-          if (nudgeBtn) {
-            if (data.can_nudge) {
-              nudgeBtn.classList.remove('d-none');
             } else {
-              nudgeBtn.classList.add('d-none');
+              commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
             }
-          }
 
-          const completeBtn = document.getElementById('modalMarkCompleteBtn');
-          if (completeBtn) {
-            if (data.status !== 'completed' && data.can_update_progress) {
-              completeBtn.classList.remove('d-none');
-              completeBtn.onclick = function () {
-                showConfirmModal({
-                  title: 'Mark Task Complete',
-                  subtitle: 'Confirm Status Change',
-                  message: `Are you sure you want to mark task <strong>${data.task_number}</strong> as completed?`,
-                  btnText: 'Mark Complete',
-                  btnClass: 'btn-success',
-                  icon: 'bi-check-circle-fill',
-                  iconBg: '#dcfce7',
-                  iconColor: '#16a34a',
-                  requirePassword: true,
-                  onConfirm: function (pwd) {
-                    const formData = new FormData();
-                    formData.append('password', pwd);
-                    fetch(`/tasks/${data.id}/complete/`, {
-                      method: 'POST',
-                      headers: {
-                        'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '',
-                        'X-Requested-With': 'XMLHttpRequest'
-                      },
-                      body: formData
-                    })
-                      .then(res => res.json())
-                      .then(resp => {
-                        if (resp.status === 'ok') {
-                          detailModal.hide();
-                          window.location.reload();
-                        } else {
-                          alert(resp.error || 'Failed to mark task complete.');
-                        }
-                      });
-                  }
-                });
-              };
+            document.getElementById('modalFullPageBtn').href = data.detail_url;
+            const editBtn = document.getElementById('modalEditBtn');
+            if (data.edit_url) {
+              editBtn.href = data.edit_url;
+              editBtn.classList.remove('d-none');
             } else {
-              completeBtn.classList.add('d-none');
+              editBtn.classList.add('d-none');
             }
-          }
 
-          document.getElementById('modalLoadingSpinner').classList.add('d-none');
-          document.getElementById('modalTaskContent').classList.remove('d-none');
-        })
-        .catch(err => {
-          console.error(err);
-          detailModal.hide();
-        });
-    }
-
-    // Prevent scrollback on closing modal
-    detailModalEl.addEventListener('hidden.bs.modal', function () {
-      window.scrollTo({ top: savedScrollY, behavior: 'instant' });
-    });
-
-    // Delegated event listeners for view buttons & title links
-    document.addEventListener('click', function (e) {
-      const viewBtn = e.target.closest('.view-task-btn');
-      if (viewBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        const taskId = viewBtn.getAttribute('data-task-id');
-        openTaskModal(taskId);
-        return;
-      }
-
-      const titleLink = e.target.closest('.task-title-link');
-      if (titleLink) {
-        e.preventDefault();
-        e.stopPropagation();
-        const taskId = titleLink.getAttribute('data-task-id');
-        openTaskModal(taskId);
-        return;
-      }
-    });
-
-    // Bulk actions logic
-    const bulkCompleteBtn = document.getElementById('bulkCompleteBtn');
-    const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
-    const bulkCompleteForm = document.getElementById('bulkCompleteForm');
-    const bulkDeleteForm = document.getElementById('bulkDeleteForm');
-
-    function updateBulkActionsState() {
-      const checked = document.querySelectorAll('.task-checkbox:checked');
-      const allBoxes = document.querySelectorAll('.task-checkbox');
-      const selectAllEl = document.getElementById('selectAllTasks');
-      const count = checked.length;
-
-      document.querySelectorAll('.selected-count').forEach(el => el.textContent = count);
-
-      const bDel = document.getElementById('bulkDeleteBtn');
-      const bComp = document.getElementById('bulkCompleteBtn');
-
-      if (bDel) {
-        if (count > 0) bDel.classList.remove('d-none');
-        else bDel.classList.add('d-none');
-      }
-      if (bComp) {
-        if (count > 0) bComp.classList.remove('d-none');
-        else bComp.classList.add('d-none');
-      }
-      if (selectAllEl) {
-        selectAllEl.checked = allBoxes.length > 0 && count === allBoxes.length;
-        selectAllEl.indeterminate = count > 0 && count < allBoxes.length;
-      }
-    }
-
-    document.addEventListener('change', function (e) {
-      if (e.target && e.target.id === 'selectAllTasks') {
-        const isChecked = e.target.checked;
-        document.querySelectorAll('.task-checkbox').forEach(cb => cb.checked = isChecked);
-        updateBulkActionsState();
-      } else if (e.target && e.target.classList.contains('task-checkbox')) {
-        updateBulkActionsState();
-      }
-    });
-
-    if (bulkCompleteBtn) {
-      bulkCompleteBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        const checked = document.querySelectorAll('.task-checkbox:checked');
-        if (checked.length === 0) return;
-        showConfirmModal({
-          title: 'Bulk Mark Tasks Complete',
-          subtitle: 'Batch Status Update Authorization',
-          message: `Are you sure you want to mark <strong>${checked.length} selected task(s)</strong> as completed?`,
-          btnText: `Mark ${checked.length} Completed`,
-          btnClass: 'btn-success',
-          icon: 'bi-check-circle-fill',
-          iconBg: '#dcfce7',
-          iconColor: '#16a34a',
-          requirePassword: true,
-          onConfirm: function (pwd) {
-            if (bulkCompleteForm) {
-              bulkCompleteForm.querySelectorAll('input[name="task_ids"]').forEach(el => el.remove());
-              checked.forEach(cb => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'task_ids';
-                input.value = cb.value;
-                bulkCompleteForm.appendChild(input);
-              });
-              let pwdField = bulkCompleteForm.querySelector('input[name="password"]');
-              if (!pwdField) {
-                pwdField = document.createElement('input');
-                pwdField.type = 'hidden';
-                pwdField.name = 'password';
-                bulkCompleteForm.appendChild(pwdField);
+            window.currentModalTaskData = data;
+            const nudgeBtn = document.getElementById('modalNudgeBtn');
+            if (nudgeBtn) {
+              if (data.can_nudge) {
+                nudgeBtn.classList.remove('d-none');
+              } else {
+                nudgeBtn.classList.add('d-none');
               }
-              pwdField.value = pwd;
-              bulkCompleteForm.submit();
             }
-          }
-        });
-      });
-    }
 
-    if (bulkDeleteBtn) {
-      bulkDeleteBtn.addEventListener('click', function (e) {
-        e.preventDefault();
-        const checked = document.querySelectorAll('.task-checkbox:checked');
-        if (checked.length === 0) return;
-        showConfirmModal({
-          title: 'Delete Task',
-          subtitle: 'Please review before proceeding',
-          message: `Are you sure you want to delete <strong>${checked.length} selected task(s)</strong>? This action cannot be undone.`,
-          btnText: `Delete ${checked.length} Task(s)`,
-          btnClass: 'btn-danger',
-          icon: 'bi-trash-fill',
-          iconBg: '#fee2e2',
-          iconColor: '#dc2626',
-          requirePassword: true,
-          onConfirm: function (pwd) {
-            if (bulkDeleteForm) {
-              bulkDeleteForm.querySelectorAll('input[name="task_ids"]').forEach(el => el.remove());
-              checked.forEach(cb => {
-                const input = document.createElement('input');
-                input.type = 'hidden';
-                input.name = 'task_ids';
-                input.value = cb.value;
-                bulkDeleteForm.appendChild(input);
-              });
-              let pwdField = bulkDeleteForm.querySelector('input[name="password"]');
-              if (!pwdField) {
-                pwdField = document.createElement('input');
-                pwdField.type = 'hidden';
-                pwdField.name = 'password';
-                bulkDeleteForm.appendChild(pwdField);
+            const completeBtn = document.getElementById('modalMarkCompleteBtn');
+            if (completeBtn) {
+              if (data.status !== 'completed' && data.can_update_progress) {
+                completeBtn.classList.remove('d-none');
+                completeBtn.onclick = function () {
+                  showConfirmModal({
+                    title: 'Mark Task Complete',
+                    subtitle: 'Confirm Status Change',
+                    message: `Are you sure you want to mark task <strong>${data.task_number}</strong> as completed?`,
+                    btnText: 'Mark Complete',
+                    btnClass: 'btn-success',
+                    icon: 'bi-check-circle-fill',
+                    iconBg: '#dcfce7',
+                    iconColor: '#16a34a',
+                    requirePassword: true,
+                    onConfirm: function (pwd) {
+                      const formData = new FormData();
+                      formData.append('password', pwd);
+                      fetch(`/tasks/${data.id}/complete/`, {
+                        method: 'POST',
+                        headers: {
+                          'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '',
+                          'X-Requested-With': 'XMLHttpRequest'
+                        },
+                        body: formData
+                      })
+                        .then(res => res.json())
+                        .then(resp => {
+                          if (resp.status === 'ok') {
+                            detailModal.hide();
+                            window.location.reload();
+                          } else {
+                            alert(resp.error || 'Failed to mark task complete.');
+                          }
+                        });
+                    }
+                  });
+                };
+              } else {
+                completeBtn.classList.add('d-none');
               }
-              pwdField.value = pwd;
-              bulkDeleteForm.submit();
             }
-          }
-        });
-      });
-    }
 
-    document.addEventListener('click', function (e) {
-      const singleDeleteBtn = e.target.closest('.single-delete-btn');
-      if (singleDeleteBtn) {
-        e.preventDefault();
-        e.stopPropagation();
-        const taskId = singleDeleteBtn.getAttribute('data-task-id');
-        const taskNum = singleDeleteBtn.getAttribute('data-task-num');
-        showConfirmModal({
-          title: 'Delete Task',
-          subtitle: 'Please review before proceeding',
-          message: `Are you sure you want to delete task <strong>${taskNum}</strong>? This action cannot be undone.`,
-          btnText: 'Delete Task',
-          btnClass: 'btn-danger',
-          icon: 'bi-trash-fill',
-          iconBg: '#fee2e2',
-          iconColor: '#dc2626',
-          requirePassword: true,
-          onConfirm: function (pwd) {
-            let form = document.getElementById('singleDeleteForm');
-            if (!form) {
-              form = document.createElement('form');
-              form.id = 'singleDeleteForm';
-              form.method = 'post';
-              form.className = 'd-none';
-              const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
-              if (csrf) form.appendChild(csrf.cloneNode(true));
-              document.body.appendChild(form);
-            }
-            form.action = `/tasks/${taskId}/delete/`;
-            let pwdField = form.querySelector('input[name="password"]');
-            if (!pwdField) {
-              pwdField = document.createElement('input');
-              pwdField.type = 'hidden';
-              pwdField.name = 'password';
-              form.appendChild(pwdField);
-            }
-            pwdField.value = pwd;
-            form.submit();
-          }
-        });
+            document.getElementById('modalLoadingSpinner').classList.add('d-none');
+            document.getElementById('modalTaskContent').classList.remove('d-none');
+          })
+          .catch(err => {
+            console.error(err);
+            detailModal.hide();
+          });
       }
-    });
 
-    // Live Search Suggestions Script
-    const searchInput = document.getElementById('searchInput');
-    const searchSuggestions = document.getElementById('searchSuggestions');
-    let searchDebounce = null;
+      // Prevent scrollback on closing modal
+      detailModalEl.addEventListener('hidden.bs.modal', function () {
+        window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+      });
 
-    if (searchInput && searchSuggestions) {
-      searchInput.addEventListener('input', function () {
-        const q = this.value.trim();
-        clearTimeout(searchDebounce);
-
-        if (!q || q.length < 1) {
-          searchSuggestions.classList.remove('show');
-          searchSuggestions.innerHTML = '';
+      // Delegated event listeners for view buttons & title links
+      document.addEventListener('click', function (e) {
+        const viewBtn = e.target.closest('.view-task-btn');
+        if (viewBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const taskId = viewBtn.getAttribute('data-task-id');
+          openTaskModal(taskId);
           return;
         }
 
-        searchDebounce = setTimeout(() => {
-          fetch(`/tasks/search-suggestions/?q=${encodeURIComponent(q)}`)
-            .then(res => res.json())
-            .then(data => {
-              if (data.results && data.results.length > 0) {
-                searchSuggestions.innerHTML = data.results.map(item => `
+        const titleLink = e.target.closest('.task-title-link');
+        if (titleLink) {
+          e.preventDefault();
+          e.stopPropagation();
+          const taskId = titleLink.getAttribute('data-task-id');
+          openTaskModal(taskId);
+          return;
+        }
+      });
+
+      // Bulk actions logic
+      const bulkCompleteBtn = document.getElementById('bulkCompleteBtn');
+      const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+      const bulkCompleteForm = document.getElementById('bulkCompleteForm');
+      const bulkDeleteForm = document.getElementById('bulkDeleteForm');
+
+      function updateBulkActionsState() {
+        const checked = document.querySelectorAll('.task-checkbox:checked');
+        const allBoxes = document.querySelectorAll('.task-checkbox');
+        const selectAllEl = document.getElementById('selectAllTasks');
+        const count = checked.length;
+
+        document.querySelectorAll('.selected-count').forEach(el => el.textContent = count);
+
+        const bDel = document.getElementById('bulkDeleteBtn');
+        const bComp = document.getElementById('bulkCompleteBtn');
+
+        if (bDel) {
+          if (count > 0) bDel.classList.remove('d-none');
+          else bDel.classList.add('d-none');
+        }
+        if (bComp) {
+          if (count > 0) bComp.classList.remove('d-none');
+          else bComp.classList.add('d-none');
+        }
+        if (selectAllEl) {
+          selectAllEl.checked = allBoxes.length > 0 && count === allBoxes.length;
+          selectAllEl.indeterminate = count > 0 && count < allBoxes.length;
+        }
+      }
+
+      document.addEventListener('change', function (e) {
+        if (e.target && e.target.id === 'selectAllTasks') {
+          const isChecked = e.target.checked;
+          document.querySelectorAll('.task-checkbox').forEach(cb => cb.checked = isChecked);
+          updateBulkActionsState();
+        } else if (e.target && e.target.classList.contains('task-checkbox')) {
+          updateBulkActionsState();
+        }
+      });
+
+      if (bulkCompleteBtn) {
+        bulkCompleteBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          const checked = document.querySelectorAll('.task-checkbox:checked');
+          if (checked.length === 0) return;
+          showConfirmModal({
+            title: 'Bulk Mark Tasks Complete',
+            subtitle: 'Batch Status Update Authorization',
+            message: `Are you sure you want to mark <strong>${checked.length} selected task(s)</strong> as completed?`,
+            btnText: `Mark ${checked.length} Completed`,
+            btnClass: 'btn-success',
+            icon: 'bi-check-circle-fill',
+            iconBg: '#dcfce7',
+            iconColor: '#16a34a',
+            requirePassword: true,
+            onConfirm: function (pwd) {
+              if (bulkCompleteForm) {
+                bulkCompleteForm.querySelectorAll('input[name="task_ids"]').forEach(el => el.remove());
+                checked.forEach(cb => {
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = 'task_ids';
+                  input.value = cb.value;
+                  bulkCompleteForm.appendChild(input);
+                });
+                let pwdField = bulkCompleteForm.querySelector('input[name="password"]');
+                if (!pwdField) {
+                  pwdField = document.createElement('input');
+                  pwdField.type = 'hidden';
+                  pwdField.name = 'password';
+                  bulkCompleteForm.appendChild(pwdField);
+                }
+                pwdField.value = pwd;
+                bulkCompleteForm.submit();
+              }
+            }
+          });
+        });
+      }
+
+      if (bulkDeleteBtn) {
+        bulkDeleteBtn.addEventListener('click', function (e) {
+          e.preventDefault();
+          const checked = document.querySelectorAll('.task-checkbox:checked');
+          if (checked.length === 0) return;
+          showConfirmModal({
+            title: 'Delete Task',
+            subtitle: 'Please review before proceeding',
+            message: `Are you sure you want to delete <strong>${checked.length} selected task(s)</strong>? This action cannot be undone.`,
+            btnText: `Delete ${checked.length} Task(s)`,
+            btnClass: 'btn-danger',
+            icon: 'bi-trash-fill',
+            iconBg: '#fee2e2',
+            iconColor: '#dc2626',
+            requirePassword: true,
+            onConfirm: function (pwd) {
+              if (bulkDeleteForm) {
+                bulkDeleteForm.querySelectorAll('input[name="task_ids"]').forEach(el => el.remove());
+                checked.forEach(cb => {
+                  const input = document.createElement('input');
+                  input.type = 'hidden';
+                  input.name = 'task_ids';
+                  input.value = cb.value;
+                  bulkDeleteForm.appendChild(input);
+                });
+                let pwdField = bulkDeleteForm.querySelector('input[name="password"]');
+                if (!pwdField) {
+                  pwdField = document.createElement('input');
+                  pwdField.type = 'hidden';
+                  pwdField.name = 'password';
+                  bulkDeleteForm.appendChild(pwdField);
+                }
+                pwdField.value = pwd;
+                bulkDeleteForm.submit();
+              }
+            }
+          });
+        });
+      }
+
+      document.addEventListener('click', function (e) {
+        const singleDeleteBtn = e.target.closest('.single-delete-btn');
+        if (singleDeleteBtn) {
+          e.preventDefault();
+          e.stopPropagation();
+          const taskId = singleDeleteBtn.getAttribute('data-task-id');
+          const taskNum = singleDeleteBtn.getAttribute('data-task-num');
+          showConfirmModal({
+            title: 'Delete Task',
+            subtitle: 'Please review before proceeding',
+            message: `Are you sure you want to delete task <strong>${taskNum}</strong>? This action cannot be undone.`,
+            btnText: 'Delete Task',
+            btnClass: 'btn-danger',
+            icon: 'bi-trash-fill',
+            iconBg: '#fee2e2',
+            iconColor: '#dc2626',
+            requirePassword: true,
+            onConfirm: function (pwd) {
+              let form = document.getElementById('singleDeleteForm');
+              if (!form) {
+                form = document.createElement('form');
+                form.id = 'singleDeleteForm';
+                form.method = 'post';
+                form.className = 'd-none';
+                const csrf = document.querySelector('input[name="csrfmiddlewaretoken"]');
+                if (csrf) form.appendChild(csrf.cloneNode(true));
+                document.body.appendChild(form);
+              }
+              form.action = `/tasks/${taskId}/delete/`;
+              let pwdField = form.querySelector('input[name="password"]');
+              if (!pwdField) {
+                pwdField = document.createElement('input');
+                pwdField.type = 'hidden';
+                pwdField.name = 'password';
+                form.appendChild(pwdField);
+              }
+              pwdField.value = pwd;
+              form.submit();
+            }
+          });
+        }
+      });
+
+      // Live Search Suggestions Script
+      const searchInput = document.getElementById('searchInput');
+      const searchSuggestions = document.getElementById('searchSuggestions');
+      let searchDebounce = null;
+
+      if (searchInput && searchSuggestions) {
+        searchInput.addEventListener('input', function () {
+          const q = this.value.trim();
+          clearTimeout(searchDebounce);
+
+          if (!q || q.length < 1) {
+            searchSuggestions.classList.remove('show');
+            searchSuggestions.innerHTML = '';
+            return;
+          }
+
+          searchDebounce = setTimeout(() => {
+            fetch(`/tasks/search-suggestions/?q=${encodeURIComponent(q)}`)
+              .then(res => res.json())
+              .then(data => {
+                if (data.results && data.results.length > 0) {
+                  searchSuggestions.innerHTML = data.results.map(item => `
                 <div class="search-suggestion-item" data-task-id="${item.id}">
                   <div>
                     <span class="badge bg-light text-primary border me-1" style="font-size:10.5px">${item.task_number}</span>
@@ -941,44 +956,124 @@
                   <span class="badge-status badge-${item.status}" style="font-size:10px">${item.status_display}</span>
                 </div>
               `).join('');
-                searchSuggestions.classList.add('show');
-              } else {
-                searchSuggestions.innerHTML = '<div class="p-3 text-muted text-center" style="font-size:12px">No matching tasks found</div>';
-                searchSuggestions.classList.add('show');
-              }
-            });
-        }, 200);
+                  searchSuggestions.classList.add('show');
+                } else {
+                  searchSuggestions.innerHTML = '<div class="p-3 text-muted text-center" style="font-size:12px">No matching tasks found</div>';
+                  searchSuggestions.classList.add('show');
+                }
+              });
+          }, 200);
+        });
+
+        document.addEventListener('click', function (e) {
+          if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+            searchSuggestions.classList.remove('show');
+          }
+        });
+
+        searchSuggestions.addEventListener('click', function (e) {
+          const item = e.target.closest('.search-suggestion-item');
+          if (item) {
+            const taskId = item.getAttribute('data-task-id');
+            searchSuggestions.classList.remove('show');
+            openTaskModal(taskId);
+          }
+        });
+      }
+
+      // Row Z-Index lifting on dropdown open
+      document.querySelectorAll('.table-custom tbody tr').forEach(tr => {
+        tr.addEventListener('show.bs.dropdown', function () {
+          this.classList.add('show-dropdown');
+        });
+        tr.addEventListener('hide.bs.dropdown', function () {
+          this.classList.remove('show-dropdown');
+        });
       });
 
-      document.addEventListener('click', function (e) {
-        if (!searchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
-          searchSuggestions.classList.remove('show');
-        }
-      });
 
-      searchSuggestions.addEventListener('click', function (e) {
-        const item = e.target.closest('.search-suggestion-item');
-        if (item) {
-          const taskId = item.getAttribute('data-task-id');
-          searchSuggestions.classList.remove('show');
-          openTaskModal(taskId);
-        }
-      });
+
+      if (window.lucide) lucide.createIcons();
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', initTaskList);
+    } else {
+      initTaskList();
+    }
+  })();
+</script>
+
+<script>
+  (function () {
+    var modalEl = document.getElementById('taskDetailModal');
+    var modal = new bootstrap.Modal(modalEl);
+
+    function openListTaskModal(taskId) {
+      var spinner = document.getElementById('modalLoadingSpinner');
+      var content = document.getElementById('modalTaskContent');
+      if (spinner) spinner.classList.remove('d-none');
+      if (content) content.classList.add('d-none');
+      modal.show();
+
+      fetch('/tasks/' + taskId + '/json/')
+        .then(function (r) { return r.json(); })
+        .then(function (data) {
+          document.getElementById('modalTaskNumber').textContent = data.task_number;
+          document.getElementById('modalTaskTitle').textContent = data.title;
+          document.getElementById('modalTaskDescription').textContent = data.description || 'No description.';
+          var statusEl = document.getElementById('modalTaskStatus');
+          statusEl.textContent = data.status_display;
+          statusEl.className = 'badge-status badge-' + data.status;
+          var priorityEl = document.getElementById('modalTaskPriority');
+          priorityEl.textContent = data.priority_display;
+          priorityEl.className = 'badge-status badge-priority-' + data.priority;
+          var pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
+          var progText = document.getElementById('modalTaskProgressText');
+          if (progText) { progText.textContent = data.progress + '%'; progText.className = 'fw-bold text-' + pColor; }
+          var progBar = document.getElementById('modalTaskProgressBar');
+          if (progBar) { progBar.style.width = data.progress + '%'; progBar.className = 'progress-bar bg-' + pColor; }
+          document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
+          if (data.is_overdue) { document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold'; }
+          else { document.getElementById('modalTaskDueDate').className = 'text-dark'; }
+          document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
+          document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
+          var assignedList = document.getElementById('modalTaskAssignedList');
+          if (data.assigned_officers && data.assigned_officers.length > 0) {
+            assignedList.innerHTML = data.assigned_officers.map(function (off) {
+              return '<div class="d-flex align-items-center p-2" style="background:var(--pink-50);border-radius:8px"><span style="font-size:12.5px;font-weight:700;color:var(--slate-800)">' + off.name + (off.position_title ? ' (' + off.position_title + ')' : '') + '</span></div>';
+            }).join('');
+          } else { assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>'; }
+          var attList = document.getElementById('modalTaskAttachmentsList');
+          if (data.attachments && data.attachments.length > 0) {
+            attList.innerHTML = data.attachments.map(function (att) {
+              return '<div class="d-flex align-items-center justify-content-between p-2 mb-1" style="background:var(--pink-50);border-radius:8px"><span style="font-size:12px">' + att.filename + '</span><a href="' + (att.view_url || att.url) + '" target="_blank" class="btn btn-sm btn-light border px-2" style="font-size:11px">View</a></div>';
+            }).join('');
+          } else { attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>'; }
+          var commentsList = document.getElementById('modalTaskCommentsList');
+          if (data.comments && data.comments.length > 0) {
+            commentsList.innerHTML = data.comments.map(function (c) {
+              return '<div class="p-2 mb-1" style="background:var(--pink-50);border-radius:8px"><strong style="font-size:12px">' + c.author + '</strong><p class="mb-0" style="font-size:12px">' + c.content + '</p></div>';
+            }).join('');
+          } else { commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>'; }
+          document.getElementById('modalFullPageBtn').href = data.detail_url;
+          var editBtn = document.getElementById('modalEditBtn');
+          if (editBtn) { if (data.edit_url) { editBtn.href = data.edit_url; editBtn.setAttribute('data-task-num', data.task_number); editBtn.classList.remove('d-none'); } else { editBtn.classList.add('d-none'); } }
+          window.currentModalTaskData = data;
+          var nudgeBtn = document.getElementById('modalNudgeBtn');
+          if (nudgeBtn) { if (data.can_nudge) { nudgeBtn.classList.remove('d-none'); } else { nudgeBtn.classList.add('d-none'); } }
+          if (spinner) spinner.classList.add('d-none');
+          if (content) content.classList.remove('d-none');
+          if (window.lucide) lucide.createIcons();
+        })
+        .catch(function (err) { console.error(err); modal.hide(); alert('Error loading task details.'); });
     }
 
-    // Row Z-Index lifting on dropdown open
-    document.querySelectorAll('.table-custom tbody tr').forEach(tr => {
-      tr.addEventListener('show.bs.dropdown', function () {
-        this.classList.add('show-dropdown');
-      });
-      tr.addEventListener('hide.bs.dropdown', function () {
-        this.classList.remove('show-dropdown');
-      });
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest('.view-task-btn');
+      if (btn) { e.preventDefault(); e.stopPropagation(); openListTaskModal(btn.getAttribute('data-task-id')); return; }
+      var link = e.target.closest('.task-title-link');
+      if (link) { e.preventDefault(); e.stopPropagation(); openListTaskModal(link.getAttribute('data-task-id')); return; }
     });
-
-
-
-    if (window.lucide) lucide.createIcons();
-  });
+  })();
 </script>
 {% endblock %}

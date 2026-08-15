@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Fix Template Syntax",
+  "description": "Automatically fixes Django template syntax issues (multi-line variable tags, missing spaces around == and >=) whenever an HTML template file is saved. Prevents raw {{ }} literals from appearing in the browser.",
+  "version": "1",
+  "when": {
+    "type": "fileEdited",
+    "patterns": [
+      "**/*.html"
+    ]
+  },
+  "then": {
+    "type": "runCommand",
+    "command": "python fix_templates.py"
+  }
+}

@@ -328,7 +328,7 @@
           document.getElementById('modalFullPageBtn').href = data.detail_url;
           const editBtn = document.getElementById('modalEditBtn');
           if (data.edit_url) {
-            editBtn.href = data.edit_url;
+            editBtn.href = data.edit_url; editBtn.setAttribute('data-task-num', data.task_number);
             editBtn.classList.remove('d-none');
           } else {
             editBtn.classList.add('d-none');
