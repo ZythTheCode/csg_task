@@ -3,12 +3,13 @@ from django.views.generic import ListView, DetailView, CreateView, UpdateView, D
 from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
+from core.mixins import FragmentResponseMixin
 from .models import Position, Officer
 from .forms import PositionForm, OfficerForm
 from accounts.models import User
 
 
-class OfficerListView(LoginRequiredMixin, ListView):
+class OfficerListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
     model = Officer
     template_name = 'officers/list.html'
     context_object_name = 'officers'

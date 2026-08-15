@@ -3,10 +3,11 @@ from django.views.generic import ListView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.core.cache import cache
+from core.mixins import FragmentResponseMixin
 from .models import Notification
 
 
-class NotificationListView(LoginRequiredMixin, ListView):
+class NotificationListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
     model = Notification
     template_name = 'notifications/list.html'
     context_object_name = 'notifications'

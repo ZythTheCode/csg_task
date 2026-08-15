@@ -8,7 +8,10 @@ from accounts.models import User
 import datetime
 
 
-class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
+from core.mixins import FragmentResponseMixin
+
+
+class MonitoringDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
     template_name = 'monitoring/dashboard.html'
 
     def get_context_data(self, **kwargs):

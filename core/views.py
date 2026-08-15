@@ -3,9 +3,10 @@ from django.views.generic import TemplateView
 from django.utils import timezone
 from tasks.models import Task
 from officers.models import Officer
+from core.mixins import FragmentResponseMixin
 
 
-class DashboardView(LoginRequiredMixin, TemplateView):
+class DashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
     template_name = 'core/dashboard.html'
 
     def get_context_data(self, **kwargs):
@@ -61,7 +62,7 @@ from django.shortcuts import redirect
 from organizations.models import Organization
 
 
-class SettingsView(LoginRequiredMixin, TemplateView):
+class SettingsView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
     template_name = 'core/settings.html'
 
     def get_target_organization(self):

@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.http import HttpResponse
 from django.utils import timezone
+from core.mixins import FragmentResponseMixin
 from tasks.models import Task
 from officers.models import Officer
 from accounts.models import User
@@ -9,7 +10,7 @@ import io
 import datetime
 
 
-class ReportsDashboardView(LoginRequiredMixin, TemplateView):
+class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
     template_name = 'reports/dashboard.html'
 
     def dispatch(self, request, *args, **kwargs):

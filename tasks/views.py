@@ -15,6 +15,7 @@ from .models import Task, TaskComment, TaskAttachment, TaskHistory, TaskAssignme
 from .forms import TaskForm, TaskProgressForm, CommentForm, AttachmentForm
 from notifications.models import Notification
 from accounts.models import User
+from core.mixins import FragmentResponseMixin
 import io
 
 
@@ -35,7 +36,7 @@ def check_org_admin_password(user, password):
     return False
 
 
-class TaskListView(LoginRequiredMixin, ListView):
+class TaskListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
     model = Task
     template_name = 'tasks/list.html'
     context_object_name = 'tasks'
@@ -452,7 +453,7 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
         return redirect(next_url)
 
 
-class TaskBoardView(LoginRequiredMixin, ListView):
+class TaskBoardView(FragmentResponseMixin, LoginRequiredMixin, ListView):
     model = Task
     template_name = 'tasks/board.html'
     context_object_name = 'tasks'
@@ -509,7 +510,7 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         return ctx
 
 
-class TaskCalendarView(LoginRequiredMixin, TemplateView):
+class TaskCalendarView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
     template_name = 'tasks/calendar.html'
 
     def get_context_data(self, **kwargs):
@@ -521,6 +522,7 @@ class TaskCalendarView(LoginRequiredMixin, TemplateView):
         category = self.request.GET.get('category', '')
         priority = self.request.GET.get('priority', '')
         status = self.request.GET.get('status', '')
+        officers = self.request.GET.getlist('officer')
 
         ctx['page_title'] = 'Task Calendar View'
         ctx['current_org'] = org
@@ -532,6 +534,7 @@ class TaskCalendarView(LoginRequiredMixin, TemplateView):
             'category': category,
             'status': status,
             'priority': priority,
+            'officer': officers,
             'scope': scope
         }
         return ctx
