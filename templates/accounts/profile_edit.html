@@ -1,5 +1,9 @@
 {% extends 'base.html' %}
 {% block title %}Edit Profile{% endblock %}
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js" defer></script>
+{% endblock %}
 {% block content %}
 <div class="row justify-content-center">
   <div class="col-md-7">
@@ -15,18 +19,23 @@
 
           <!-- Avatar Component Header -->
           <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:var(--pink-50)">
-            <div class="avatar-upload-wrapper" onclick="document.getElementById('id_profile_picture').click()" title="Click to change profile picture">
+            <div class="avatar-upload-wrapper" onclick="document.getElementById('id_profile_picture').click()"
+              title="Click to change profile picture">
               <div class="avatar-upload-circle">
                 {% if user.profile_picture %}
-                  <img id="avatarPreviewProfile" src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}" style="width:100%;height:100%;object-fit:cover;">
-                  <div id="avatarFallbackProfile" class="officer-avatar d-none" style="width:100%;height:100%;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center">
-                    <i class="bi bi-person"></i>
-                  </div>
+                <img id="avatarPreviewProfile" src="{{ user.profile_picture.url }}" alt="{{ user.get_full_name }}"
+                  style="width:100%;height:100%;object-fit:cover;">
+                <div id="avatarFallbackProfile" class="officer-avatar d-none"
+                  style="width:100%;height:100%;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center">
+                  <i class="bi bi-person"></i>
+                </div>
                 {% else %}
-                  <img id="avatarPreviewProfile" src="" alt="Profile Preview" class="d-none" style="width:100%;height:100%;object-fit:cover;">
-                  <div id="avatarFallbackProfile" class="officer-avatar" style="width:100%;height:100%;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center;background:var(--pink-100);color:var(--primary)">
-                    {{ user.first_name|first }}{{ user.last_name|first }}
-                  </div>
+                <img id="avatarPreviewProfile" src="" alt="Profile Preview" class="d-none"
+                  style="width:100%;height:100%;object-fit:cover;">
+                <div id="avatarFallbackProfile" class="officer-avatar"
+                  style="width:100%;height:100%;border-radius:50%;font-size:32px;display:flex;align-items:center;justify-content:center;background:var(--pink-100);color:var(--primary)">
+                  {{ user.first_name|first }}{{ user.last_name|first }}
+                </div>
                 {% endif %}
               </div>
               <div class="avatar-upload-btn" title="Edit Profile Photo">
@@ -35,41 +44,52 @@
             </div>
             <div>
               <h6 class="fw-bold mb-1 text-dark" style="font-size:15px">{{ user.get_full_name }}</h6>
-              <small class="text-muted d-block mb-2" style="font-size:12px">Click your photo or the pencil icon to upload a new avatar.</small>
-              <button type="button" class="btn btn-sm btn-outline-primary px-3" style="border-radius:20px;font-size:12px;font-weight:600" onclick="document.getElementById('id_profile_picture').click()">
+              <small class="text-muted d-block mb-2" style="font-size:12px">Click your photo or the pencil icon to
+                upload a new avatar.</small>
+              <button type="button" class="btn btn-sm btn-outline-primary px-3"
+                style="border-radius:20px;font-size:12px;font-weight:600"
+                onclick="document.getElementById('id_profile_picture').click()">
                 <i class="bi bi-camera me-1"></i> Change Photo
               </button>
               {% if user.profile_picture %}
-              <button type="button" class="btn btn-sm btn-outline-danger px-3 ms-2" style="border-radius:20px;font-size:12px;font-weight:600" data-bs-toggle="modal" data-bs-target="#removeProfilePhotoModal">
+              <button type="button" class="btn btn-sm btn-outline-danger px-3 ms-2"
+                style="border-radius:20px;font-size:12px;font-weight:600" data-bs-toggle="modal"
+                data-bs-target="#removeProfilePhotoModal">
                 <i class="bi bi-trash me-1"></i> Remove Photo
               </button>
               {% endif %}
-              <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" style="display:none" onchange="handleProfilePhotoSelect(this, 'avatarPreviewProfile', 'avatarFallbackProfile')">
+              <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*" style="display:none"
+                onchange="handleProfilePhotoSelect(this, 'avatarPreviewProfile', 'avatarFallbackProfile')">
             </div>
           </div>
 
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label fw-semibold" style="font-size:13px">First Name</label>
-              <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" class="form-control" style="font-size:13px">
+              <input type="text" name="first_name" value="{{ form.first_name.value|default:'' }}" class="form-control"
+                style="font-size:13px">
             </div>
             <div class="col-md-6">
               <label class="form-label fw-semibold" style="font-size:13px">Last Name</label>
-              <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" class="form-control" style="font-size:13px">
+              <input type="text" name="last_name" value="{{ form.last_name.value|default:'' }}" class="form-control"
+                style="font-size:13px">
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold" style="font-size:13px">Email Address</label>
-              <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="form-control" style="font-size:13px">
+              <input type="email" name="email" value="{{ form.email.value|default:'' }}" class="form-control"
+                style="font-size:13px">
             </div>
             <div class="col-12">
               <label class="form-label fw-semibold" style="font-size:13px">Bio / Executive Summary</label>
-              <textarea name="bio" class="form-control" rows="3" style="font-size:13px">{{ form.bio.value|default:'' }}</textarea>
+              <textarea name="bio" class="form-control" rows="3"
+                style="font-size:13px">{{ form.bio.value|default:'' }}</textarea>
             </div>
           </div>
 
           <hr class="my-4">
           <div class="d-flex gap-2 justify-content-end">
-            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary-custom btn-sm px-4" style="border-radius:20px;font-weight:600">Cancel</a>
+            <a href="{% url 'accounts:profile' %}" class="btn btn-secondary-custom btn-sm px-4"
+              style="border-radius:20px;font-weight:600">Cancel</a>
             <button type="submit" class="btn btn-primary-custom btn-sm px-4" style="border-radius:20px;font-weight:600">
               <i class="bi bi-check-lg me-1"></i> Save Changes
             </button>
@@ -81,40 +101,44 @@
 </div>
 
 <script>
-function previewAvatarProfile(input) {
-  if (input.files && input.files[0]) {
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      const preview = document.getElementById('avatarPreviewProfile');
-      const fallback = document.getElementById('avatarFallbackProfile');
-      if (preview) {
-        preview.src = e.target.result;
-        preview.classList.remove('d-none');
-      }
-      if (fallback) {
-        fallback.classList.add('d-none');
-      }
-    };
-    reader.readAsDataURL(input.files[0]);
+  function previewAvatarProfile(input) {
+    if (input.files && input.files[0]) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const preview = document.getElementById('avatarPreviewProfile');
+        const fallback = document.getElementById('avatarFallbackProfile');
+        if (preview) {
+          preview.src = e.target.result;
+          preview.classList.remove('d-none');
+        }
+        if (fallback) {
+          fallback.classList.add('d-none');
+        }
+      };
+      reader.readAsDataURL(input.files[0]);
+    }
   }
-}
 </script>
 {% endblock %}
 
 {% block modals %}
 <!-- Remove Profile Photo Modal -->
-<div class="modal fade" id="removeProfilePhotoModal" tabindex="-1" aria-labelledby="removeProfilePhotoModalTitle" aria-hidden="true">
+<div class="modal fade" id="removeProfilePhotoModal" tabindex="-1" aria-labelledby="removeProfilePhotoModalTitle"
+  aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" style="max-width:440px">
     <div class="modal-content border-0 shadow-lg" style="border-radius:20px;overflow:hidden">
       <div class="modal-header py-3 px-4" style="background:#FFF1F2;border-bottom:1px solid #FECDD3">
-        <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2 mb-0" id="removeProfilePhotoModalTitle" style="font-size:15px">
+        <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2 mb-0"
+          id="removeProfilePhotoModalTitle" style="font-size:15px">
           <i class="bi bi-exclamation-triangle-fill"></i> Remove Profile Photo
         </h6>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-4 text-center">
         <div class="mb-3">
-          <div class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle p-3" style="width:64px;height:64px">
+          <div
+            class="d-inline-flex align-items-center justify-content-center bg-danger bg-opacity-10 text-danger rounded-circle p-3"
+            style="width:64px;height:64px">
             <i class="bi bi-person-x-fill" style="font-size:28px"></i>
           </div>
         </div>
@@ -124,10 +148,12 @@ function previewAvatarProfile(input) {
         </p>
       </div>
       <div class="modal-footer py-3 px-4 bg-light border-top-0 d-flex justify-content-between">
-        <button type="button" class="btn btn-secondary-custom btn-sm px-4" data-bs-dismiss="modal" style="border-radius:30px;font-weight:600">Cancel</button>
+        <button type="button" class="btn btn-secondary-custom btn-sm px-4" data-bs-dismiss="modal"
+          style="border-radius:30px;font-weight:600">Cancel</button>
         <form method="post" class="d-inline">
           {% csrf_token %}
-          <button type="submit" name="action" value="remove_photo" class="btn btn-danger btn-sm px-4" style="border-radius:30px;font-weight:600">
+          <button type="submit" name="action" value="remove_photo" class="btn btn-danger btn-sm px-4"
+            style="border-radius:30px;font-weight:600">
             <i class="bi bi-trash me-1"></i> Yes, Remove Photo
           </button>
         </form>
@@ -136,4 +162,3 @@ function previewAvatarProfile(input) {
   </div>
 </div>
 {% endblock %}
-

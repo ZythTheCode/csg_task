@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Case, When, Value, IntegerField
 from django.core.paginator import Paginator
+from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings as django_settings
 from decouple import config
@@ -38,7 +39,7 @@ class TaskListView(LoginRequiredMixin, ListView):
     model = Task
     template_name = 'tasks/list.html'
     context_object_name = 'tasks'
-    paginate_by = 15
+    paginate_by = 10
 
     def get_queryset(self):
         org = self.request.user.get_organization(self.request)
@@ -160,17 +161,27 @@ class TaskListView(LoginRequiredMixin, ListView):
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         org = self.request.user.get_organization(self.request)
         if org:
-            ctx['officers_list'] = User.objects.filter(
-                is_active=True, organization=org
-            ).exclude(role='super_super_admin').select_related(
-                'officer_profile', 'officer_profile__position'
-            ).order_by('first_name', 'last_name')
+            cache_key = f'officers_list_{org.pk}'
+            officers_list = cache.get(cache_key)
+            if officers_list is None:
+                officers_list = list(User.objects.filter(
+                    is_active=True, organization=org
+                ).exclude(role='super_super_admin').select_related(
+                    'officer_profile', 'officer_profile__position'
+                ).order_by('first_name', 'last_name'))
+                cache.set(cache_key, officers_list, 60)
+            ctx['officers_list'] = officers_list
         else:
-            ctx['officers_list'] = User.objects.filter(
-                is_active=True, organization__isnull=False
-            ).exclude(role='super_super_admin').select_related(
-                'officer_profile', 'officer_profile__position', 'organization'
-            ).order_by('organization__name', 'first_name', 'last_name')
+            cache_key = 'officers_list_all'
+            officers_list = cache.get(cache_key)
+            if officers_list is None:
+                officers_list = list(User.objects.filter(
+                    is_active=True, organization__isnull=False
+                ).exclude(role='super_super_admin').select_related(
+                    'officer_profile', 'officer_profile__position', 'organization'
+                ).order_by('organization__name', 'first_name', 'last_name'))
+                cache.set(cache_key, officers_list, 60)
+            ctx['officers_list'] = officers_list
         ctx['category_choices'] = Task.CATEGORY_CHOICES
         ctx['current_filters'] = {
             'q': self.request.GET.get('q', ''),
@@ -478,7 +489,7 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         for status_code, status_label in Task.STATUS_CHOICES:
             if status_code in ['overdue', 'completed']:
                 continue
-            col_tasks = base_qs.filter(status=status_code).select_related('created_by', 'organization').prefetch_related('assigned_officers')[:50]
+            col_tasks = base_qs.filter(status=status_code).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:50]
             columns.append({
                 'code': status_code,
                 'label': status_label,

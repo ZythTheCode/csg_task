@@ -13,6 +13,9 @@ ENV/
 # Database
 db.sqlite3
 
+# Cache
+django_cache/
+
 # Static media
 media/
 staticfiles/

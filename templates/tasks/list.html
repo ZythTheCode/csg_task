@@ -395,7 +395,7 @@
             {{ task.description|default:"—"|truncatewords:25 }}
           </td>
           <td>
-            {% if task.assigned_officers.exists %}
+            {% if task.has_assigned_officers %}
             {% for officer in task.sorted_assigned_officers %}
             <div class="mb-1" style="font-size:12px;color:var(--slate-800)">
               <strong style="color:var(--slate-900)">{{ officer.get_full_name|default:officer.username }}</strong>
@@ -439,7 +439,7 @@
             </div>
           </td>
           <td>
-            {% if task.assigned_officers.exists %}
+            {% if task.has_assigned_officers %}
             <div class="dropdown d-inline-block">
               <div class="d-flex align-items-center gap-1 flex-nowrap" data-bs-toggle="dropdown" aria-expanded="false"
                 data-bs-boundary="window" style="cursor:pointer" title="Click to view officer names">
@@ -450,10 +450,10 @@
                   {{ officer.position_title|initials }}
                 </span>
                 {% endfor %}
-                {% if task.assigned_officers.count > 2 %}
+                {% if task.assigned_officers_count > 2 %}
                 <span class="badge bg-secondary text-white"
                   style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">
-                  +{{ task.assigned_officers.count|add:"-2" }}
+                  +{{ task.assigned_officers_count|add:"-2" }}
                 </span>
                 {% endif %}
               </div>

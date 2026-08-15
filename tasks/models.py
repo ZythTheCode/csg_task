@@ -157,6 +157,16 @@ class Task(models.Model):
         return self.CATEGORY_ICONS.get(self.category, 'box')
 
     @property
+    def has_assigned_officers(self):
+        """Uses prefetch cache - no extra DB query."""
+        return bool(self.assigned_officers.all())
+
+    @property
+    def assigned_officers_count(self):
+        """Uses prefetch cache - no extra DB query."""
+        return len(self.assigned_officers.all())
+
+    @property
     def sorted_assigned_officers(self):
         ORDER_MAP = {
             "President": 1,

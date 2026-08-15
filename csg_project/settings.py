@@ -164,11 +164,11 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
             },
         }
 
-# Cache configuration for performance
+# Cache configuration for performance (file-based survives process restarts)
 CACHES = {
     'default': {
-        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
-        'LOCATION': 'csg-cache',
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': BASE_DIR / 'django_cache',
         'TIMEOUT': 300,
     }
 }

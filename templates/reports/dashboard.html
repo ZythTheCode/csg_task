@@ -8,56 +8,97 @@
     <p class="text-muted mb-0" style="font-size:13px">Generate and export task reports</p>
   </div>
   <div class="d-flex flex-wrap gap-2 align-items-center w-100 w-md-auto">
-    <div class="scope-switcher me-md-2 me-0" style="background:#fff;border-radius:30px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:inline-flex">
-      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="setScope('my_tasks')" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i>My Tasks</button>
-      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}" onclick="setScope('all')" style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i>All Tasks</button>
+    <div class="scope-switcher me-md-2 me-0"
+      style="background:#fff;border-radius:30px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:inline-flex">
+      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}"
+        onclick="setScope('my_tasks')"
+        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="user"
+          class="me-1" style="width:14px;height:14px"></i>My Tasks</button>
+      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}"
+        onclick="setScope('all')"
+        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="users"
+          class="me-1" style="width:14px;height:14px"></i>All Tasks</button>
     </div>
     <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0 ms-auto">
-      <a href="{% url 'reports:export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-danger btn-sm flex-fill" style="border-radius:30px;font-weight:700;padding:8px 18px;white-space:nowrap"><i data-lucide="file-text" class="me-1" style="width:14px;height:14px"></i>Export PDF</a>
-      <a href="{% url 'reports:export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success btn-sm flex-fill" style="border-radius:30px;font-weight:700;padding:8px 18px;white-space:nowrap"><i data-lucide="file-spreadsheet" class="me-1" style="width:14px;height:14px"></i>Export Excel</a>
+      <a href="{% url 'reports:export_pdf' %}?{{ request.GET.urlencode }}" class="btn btn-danger btn-sm flex-fill"
+        style="border-radius:30px;font-weight:700;padding:8px 18px;white-space:nowrap"><i data-lucide="file-text"
+          class="me-1" style="width:14px;height:14px"></i>Export PDF</a>
+      <a href="{% url 'reports:export_excel' %}?{{ request.GET.urlencode }}" class="btn btn-success btn-sm flex-fill"
+        style="border-radius:30px;font-weight:700;padding:8px 18px;white-space:nowrap"><i data-lucide="file-spreadsheet"
+          class="me-1" style="width:14px;height:14px"></i>Export Excel</a>
     </div>
   </div>
 </div>
 
 <!-- Summary Cards -->
 <div class="row g-2 g-sm-3 mb-4">
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?scope={{ scope }}" class="stat-card primary text-decoration-none" title="View all tasks"><div class="stat-icon"><i class="bi bi-clipboard-data-fill"></i></div><div class="stat-value">{{ summary.total }}</div><div class="stat-label">Total Tasks</div></a></div>
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none" title="View all completed tasks"><div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div><div class="stat-value">{{ summary.completed }}</div><div class="stat-label">Completed</div></a></div>
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none" title="View all overdue tasks"><div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div><div class="stat-value">{{ summary.overdue }}</div><div class="stat-label">Overdue</div></a></div>
-  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=in_progress&scope={{ scope }}" class="stat-card warning text-decoration-none" title="View tasks currently in progress"><div class="stat-icon"><i class="bi bi-clock-history"></i></div><div class="stat-value">{{ summary.in_progress }}</div><div class="stat-label">In Progress</div></a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?scope={{ scope }}"
+      class="stat-card primary text-decoration-none" title="View all tasks">
+      <div class="stat-icon"><i class="bi bi-clipboard-data-fill"></i></div>
+      <div class="stat-value">{{ summary.total }}</div>
+      <div class="stat-label">Total Tasks</div>
+    </a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}"
+      class="stat-card success text-decoration-none" title="View all completed tasks">
+      <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
+      <div class="stat-value">{{ summary.completed }}</div>
+      <div class="stat-label">Completed</div>
+    </a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}"
+      class="stat-card danger text-decoration-none" title="View all overdue tasks">
+      <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div class="stat-value">{{ summary.overdue }}</div>
+      <div class="stat-label">Overdue</div>
+    </a></div>
+  <div class="col-6 col-md-3"><a href="{% url 'tasks:list' %}?status=in_progress&scope={{ scope }}"
+      class="stat-card warning text-decoration-none" title="View tasks currently in progress">
+      <div class="stat-icon"><i class="bi bi-clock-history"></i></div>
+      <div class="stat-value">{{ summary.in_progress }}</div>
+      <div class="stat-label">In Progress</div>
+    </a></div>
 </div>
 
 <!-- Filters -->
 <div class="glass-card mb-4">
-  <div class="card-header-custom"><h6><i data-lucide="filter" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Filters</h6></div>
+  <div class="card-header-custom">
+    <h6><i data-lucide="filter" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Filters</h6>
+  </div>
   <div class="p-3">
     <form method="get" class="row g-2 align-items-end">
       <input type="hidden" name="scope" value="{{ scope }}">
       <div class="col-12 col-sm-6 col-lg-3">
-        <label class="form-label mb-1 text-muted" style="font-size:11px;font-weight:700;text-transform:uppercase">Officer</label>
+        <label class="form-label mb-1 text-muted"
+          style="font-size:11px;font-weight:700;text-transform:uppercase">Officer</label>
         <select name="officer" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Officers</option>
-          {% for o in officers %}<option value="{{ o.user.pk }}" {% if filters.officer == o.user.pk|stringformat:"s" %}selected{% endif %}>{{ o.user.get_full_name }}</option>{% endfor %}
+          {% for o in officers %}<option value="{{ o.user.pk }}" {% if filters.officer==o.user.pk|stringformat:"s"
+            %}selected{% endif %}>{{ o.user.get_full_name }}</option>{% endfor %}
         </select>
       </div>
       <div class="col-12 col-sm-6 col-lg-2">
-        <label class="form-label mb-1 text-muted" style="font-size:11px;font-weight:700;text-transform:uppercase">Status</label>
+        <label class="form-label mb-1 text-muted"
+          style="font-size:11px;font-weight:700;text-transform:uppercase">Status</label>
         <select name="status" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Status</option>
-          <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %} style="font-weight:700;color:var(--primary)">In Progress (Active)</option>
+          <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %}
+            style="font-weight:700;color:var(--primary)">In Progress (Active)</option>
           <option value="" disabled>──────────</option>
-          {% for val, label in status_choices %}<option value="{{ val }}" {% if filters.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          {% for val, label in status_choices %}<option value="{{ val }}" {% if filters.status == val %}selected{% endif
+            %}>{{ label }}</option>{% endfor %}
         </select>
       </div>
       <div class="col-12 col-sm-6 col-lg-2">
-        <label class="form-label mb-1 text-muted" style="font-size:11px;font-weight:700;text-transform:uppercase">Priority</label>
+        <label class="form-label mb-1 text-muted"
+          style="font-size:11px;font-weight:700;text-transform:uppercase">Priority</label>
         <select name="priority" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Priority</option>
-          {% for val, label in priority_choices %}<option value="{{ val }}" {% if filters.priority == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          {% for val, label in priority_choices %}<option value="{{ val }}" {% if filters.priority == val %}selected{%
+            endif %}>{{ label }}</option>{% endfor %}
         </select>
       </div>
       <div class="col-6 col-sm-6 col-lg-2">
-        <label class="form-label mb-1 text-muted" style="font-size:11px;font-weight:700;text-transform:uppercase">Month</label>
+        <label class="form-label mb-1 text-muted"
+          style="font-size:11px;font-weight:700;text-transform:uppercase">Month</label>
         <select name="month" class="form-select form-select-sm" style="font-size:13px">
           <option value="">Month</option>
           <option value="1" {% if filters.month == '1' %}selected{% endif %}>January</option>
@@ -75,7 +116,8 @@
         </select>
       </div>
       <div class="col-6 col-sm-6 col-lg-1">
-        <label class="form-label mb-1 text-muted" style="font-size:11px;font-weight:700;text-transform:uppercase">Year</label>
+        <label class="form-label mb-1 text-muted"
+          style="font-size:11px;font-weight:700;text-transform:uppercase">Year</label>
         <select name="year" class="form-select form-select-sm" style="font-size:13px">
           <option value="">Year</option>
           <option value="2024" {% if filters.year == '2024' %}selected{% endif %}>2024</option>
@@ -87,7 +129,8 @@
       </div>
       <div class="col-12 col-sm-12 col-lg-2 d-flex gap-2 mt-2 mt-lg-0">
         <button type="submit" class="btn btn-primary-custom btn-sm flex-fill" style="padding:6px 14px">Apply</button>
-        <a href="{% url 'reports:dashboard' %}" class="btn btn-secondary-custom btn-sm flex-fill text-center" style="padding:6px 14px">Clear</a>
+        <a href="{% url 'reports:dashboard' %}" class="btn btn-secondary-custom btn-sm flex-fill text-center"
+          style="padding:6px 14px">Clear</a>
       </div>
     </form>
   </div>
@@ -97,30 +140,42 @@
 <!-- Active / Ongoing Tasks Table -->
 <div class="table-custom-container mb-4">
   <div class="card-header-custom py-3 px-4 d-flex align-items-center justify-content-between">
-    <h6 class="mb-0 fw-bold"><i data-lucide="clock" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Active / Ongoing Tasks Report <span class="badge bg-primary ms-2" style="border-radius:20px">{{ active_count }}</span></h6>
+    <h6 class="mb-0 fw-bold"><i data-lucide="clock" class="me-2"
+        style="width:18px;height:18px;color:var(--primary)"></i>Active / Ongoing Tasks Report <span
+        class="badge bg-primary ms-2" style="border-radius:20px">{{ active_count }}</span></h6>
   </div>
   <div class="table-responsive">
     <table class="table-custom table-sortable w-100">
       <thead>
         <tr>
           <th style="width:12%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
-            <div class="d-inline-flex align-items-center gap-1"><span>Task No.</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Task No.</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:28%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
-            <div class="d-inline-flex align-items-center gap-1"><span>Title</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Title</span><span class="sort-icon-container"><i
+                  data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:12%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
-            <div class="d-inline-flex align-items-center gap-1"><span>Status</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Status</span><span class="sort-icon-container"><i
+                  data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:10%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
-            <div class="d-inline-flex align-items-center gap-1"><span>Priority</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Priority</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:15%">Assigned To</th>
           <th style="width:12%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due-date">
-            <div class="d-inline-flex align-items-center gap-1"><span>Due Date</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Due Date</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:11%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
-            <div class="d-inline-flex align-items-center gap-1"><span>Progress</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Progress</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
         </tr>
       </thead>
@@ -128,26 +183,35 @@
         {% for task in active_tasks %}
         <tr>
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
-          <td style="font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)" title="{{ task.title }}">{{ task.title }}</td>
+          <td
+            style="font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)"
+            title="{{ task.title }}">{{ task.title }}</td>
           <td>
             <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
           </td>
           <td><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
           <td>
-            {% if task.assigned_officers.exists %}
+            {% if task.has_assigned_officers %}
             <div class="dropdown d-inline-block">
-              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="body" style="cursor:pointer" title="Click to view officer names">
+              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false"
+                data-bs-boundary="body" style="cursor:pointer" title="Click to view officer names">
                 {% for officer in task.sorted_assigned_officers|slice:":2" %}
-                <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">{{ officer.position_title|initials }}</span>
+                <span class="badge bg-light text-primary border"
+                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px"
+                  title="{{ officer.position_title }}">{{ officer.position_title|initials }}</span>
                 {% endfor %}
-                {% if task.assigned_officers.count > 2 %}
-                <span class="badge bg-secondary text-white" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{ task.assigned_officers.count|add:"-2" }}</span>
+                {% if task.assigned_officers_count > 2 %}
+                <span class="badge bg-secondary text-white"
+                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{ task.assigned_officers_count|add:"-2" }}</span>
                 {% endif %}
               </div>
-              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:12px;min-width:230px;border-radius:12px">
-                <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">Assigned Officers</li>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
+                style="font-size:12px;min-width:230px;border-radius:12px">
+                <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">
+                  Assigned Officers</li>
                 {% for officer in task.sorted_assigned_officers %}
-                <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:var(--pink-50);border-radius:6px">
+                <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
+                  style="background:var(--pink-50);border-radius:6px">
                   <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
                   <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
                 </li>
@@ -161,7 +225,7 @@
           <td style="font-size:12.5px;white-space:nowrap">
             {% if task.due_date %}
             <div class="d-flex flex-column align-items-start" style="gap:2px">
-              <span {% if task.is_overdue %}style="color:var(--danger);font-weight:700"{% endif %}>
+              <span {% if task.is_overdue %}style="color:var(--danger);font-weight:700" {% endif %}>
                 {{ task.due_date|date:"M d, Y" }}
               </span>
               {% if task.is_overdue %}
@@ -172,13 +236,21 @@
           </td>
           <td>
             <div class="d-flex align-items-center gap-1">
-              <div class="progress-custom" style="width:70px;height:6px"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>
+              <div class="progress-custom" style="width:70px;height:6px">
+                <div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div>
+              </div>
               <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
             </div>
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="7"><div class="empty-state"><i data-lucide="inbox"></i><h6>No active tasks match filters</h6></div></td></tr>
+        <tr>
+          <td colspan="7">
+            <div class="empty-state"><i data-lucide="inbox"></i>
+              <h6>No active tasks match filters</h6>
+            </div>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -187,24 +259,33 @@
 
 <!-- Completed Tasks Table -->
 <div class="table-custom-container mb-4" style="border-top:3px solid #10B981">
-  <div class="card-header-custom py-3 px-4 d-flex align-items-center justify-content-between" style="background:#F0FDF4">
-    <h6 class="mb-0 fw-bold" style="color:#065F46"><i data-lucide="check-circle-2" class="me-2" style="width:18px;height:18px;color:#10B981"></i>Completed Tasks Report <span class="badge bg-success ms-2" style="border-radius:20px;background:#10B981 !important">{{ completed_count }}</span></h6>
+  <div class="card-header-custom py-3 px-4 d-flex align-items-center justify-content-between"
+    style="background:#F0FDF4">
+    <h6 class="mb-0 fw-bold" style="color:#065F46"><i data-lucide="check-circle-2" class="me-2"
+        style="width:18px;height:18px;color:#10B981"></i>Completed Tasks Report <span class="badge bg-success ms-2"
+        style="border-radius:20px;background:#10B981 !important">{{ completed_count }}</span></h6>
   </div>
   <div class="table-responsive">
     <table class="table-custom table-sortable w-100">
       <thead>
         <tr>
           <th style="width:12%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
-            <div class="d-inline-flex align-items-center gap-1"><span>Task No.</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Task No.</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:28%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
-            <div class="d-inline-flex align-items-center gap-1"><span>Title</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Title</span><span class="sort-icon-container"><i
+                  data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:12%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
-            <div class="d-inline-flex align-items-center gap-1"><span>Status</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Status</span><span class="sort-icon-container"><i
+                  data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:10%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
-            <div class="d-inline-flex align-items-center gap-1"><span>Priority</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-inline-flex align-items-center gap-1"><span>Priority</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:15%">Assigned To</th>
           <th style="width:12%">Completed Date</th>
@@ -215,26 +296,35 @@
         {% for task in completed_tasks %}
         <tr>
           <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
-          <td style="font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)" title="{{ task.title }}">{{ task.title }}</td>
+          <td
+            style="font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)"
+            title="{{ task.title }}">{{ task.title }}</td>
           <td>
             <span class="badge-status badge-completed">Completed</span>
           </td>
           <td><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
           <td>
-            {% if task.assigned_officers.exists %}
+            {% if task.has_assigned_officers %}
             <div class="dropdown d-inline-block">
-              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" data-bs-boundary="body" style="cursor:pointer" title="Click to view officer names">
+              <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false"
+                data-bs-boundary="body" style="cursor:pointer" title="Click to view officer names">
                 {% for officer in task.sorted_assigned_officers|slice:":2" %}
-                <span class="badge bg-light text-primary border" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px" title="{{ officer.position_title }}">{{ officer.position_title|initials }}</span>
+                <span class="badge bg-light text-primary border"
+                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px"
+                  title="{{ officer.position_title }}">{{ officer.position_title|initials }}</span>
                 {% endfor %}
-                {% if task.assigned_officers.count > 2 %}
-                <span class="badge bg-secondary text-white" style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{ task.assigned_officers.count|add:"-2" }}</span>
+                {% if task.assigned_officers_count > 2 %}
+                <span class="badge bg-secondary text-white"
+                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{ task.assigned_officers_count|add:"-2" }}</span>
                 {% endif %}
               </div>
-              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:12px;min-width:230px;border-radius:12px">
-                <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">Assigned Officers</li>
+              <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
+                style="font-size:12px;min-width:230px;border-radius:12px">
+                <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">
+                  Assigned Officers</li>
                 {% for officer in task.sorted_assigned_officers %}
-                <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:var(--pink-50);border-radius:6px">
+                <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
+                  style="background:var(--pink-50);border-radius:6px">
                   <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
                   <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
                 </li>
@@ -250,13 +340,21 @@
           </td>
           <td>
             <div class="d-flex align-items-center gap-1">
-              <div class="progress-custom" style="width:70px;height:6px"><div class="progress-bar bg-success" style="width:100%"></div></div>
+              <div class="progress-custom" style="width:70px;height:6px">
+                <div class="progress-bar bg-success" style="width:100%"></div>
+              </div>
               <small style="font-size:11px;font-weight:800" class="text-success">100%</small>
             </div>
           </td>
         </tr>
         {% empty %}
-        <tr><td colspan="7"><div class="empty-state"><i data-lucide="check-check"></i><h6>No completed tasks match filters</h6></div></td></tr>
+        <tr>
+          <td colspan="7">
+            <div class="empty-state"><i data-lucide="check-check"></i>
+              <h6>No completed tasks match filters</h6>
+            </div>
+          </td>
+        </tr>
         {% endfor %}
       </tbody>
     </table>
@@ -266,11 +364,11 @@
 
 {% block extra_js %}
 <script>
-window.setScope = function(scopeVal) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('scope', scopeVal);
-  window.location.href = url.toString();
-};
-if (window.lucide) lucide.createIcons();
+  window.setScope = function (scopeVal) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('scope', scopeVal);
+    window.location.href = url.toString();
+  };
+  if (window.lucide) lucide.createIcons();
 </script>
 {% endblock %}
