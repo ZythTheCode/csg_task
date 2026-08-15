@@ -8,7 +8,8 @@ class Position(models.Model):
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='positions'
+        related_name='positions',
+        db_index=True
     )
     title = models.CharField(max_length=100)
     initials = models.CharField(max_length=20, blank=True, help_text="Default or custom initials for position")

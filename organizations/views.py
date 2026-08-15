@@ -133,7 +133,7 @@ def organization_detail_json(request, org_id):
     if not org:
         return JsonResponse({'error': 'Organization not found.'}, status=404)
 
-    users = org.users.filter(is_active=True).exclude(role__in=['super_admin', 'super_super_admin']).order_by('role', 'first_name')
+    users = org.users.filter(is_active=True).exclude(role__in=['super_admin', 'super_super_admin']).select_related('officer_profile', 'officer_profile__position').order_by('role', 'first_name')
     current_admin = org.users.filter(role='org_admin', is_active=True).first()
     current_admin_name = (current_admin.get_full_name() or current_admin.username) if current_admin else 'None (Unassigned)'
     

@@ -41,9 +41,6 @@ class TaskListView(LoginRequiredMixin, ListView):
     paginate_by = 15
 
     def get_queryset(self):
-        from tasks.services import TaskService
-        TaskService.cleanup_expired_completed_tasks()
-
         org = self.request.user.get_organization(self.request)
         if org:
             qs = Task.objects.filter(is_archived=False, organization=org)
@@ -395,6 +392,9 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
         else:
             qs = Task.objects.filter(pk__in=task_ids, is_archived=False)
 
+        # Prefetch assignments to avoid N+1 when creating notifications
+        qs = qs.prefetch_related('assignments__officer')
+
         updated_count = 0
         now_date = timezone.now().date()
         status_dict = dict(Task.STATUS_CHOICES)
@@ -470,12 +470,12 @@ class TaskBoardView(LoginRequiredMixin, ListView):
         for status_code, status_label in Task.STATUS_CHOICES:
             if status_code in ['overdue', 'completed']:
                 continue
-            col_tasks = base_qs.filter(status=status_code).prefetch_related('assigned_officers', 'created_by')
+            col_tasks = base_qs.filter(status=status_code).select_related('created_by', 'organization').prefetch_related('assigned_officers')[:50]
             columns.append({
                 'code': status_code,
                 'label': status_label,
                 'tasks': col_tasks,
-                'count': col_tasks.count(),
+                'count': base_qs.filter(status=status_code).count(),
             })
 
         ctx['page_title'] = 'Task Kanban Board'
@@ -552,7 +552,10 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
         if priority:
             qs = qs.filter(priority=priority)
 
-        qs = qs.select_related('organization', 'created_by').prefetch_related('assigned_officers')
+        qs = qs.select_related('organization', 'created_by').prefetch_related(
+            'assigned_officers', 'assigned_officers__officer_profile',
+            'assigned_officers__officer_profile__position'
+        )
 
         events = []
         for task in qs:
@@ -834,7 +837,7 @@ class MarkCompleteView(LoginRequiredMixin, View):
                 old_value=dict(Task.STATUS_CHOICES).get(old_status, old_status),
                 new_value='Completed'
             )
-            for assignment in task.assignments.all():
+            for assignment in task.assignments.select_related('officer').all():
                 Notification.objects.create(
                     recipient=assignment.officer,
                     title='Task Completed',

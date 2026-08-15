@@ -2,6 +2,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import ListView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
+from django.core.cache import cache
 from .models import Notification
 
 
@@ -12,7 +13,7 @@ class NotificationListView(LoginRequiredMixin, ListView):
     paginate_by = 20
 
     def get_queryset(self):
-        return Notification.objects.filter(recipient=self.request.user)
+        return Notification.objects.filter(recipient=self.request.user).select_related('related_task')
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -25,7 +26,8 @@ class MarkReadView(LoginRequiredMixin, View):
     def post(self, request, pk):
         notif = get_object_or_404(Notification, pk=pk, recipient=request.user)
         notif.is_read = True
-        notif.save()
+        notif.save(update_fields=['is_read'])
+        cache.delete(f'notif_unread_{request.user.pk}')
         if notif.related_task:
             return redirect('tasks:detail', pk=notif.related_task.pk)
         return redirect('notifications:list')
@@ -34,6 +36,7 @@ class MarkReadView(LoginRequiredMixin, View):
 class MarkAllReadView(LoginRequiredMixin, View):
     def post(self, request):
         Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        cache.delete(f'notif_unread_{request.user.pk}')
         messages.success(request, 'All notifications marked as read.')
         return redirect('notifications:list')
 
@@ -42,6 +45,7 @@ class DeleteNotificationView(LoginRequiredMixin, View):
     def post(self, request, pk):
         notif = get_object_or_404(Notification, pk=pk, recipient=request.user)
         notif.delete()
+        cache.delete(f'notif_unread_{request.user.pk}')
         messages.success(request, 'Notification permanently deleted.')
         return redirect('notifications:list')
 
@@ -63,5 +67,6 @@ class BulkDeleteNotificationView(LoginRequiredMixin, View):
             else:
                 messages.warning(request, 'No notifications were selected for deletion.')
 
+        cache.delete(f'notif_unread_{request.user.pk}')
         return redirect('notifications:list')
 

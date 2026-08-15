@@ -29,15 +29,24 @@ class DashboardView(LoginRequiredMixin, TemplateView):
         
         ctx['scope'] = scope
 
+        # Use a single aggregated query for counts
+        from django.db.models import Count, Q as DQ
+        counts = base_qs.aggregate(
+            active_tasks=Count('id', filter=DQ(status__in=active_statuses)),
+            completed_tasks=Count('id', filter=DQ(status='completed')),
+            overdue_tasks=Count('id', filter=DQ(due_date__lt=today, status__in=active_statuses)),
+            upcoming_tasks=Count('id', filter=DQ(
+                due_date__gte=today,
+                due_date__lte=today + timezone.timedelta(days=7),
+                status__in=active_statuses
+            )),
+        )
+
         ctx['page_title'] = 'Dashboard'
-        ctx['active_tasks'] = base_qs.filter(status__in=active_statuses).count()
-        ctx['completed_tasks'] = base_qs.filter(status='completed').count()
-        ctx['overdue_tasks'] = base_qs.filter(due_date__lt=today, status__in=active_statuses).count()
-        ctx['upcoming_tasks'] = base_qs.filter(
-            due_date__gte=today,
-            due_date__lte=today + timezone.timedelta(days=7),
-            status__in=active_statuses
-        ).count()
+        ctx['active_tasks'] = counts['active_tasks']
+        ctx['completed_tasks'] = counts['completed_tasks']
+        ctx['overdue_tasks'] = counts['overdue_tasks']
+        ctx['upcoming_tasks'] = counts['upcoming_tasks']
         ctx['recent_tasks'] = base_qs.select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:10]
         
         if org:

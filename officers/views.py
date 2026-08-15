@@ -56,12 +56,20 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         from tasks.models import Task
+        from django.db.models import Count, Q
         officer_user = self.object.user
         ctx['page_title'] = f'Officer: {officer_user.get_full_name()}'
         ctx['assigned_tasks'] = Task.objects.filter(assigned_officers=officer_user, is_archived=False).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:10]
-        ctx['total_tasks'] = Task.objects.filter(assigned_officers=officer_user).count()
-        ctx['completed_tasks'] = Task.objects.filter(assigned_officers=officer_user, status='completed').count()
-        ctx['active_tasks'] = Task.objects.filter(assigned_officers=officer_user).exclude(status='completed').count()
+        # Use a single aggregated query for task counts
+        from tasks.models import TaskAssignment
+        counts = TaskAssignment.objects.filter(officer=officer_user).aggregate(
+            total=Count('id'),
+            completed=Count('id', filter=Q(task__status='completed')),
+            active=Count('id', filter=~Q(task__status='completed') & Q(task__is_archived=False)),
+        )
+        ctx['total_tasks'] = counts['total']
+        ctx['completed_tasks'] = counts['completed']
+        ctx['active_tasks'] = counts['active']
         return ctx
 
 

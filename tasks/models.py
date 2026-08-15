@@ -173,8 +173,9 @@ class Task(models.Model):
             "Graphics and Media": 12,
             "P.V.": 13,
         }
+        # Use .all() to leverage prefetch cache if available
         officers = list(self.assigned_officers.all())
-        officers.sort(key=lambda u: ORDER_MAP.get(u.position_title, 99))
+        officers.sort(key=lambda u: ORDER_MAP.get(getattr(u, '_cached_position_title', u.position_title), 99))
         return officers
 
 
@@ -189,6 +190,10 @@ class TaskAssignment(models.Model):
 
     class Meta:
         unique_together = ('task', 'officer')
+        indexes = [
+            models.Index(fields=['officer', 'task']),
+            models.Index(fields=['task']),
+        ]
 
     def __str__(self):
         return f"{self.officer.get_full_name()} → {self.task.title}"

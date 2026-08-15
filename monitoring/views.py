@@ -12,9 +12,6 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
     template_name = 'monitoring/dashboard.html'
 
     def get_context_data(self, **kwargs):
-        from tasks.services import TaskService
-        TaskService.cleanup_expired_completed_tasks()
-
         ctx = super().get_context_data(**kwargs)
         today = timezone.now().date()
         ctx['page_title'] = 'Monitoring Dashboard'
@@ -52,18 +49,18 @@ class MonitoringDashboardView(LoginRequiredMixin, TemplateView):
         officers_data.sort(key=lambda x: x['completion_rate'], reverse=True)
         ctx['officers_data'] = officers_data
 
-        # Upcoming deadlines (next 7 days)
+        # Upcoming deadlines (next 7 days) - limit to 20
         ctx['upcoming_deadlines'] = tasks_base_qs.filter(
             due_date__gte=today,
             due_date__lte=today + datetime.timedelta(days=7),
             is_archived=False
-        ).exclude(status='completed').select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position').order_by('due_date')
+        ).exclude(status='completed').select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position').order_by('due_date')[:20]
 
-        # Delayed tasks
+        # Delayed tasks - limit to 20
         ctx['delayed_tasks'] = tasks_base_qs.filter(
             due_date__lt=today,
             is_archived=False
-        ).exclude(status='completed').select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position').order_by('due_date')
+        ).exclude(status='completed').select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position').order_by('due_date')[:20]
 
         # Overall stats
         total_tasks = tasks_base_qs.filter(is_archived=False).count()

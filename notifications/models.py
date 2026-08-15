@@ -47,6 +47,16 @@ class Notification(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['recipient', 'is_read', '-created_at']),
+            models.Index(fields=['recipient', '-created_at']),
+        ]
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        # Invalidate notification count cache
+        from django.core.cache import cache
+        cache.delete(f'notif_unread_{self.recipient_id}')
 
     def __str__(self):
         return f"{self.recipient.username}: {self.title}"

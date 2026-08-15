@@ -20,13 +20,14 @@ class User(AbstractUser):
         ('executive', 'Elected Officer'),
         ('committee_head', 'Committee Member'),
     ]
-    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='committee_head')
+    role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='committee_head', db_index=True)
     organization = models.ForeignKey(
         'organizations.Organization',
         on_delete=models.CASCADE,
         null=True,
         blank=True,
-        related_name='users'
+        related_name='users',
+        db_index=True
     )
     profile_picture = models.ImageField(upload_to=user_profile_picture_path, blank=True, null=True)
     phone = models.CharField(max_length=20, blank=True)
@@ -54,14 +55,22 @@ class User(AbstractUser):
 
     @property
     def position_title(self):
-        if hasattr(self, 'officer_profile') and self.officer_profile and self.officer_profile.position:
-            return self.officer_profile.position.title
+        try:
+            profile = self.officer_profile
+            if profile and profile.position:
+                return profile.position.title
+        except Exception:
+            pass
         return self.get_role_display() or 'Officer'
 
     @property
     def position_initials(self):
-        if hasattr(self, 'officer_profile') and self.officer_profile and self.officer_profile.position:
-            return self.officer_profile.position.get_initials()
+        try:
+            profile = self.officer_profile
+            if profile and profile.position:
+                return profile.position.get_initials()
+        except Exception:
+            pass
         from tasks.templatetags.task_filters import initials
         return initials(self.position_title)
 
