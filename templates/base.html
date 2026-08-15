@@ -105,8 +105,7 @@
           onerror="this.style.display='none'; if(this.nextElementSibling) this.nextElementSibling.style.display='flex';">
         <div class="brand-logo" style="display:none">{% if current_organization %}{{ current_organization.short_name|slice:":3"|upper }}{% elif user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
         {% else %}
-        <div class="brand-logo">{% if current_organization %}{{ current_organization.short_name|slice:":3"|upper }}{%
-          elif user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
+        <div class="brand-logo">{% if current_organization %}{{ current_organization.short_name|slice:":3"|upper }}{% elif user.organization %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
         {% endif %}
         <button type="button" class="sidebar-expand-btn d-none d-lg-flex" onclick="toggleSidebarMin()"
           title="Expand Sidebar">
@@ -117,12 +116,9 @@
         title="{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}CSG System{% endif %}">
         <h6 class="text-truncate mb-0" style="max-width:145px"
           title="{% if current_organization %}{{ current_organization.abbreviation|default:current_organization.name }}{% elif user.organization %}{{ user.organization.abbreviation|default:user.organization.name }}{% else %}CSG System{% endif %}">
-          {% if current_organization %}{{ current_organization.abbreviation|default:current_organization.name }}{% elif
-          user.organization %}{{ user.organization.abbreviation|default:user.organization.name }}{% else %}CSG System{%
-          endif %}</h6>
+          {% if current_organization %}{{ current_organization.abbreviation|default:current_organization.name }}{% elif user.organization %}{{ user.organization.abbreviation|default:user.organization.name }}{% else %}CSG System{% endif %}</h6>
         <small class="d-block text-muted text-truncate" style="max-width:145px;line-height:1.2"
-          title="{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}">{%
-          if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}</small>
+          title="{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}">{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}</small>
       </div>
       <button type="button" class="sidebar-collapse-btn d-none d-lg-flex ms-auto" onclick="toggleSidebarMin()"
         title="Collapse Sidebar">
