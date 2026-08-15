@@ -39,19 +39,25 @@ class User(AbstractUser):
         return f"{self.get_full_name() or self.username} ({self.get_role_display()})"
 
     def get_organization(self, request=None):
+        # Cache the result on the request object to avoid repeated DB lookups
+        if request and hasattr(request, '_cached_org'):
+            return request._cached_org
+
+        org = None
         if request and hasattr(request, 'session') and self.is_super_admin:
             active_org_id = request.session.get('active_org_id')
             if active_org_id:
                 from organizations.models import Organization
                 org = Organization.objects.filter(id=active_org_id).first()
-                if org:
-                    return org
-        if self.is_super_admin:
+        if not org and self.is_super_admin:
             from organizations.models import Organization
-            csg_org = Organization.objects.filter(models.Q(abbreviation='CSG') | models.Q(name__icontains='Central Student Government')).first()
-            if csg_org:
-                return csg_org
-        return self.organization
+            org = Organization.objects.filter(models.Q(abbreviation='CSG') | models.Q(name__icontains='Central Student Government')).first()
+        if not org:
+            org = self.organization
+
+        if request:
+            request._cached_org = org
+        return org
 
     @property
     def position_title(self):

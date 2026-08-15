@@ -173,6 +173,9 @@ CACHES = {
     }
 }
 
+# Use cached sessions to reduce DB hits per request
+SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = 'accounts.User'

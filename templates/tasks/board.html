@@ -2,85 +2,87 @@
 {% load task_filters %}
 {% block title %}Task Board{% endblock %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
+<div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-2 mb-3">
   <div>
     <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Task Kanban Board</h5>
     <p class="text-muted mb-0" style="font-size:13px">Drag and drop tasks between stage boards to update status</p>
   </div>
-  <div class="d-flex gap-2 align-items-center flex-wrap">
-    <!-- Scope Switcher -->
-    <div class="btn-group p-1 me-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
-      <button type="button" onclick="setScope('my_tasks')" class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks</button>
-      <button type="button" onclick="setScope('all')" class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks</button>
+  <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+    <div class="btn-group p-1" role="group"
+      style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+      <a href="{% url 'tasks:board' %}?scope=my_tasks{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
+        class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
+          data-lucide="user" class="me-1" style="width:13px;height:13px"></i>My Tasks</a>
+      <a href="{% url 'tasks:board' %}?scope=all{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
+        class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
+          data-lucide="users" class="me-1" style="width:13px;height:13px"></i>All Tasks</a>
     </div>
-
-    <!-- View Switcher -->
-    <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
-      <a href="{% url 'tasks:list' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px"><i data-lucide="list" class="me-1" style="width:14px;height:14px"></i> List</a>
-      <a href="{% url 'tasks:board' %}" class="btn btn-sm btn-primary-custom" style="font-size:12.5px;padding:4px 14px"><i data-lucide="kanban" class="me-1" style="width:14px;height:14px"></i> Board</a>
-      <a href="{% url 'tasks:calendar' %}" class="btn btn-sm text-secondary border-0" style="font-weight:700;font-size:12.5px;border-radius:20px"><i data-lucide="calendar" class="me-1" style="width:14px;height:14px"></i> Calendar</a>
+    <div class="btn-group p-1" role="group"
+      style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+      <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+        class="btn btn-sm text-secondary border-0"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px"><i data-lucide="list" class="me-1"
+          style="width:13px;height:13px"></i>List</a>
+      <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+        class="btn btn-sm btn-primary-custom" style="font-size:12px;padding:4px 14px;border-radius:20px"><i
+          data-lucide="kanban" class="me-1" style="width:13px;height:13px"></i>Board</a>
+      <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
+        class="btn btn-sm text-secondary border-0"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px"><i data-lucide="calendar"
+          class="me-1" style="width:13px;height:13px"></i>Calendar</a>
     </div>
-
-    <a href="{% url 'tasks:create' %}" class="btn-primary-custom"><i data-lucide="plus" style="width:16px;height:16px"></i> New Task</a>
+    <a href="{% url 'tasks:create' %}" class="btn-primary-custom"
+      style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap"><i data-lucide="plus"
+        style="width:15px;height:15px"></i> New Task</a>
   </div>
 </div>
-
-<!-- Filters -->
-<div class="glass-card glass-card-filters mb-4">
-  <div class="p-3">
-    <form method="get" class="row g-2 align-items-center">
-      <input type="hidden" name="scope" value="{{ current_filters.scope }}">
-      <div class="col-md-5 position-relative">
-        <div class="input-group">
-          <span class="input-group-text border-end-0" style="background:#fff;border-radius:12px 0 0 12px;border-color:var(--slate-200)"><i data-lucide="search" class="text-muted" style="width:16px;height:16px"></i></span>
-          <input type="text" name="q" value="{{ current_filters.q }}" id="boardSearchInput" class="form-control border-start-0" placeholder="Search task title or number..." autocomplete="off" style="border-radius:0 12px 12px 0;font-size:13.5px">
-        </div>
-        <div id="boardSearchSuggestions" class="search-suggestions-dropdown shadow-lg"></div>
+<div class="glass-card mb-3" style="padding:10px 16px;border-radius:16px">
+  <form method="get" class="d-flex align-items-center gap-2 flex-wrap" style="row-gap:8px">
+    <input type="hidden" name="scope" value="{{ current_filters.scope }}">
+    <div class="position-relative" style="flex:1 1 180px;min-width:140px;max-width:280px">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text border-end-0"
+          style="background:#fff;border-radius:10px 0 0 10px;border-color:var(--slate-200);padding:4px 8px"><i
+            data-lucide="search" class="text-muted" style="width:14px;height:14px"></i></span>
+        <input type="text" name="q" value="{{ current_filters.q }}" class="form-control form-control-sm border-start-0"
+          placeholder="Search..." autocomplete="off"
+          style="border-radius:0 10px 10px 0;font-size:12.5px;padding:6px 10px">
       </div>
-      <div class="col-md-2">
-        <select name="category" class="form-select" style="font-size:13.5px" onchange="this.form.submit()">
-          <option value="">All Categories</option>
-          {% for val, label in category_choices %}
-          <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-2">
-        <select name="priority" class="form-select" style="font-size:13.5px" onchange="this.form.submit()">
-          <option value="">All Priorities</option>
-          {% for val, label in priority_choices %}
-          <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-      <div class="col-md-3">
-        <div class="dropdown">
-          <button class="btn btn-secondary-custom w-100 text-start d-flex justify-content-between align-items-center" type="button" data-bs-toggle="dropdown" data-bs-auto-close="outside" data-bs-boundary="window" style="font-size:13px;padding:9px 16px">
-            <span>Officer {% if current_filters.officer %}({{ current_filters.officer|length }}){% endif %}</span>
-            <i data-lucide="chevron-down" style="width:14px;height:14px"></i>
-          </button>
-          <ul class="dropdown-menu p-2 shadow-sm border-0" style="max-height:220px;overflow-y:auto;font-size:13px;width:100%;border-radius:16px">
-            {% for off in officers_list %}
-            <li>
-              <div class="form-check mb-1">
-                <input class="form-check-input" type="checkbox" name="officer" value="{{ off.pk }}" id="boff_{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}checked{% endif %}>
-                <label class="form-check-label" for="boff_{{ off.pk }}" style="cursor:pointer">
-                  {{ off.get_full_name|default:off.username }}
-                </label>
-              </div>
-            </li>
-            {% empty %}
-            <li class="px-2 py-1 text-muted" style="font-size:12px">No officers found</li>
-            {% endfor %}
-          </ul>
-        </div>
-      </div>
-      <div class="col-md-2 d-flex gap-1">
-        <button type="submit" class="btn btn-primary-custom btn-sm w-100" style="padding:8px">Filter</button>
-        <a href="{% url 'tasks:board' %}" class="btn btn-secondary-custom btn-sm" style="padding:8px 12px" title="Reset Filters"><i data-lucide="x" style="width:16px;height:16px"></i></a>
-      </div>
-    </form>
-  </div>
+    </div>
+    <select name="category" class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:120px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
+      <option value="">All Categories</option>
+      {% for val, label in category_choices %}
+      <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="priority" class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:140px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
+      <option value="">All Priorities</option>
+      {% for val, label in priority_choices %}
+      <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if current_filters.scope != 'my_tasks' %}
+    <select name="officer" multiple class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)"
+      size="1">
+      <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
+      {% for off in officers_list %}
+      <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{ off.get_full_name|default:off.username }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+    <div class="d-flex gap-1 ms-auto">
+      <button type="submit" class="btn-primary-custom"
+        style="font-size:12px;padding:6px 14px;border-radius:10px;white-space:nowrap"><i data-lucide="filter"
+          style="width:13px;height:13px"></i> Apply</button>
+      <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}" class="btn btn-sm btn-outline-secondary"
+        style="font-size:12px;padding:5px 12px;border-radius:10px">Reset</a>
+    </div>
+  </form>
 </div>
 
 <!-- Kanban Columns Container -->
@@ -89,7 +91,8 @@
   <div class="kanban-column" data-status="{{ col.code }}">
     <div class="kanban-column-header">
       <div class="kanban-column-title">
-        <span class="badge-status badge-{{ col.code }}" style="width:10px;height:10px;padding:0;border-radius:50%"></span>
+        <span class="badge-status badge-{{ col.code }}"
+          style="width:10px;height:10px;padding:0;border-radius:50%"></span>
         <span>{{ col.label }}</span>
       </div>
       <span class="badge bg-secondary rounded-pill col-count-badge" style="font-size:11px">{{ col.count }}</span>
@@ -97,53 +100,71 @@
     <div class="kanban-cards-list" data-status="{{ col.code }}">
       {% for task in col.tasks %}
       {% can_update_task_progress user task as update_perm %}
-      <div class="kanban-card {% if not update_perm %}kanban-card-disabled{% endif %}" draggable="{% if update_perm %}true{% else %}false{% endif %}" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+      <div class="kanban-card {% if not update_perm %}kanban-card-disabled{% endif %}"
+        draggable="{% if update_perm %}true{% else %}false{% endif %}" data-task-id="{{ task.pk }}"
+        data-task-num="{{ task.task_number }}">
         <div class="d-flex justify-content-between align-items-center mb-2">
           <div class="d-flex align-items-center gap-1">
             <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:11.5px">{{ task.task_number }}</span>
             {% if not update_perm %}
-            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle d-inline-flex align-items-center gap-1" style="font-size:9.5px;padding:2px 7px;border-radius:10px;font-weight:700" title="Not assigned to you (Read Only - Cannot move stage)"><i data-lucide="lock" style="width:10px;height:10px"></i> Read Only</span>
+            <span
+              class="badge bg-secondary-subtle text-secondary border border-secondary-subtle d-inline-flex align-items-center gap-1"
+              style="font-size:9.5px;padding:2px 7px;border-radius:10px;font-weight:700"
+              title="Not assigned to you (Read Only - Cannot move stage)"><i data-lucide="lock"
+                style="width:10px;height:10px"></i> Read Only</span>
             {% endif %}
           </div>
           <div class="d-flex align-items-center gap-1">
-            <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px;border-radius:10px">
+            <span class="badge-status badge-category-{{ task.category }}"
+              style="font-size:9.5px;padding:2px 7px;border-radius:10px">
               <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
             </span>
             <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{ task.get_priority_display }}</span>
-            <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}" title="View Details" style="width:24px;height:24px">
+            <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}"
+              title="View Details" style="width:24px;height:24px">
               <i class="bi bi-eye-fill" style="font-size:12px;color:#475569"></i>
             </button>
             {% can_edit_task user task as edit_perm %}
             {% if edit_perm %}
-            <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon ms-1" title="Edit Task" style="width:24px;height:24px"><i class="bi bi-pencil-fill" style="font-size:11px;color:#475569"></i></a>
-            <button type="button" class="btn-sm-icon single-delete-btn ms-1" style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important;width:24px;height:24px" title="Delete Task" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
+            <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon ms-1" title="Edit Task"
+              style="width:24px;height:24px"><i class="bi bi-pencil-fill" style="font-size:11px;color:#475569"></i></a>
+            <button type="button" class="btn-sm-icon single-delete-btn ms-1"
+              style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important;width:24px;height:24px"
+              title="Delete Task" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
               <i class="bi bi-trash3-fill" style="font-size:11px;color:#EF4444"></i>
             </button>
             {% endif %}
           </div>
         </div>
         <h6 class="fw-bold mb-2" style="font-size:13.5px;line-height:1.4">
-          <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}" style="text-decoration:none;color:var(--slate-800)" title="{{ task.title }}">{{ task.title }}</a>
+          <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
+            style="text-decoration:none;color:var(--slate-800)" title="{{ task.title }}">{{ task.title }}</a>
         </h6>
         <div class="d-flex justify-content-between align-items-center mt-2 pt-2 border-top">
           {% if task.assigned_officers.exists %}
           <div class="dropdown d-inline-block">
-            <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false" style="cursor:pointer" title="Click to view officer names">
+            <div class="d-flex align-items-center gap-1 flex-wrap" data-bs-toggle="dropdown" aria-expanded="false"
+              style="cursor:pointer" title="Click to view officer names">
               {% for officer in task.sorted_assigned_officers|slice:":2" %}
-              <span class="badge bg-light text-primary border" style="font-size:10px;font-weight:600;padding:3px 7px;border-radius:10px">
+              <span class="badge bg-light text-primary border"
+                style="font-size:10px;font-weight:600;padding:3px 7px;border-radius:10px">
                 {{ officer.position_title }}
               </span>
               {% endfor %}
               {% if task.assigned_officers.count > 2 %}
-              <span class="badge bg-secondary text-white" style="font-size:10px;font-weight:600;padding:3px 7px;border-radius:10px">
+              <span class="badge bg-secondary text-white"
+                style="font-size:10px;font-weight:600;padding:3px 7px;border-radius:10px">
                 +{{ task.assigned_officers.count|add:"-2" }}
               </span>
               {% endif %}
             </div>
-            <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2" style="font-size:11px;min-width:210px;border-radius:12px">
-              <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:9px;font-weight:700">Assigned Officers</li>
+            <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
+              style="font-size:11px;min-width:210px;border-radius:12px">
+              <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:9px;font-weight:700">
+                Assigned Officers</li>
               {% for officer in task.sorted_assigned_officers %}
-              <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1" style="background:var(--pink-50);border-radius:6px">
+              <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
+                style="background:var(--pink-50);border-radius:6px">
                 <span class="fw-semibold text-primary" style="font-size:10px">{{ officer.position_title }}</span>
                 <span class="fw-bold text-dark ms-2" style="font-size:10px">{{ officer.get_full_name|default:officer.username }}</span>
               </li>
@@ -154,9 +175,11 @@
           <small class="text-muted" style="font-size:10px;font-style:italic">Unassigned</small>
           {% endif %}
           {% if task.due_date %}
-          <small style="font-size:11px;white-space:nowrap" class="{% if task.is_overdue %}text-danger fw-bold{% else %}text-muted{% endif %}">
+          <small style="font-size:11px;white-space:nowrap"
+            class="{% if task.is_overdue %}text-danger fw-bold{% else %}text-muted{% endif %}">
             <i data-lucide="calendar" style="width:12px;height:12px;display:inline-block;vertical-align:-2px"></i> {{ task.due_date|date:"M d" }}
-            {% if task.is_overdue %}<span class="badge bg-danger ms-1" style="font-size:8.5px;padding:2px 5px">Overdue</span>{% endif %}
+            {% if task.is_overdue %}<span class="badge bg-danger ms-1"
+              style="font-size:8.5px;padding:2px 5px">Overdue</span>{% endif %}
           </small>
           {% endif %}
         </div>
@@ -165,7 +188,9 @@
             <span style="font-size:10px;color:var(--slate-500);font-weight:600">Progress</span>
             <span style="font-size:10px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</span>
           </div>
-          <div class="progress-custom" style="height:5px"><div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div></div>
+          <div class="progress-custom" style="height:5px">
+            <div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div>
+          </div>
         </div>
       </div>
       {% empty %}
@@ -184,89 +209,89 @@
 
 {% block extra_js %}
 <script>
-window.setScope = function(scopeVal) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('scope', scopeVal);
-  window.location.href = url.toString();
-};
+  window.setScope = function (scopeVal) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('scope', scopeVal);
+    window.location.href = url.toString();
+  };
 
-document.addEventListener('DOMContentLoaded', function() {
-  let draggedCard = null;
-  const csrfToken = document.querySelector('#csrfForm input[name=csrfmiddlewaretoken]').value;
-  const detailModal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
+  document.addEventListener('DOMContentLoaded', function () {
+    let draggedCard = null;
+    const csrfToken = document.querySelector('#csrfForm input[name=csrfmiddlewaretoken]').value;
+    const detailModal = new bootstrap.Modal(document.getElementById('taskDetailModal'));
 
-  function markTaskAsVisited(taskId) {
-    if (!taskId) return;
-    sessionStorage.setItem('csg_active_viewed_task', String(taskId));
-    document.querySelectorAll('.kanban-card').forEach(card => card.classList.remove('card-visited'));
-    const activeCard = document.querySelector(`.kanban-card[data-task-id="${taskId}"]`);
-    if (activeCard) {
-      activeCard.classList.add('card-visited');
+    function markTaskAsVisited(taskId) {
+      if (!taskId) return;
+      sessionStorage.setItem('csg_active_viewed_task', String(taskId));
+      document.querySelectorAll('.kanban-card').forEach(card => card.classList.remove('card-visited'));
+      const activeCard = document.querySelector(`.kanban-card[data-task-id="${taskId}"]`);
+      if (activeCard) {
+        activeCard.classList.add('card-visited');
+      }
     }
-  }
 
-  // Restore active visited task from sessionStorage
-  const savedActiveTask = sessionStorage.getItem('csg_active_viewed_task');
-  if (savedActiveTask) {
-    markTaskAsVisited(savedActiveTask);
-  }
+    // Restore active visited task from sessionStorage
+    const savedActiveTask = sessionStorage.getItem('csg_active_viewed_task');
+    if (savedActiveTask) {
+      markTaskAsVisited(savedActiveTask);
+    }
 
-  function openTaskModal(taskId) {
-    markTaskAsVisited(taskId);
-    document.getElementById('modalLoadingSpinner').classList.remove('d-none');
-    document.getElementById('modalTaskContent').classList.add('d-none');
-    detailModal.show();
+    function openTaskModal(taskId) {
+      markTaskAsVisited(taskId);
+      document.getElementById('modalLoadingSpinner').classList.remove('d-none');
+      document.getElementById('modalTaskContent').classList.add('d-none');
+      detailModal.show();
 
-    fetch(`/tasks/${taskId}/json/`)
-      .then(res => res.json())
-      .then(data => {
-        document.getElementById('modalTaskNumber').textContent = data.task_number;
-        document.getElementById('modalTaskTitle').textContent = data.title;
-        document.getElementById('modalTaskDescription').textContent = data.description || 'No description provided.';
-        
-        const statusEl = document.getElementById('modalTaskStatus');
-        statusEl.textContent = data.status_display;
-        statusEl.className = `badge-status badge-${data.status}`;
-        
-        const priorityEl = document.getElementById('modalTaskPriority');
-        priorityEl.textContent = data.priority_display;
-        priorityEl.className = `badge-status badge-priority-${data.priority}`;
+      fetch(`/tasks/${taskId}/json/`)
+        .then(res => res.json())
+        .then(data => {
+          document.getElementById('modalTaskNumber').textContent = data.task_number;
+          document.getElementById('modalTaskTitle').textContent = data.title;
+          document.getElementById('modalTaskDescription').textContent = data.description || 'No description provided.';
 
-        const pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
-        const progText = document.getElementById('modalTaskProgressText');
-        progText.textContent = `${data.progress}%`;
-        progText.className = `fw-bold text-${pColor}`;
+          const statusEl = document.getElementById('modalTaskStatus');
+          statusEl.textContent = data.status_display;
+          statusEl.className = `badge-status badge-${data.status}`;
 
-        const progBar = document.getElementById('modalTaskProgressBar');
-        progBar.style.width = `${data.progress}%`;
-        progBar.className = `progress-bar bg-${pColor}`;
+          const priorityEl = document.getElementById('modalTaskPriority');
+          priorityEl.textContent = data.priority_display;
+          priorityEl.className = `badge-status badge-priority-${data.priority}`;
 
-        document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
-        if (data.is_overdue) {
-          document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
-        } else {
-          document.getElementById('modalTaskDueDate').className = 'text-dark';
-        }
-        document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
-        document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
+          const pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
+          const progText = document.getElementById('modalTaskProgressText');
+          progText.textContent = `${data.progress}%`;
+          progText.className = `fw-bold text-${pColor}`;
 
-        const assignedList = document.getElementById('modalTaskAssignedList');
-        if (data.assigned_officers && data.assigned_officers.length > 0) {
-          assignedList.innerHTML = data.assigned_officers.map(off => {
-            const posStr = (off.position_title || off.position) ? ` (${off.position_title || off.position})` : '';
-            return `
+          const progBar = document.getElementById('modalTaskProgressBar');
+          progBar.style.width = `${data.progress}%`;
+          progBar.className = `progress-bar bg-${pColor}`;
+
+          document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
+          if (data.is_overdue) {
+            document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
+          } else {
+            document.getElementById('modalTaskDueDate').className = 'text-dark';
+          }
+          document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
+          document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
+
+          const assignedList = document.getElementById('modalTaskAssignedList');
+          if (data.assigned_officers && data.assigned_officers.length > 0) {
+            assignedList.innerHTML = data.assigned_officers.map(off => {
+              const posStr = (off.position_title || off.position) ? ` (${off.position_title || off.position})` : '';
+              return `
               <div class="d-flex align-items-center p-2" style="background:var(--pink-50);border-radius:8px">
                 <span style="font-size:12.5px;font-weight:700;color:var(--slate-800)">${off.name}${posStr}</span>
               </div>
             `;
-          }).join('');
-        } else {
-          assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
-        }
+            }).join('');
+          } else {
+            assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
+          }
 
-        const attList = document.getElementById('modalTaskAttachmentsList');
-        if (data.attachments && data.attachments.length > 0) {
-          attList.innerHTML = data.attachments.map(att => `
+          const attList = document.getElementById('modalTaskAttachmentsList');
+          if (data.attachments && data.attachments.length > 0) {
+            attList.innerHTML = data.attachments.map(att => `
             <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
               <div class="pe-2 overflow-hidden">
                 <span class="text-truncate d-block fw-bold text-dark" style="font-size:12px" title="${att.filename}">${att.filename}</span>
@@ -278,13 +303,13 @@ document.addEventListener('DOMContentLoaded', function() {
               </div>
             </div>
           `).join('');
-        } else {
-          attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
-        }
+          } else {
+            attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
+          }
 
-        const commentsList = document.getElementById('modalTaskCommentsList');
-        if (data.comments && data.comments.length > 0) {
-          commentsList.innerHTML = data.comments.map(c => `
+          const commentsList = document.getElementById('modalTaskCommentsList');
+          if (data.comments && data.comments.length > 0) {
+            commentsList.innerHTML = data.comments.map(c => `
             <div class="p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <div>
@@ -296,235 +321,235 @@ document.addEventListener('DOMContentLoaded', function() {
               <p class="mb-0" style="font-size:12px;color:var(--slate-700)">${c.content}</p>
             </div>
           `).join('');
-        } else {
-          commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
-        }
-
-        document.getElementById('modalFullPageBtn').href = data.detail_url;
-        const editBtn = document.getElementById('modalEditBtn');
-        if (data.edit_url) {
-          editBtn.href = data.edit_url;
-          editBtn.classList.remove('d-none');
-        } else {
-          editBtn.classList.add('d-none');
-        }
-
-        window.currentModalTaskData = data;
-        const nudgeBtn = document.getElementById('modalNudgeBtn');
-        if (nudgeBtn) {
-          if (data.can_nudge) {
-            nudgeBtn.classList.remove('d-none');
           } else {
-            nudgeBtn.classList.add('d-none');
+            commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
           }
-        }
 
-        document.getElementById('modalLoadingSpinner').classList.add('d-none');
-        document.getElementById('modalTaskContent').classList.remove('d-none');
-      })
-      .catch(err => {
-        console.error(err);
-        showToast('Error loading task details', 'danger');
-        detailModal.hide();
-      });
-  }
+          document.getElementById('modalFullPageBtn').href = data.detail_url;
+          const editBtn = document.getElementById('modalEditBtn');
+          if (data.edit_url) {
+            editBtn.href = data.edit_url;
+            editBtn.classList.remove('d-none');
+          } else {
+            editBtn.classList.add('d-none');
+          }
 
-  document.addEventListener('click', function(e) {
-    const viewBtn = e.target.closest('.view-task-btn');
-    if (viewBtn) {
-      e.stopPropagation();
-      const taskId = viewBtn.getAttribute('data-task-id');
-      openTaskModal(taskId);
-      return;
+          window.currentModalTaskData = data;
+          const nudgeBtn = document.getElementById('modalNudgeBtn');
+          if (nudgeBtn) {
+            if (data.can_nudge) {
+              nudgeBtn.classList.remove('d-none');
+            } else {
+              nudgeBtn.classList.add('d-none');
+            }
+          }
+
+          document.getElementById('modalLoadingSpinner').classList.add('d-none');
+          document.getElementById('modalTaskContent').classList.remove('d-none');
+        })
+        .catch(err => {
+          console.error(err);
+          showToast('Error loading task details', 'danger');
+          detailModal.hide();
+        });
     }
 
-    const titleLink = e.target.closest('.task-title-link');
-    if (titleLink) {
-      e.preventDefault();
-      const taskId = titleLink.getAttribute('data-task-id');
-      openTaskModal(taskId);
-      return;
-    }
-  });
+    document.addEventListener('click', function (e) {
+      const viewBtn = e.target.closest('.view-task-btn');
+      if (viewBtn) {
+        e.stopPropagation();
+        const taskId = viewBtn.getAttribute('data-task-id');
+        openTaskModal(taskId);
+        return;
+      }
 
-  function initDraggableCards() {
-    const cards = document.querySelectorAll('.kanban-card');
-    cards.forEach(card => {
-      if (card.getAttribute('draggable') === 'true') {
-        card.removeEventListener('dragstart', handleDragStart);
-        card.removeEventListener('dragend', handleDragEnd);
-        card.addEventListener('dragstart', handleDragStart);
-        card.addEventListener('dragend', handleDragEnd);
-      } else {
-        card.style.cursor = 'not-allowed';
+      const titleLink = e.target.closest('.task-title-link');
+      if (titleLink) {
+        e.preventDefault();
+        const taskId = titleLink.getAttribute('data-task-id');
+        openTaskModal(taskId);
+        return;
       }
     });
-  }
 
-  function handleDragStart(e) {
-    if (this.getAttribute('draggable') !== 'true') {
-      e.preventDefault();
-      return false;
+    function initDraggableCards() {
+      const cards = document.querySelectorAll('.kanban-card');
+      cards.forEach(card => {
+        if (card.getAttribute('draggable') === 'true') {
+          card.removeEventListener('dragstart', handleDragStart);
+          card.removeEventListener('dragend', handleDragEnd);
+          card.addEventListener('dragstart', handleDragStart);
+          card.addEventListener('dragend', handleDragEnd);
+        } else {
+          card.style.cursor = 'not-allowed';
+        }
+      });
     }
-    draggedCard = this;
-    this.classList.add('dragging');
-    e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', this.getAttribute('data-task-id'));
-  }
 
-  function handleDragEnd(e) {
-    this.classList.remove('dragging');
-    draggedCard = null;
-    document.querySelectorAll('.kanban-cards-list').forEach(list => list.classList.remove('drag-over'));
-  }
+    function handleDragStart(e) {
+      if (this.getAttribute('draggable') !== 'true') {
+        e.preventDefault();
+        return false;
+      }
+      draggedCard = this;
+      this.classList.add('dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', this.getAttribute('data-task-id'));
+    }
 
-  const dropzones = document.querySelectorAll('.kanban-cards-list');
-  dropzones.forEach(zone => {
-    zone.addEventListener('dragover', function(e) {
-      if (!draggedCard || draggedCard.getAttribute('draggable') !== 'true') return;
-      e.preventDefault();
-      e.dataTransfer.dropEffect = 'move';
-      this.classList.add('drag-over');
-    });
+    function handleDragEnd(e) {
+      this.classList.remove('dragging');
+      draggedCard = null;
+      document.querySelectorAll('.kanban-cards-list').forEach(list => list.classList.remove('drag-over'));
+    }
 
-    zone.addEventListener('dragleave', function(e) {
-      this.classList.remove('drag-over');
-    });
+    const dropzones = document.querySelectorAll('.kanban-cards-list');
+    dropzones.forEach(zone => {
+      zone.addEventListener('dragover', function (e) {
+        if (!draggedCard || draggedCard.getAttribute('draggable') !== 'true') return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+        this.classList.add('drag-over');
+      });
 
-    zone.addEventListener('drop', function(e) {
-      e.preventDefault();
-      this.classList.remove('drag-over');
-      if (!draggedCard || draggedCard.getAttribute('draggable') !== 'true') return;
+      zone.addEventListener('dragleave', function (e) {
+        this.classList.remove('drag-over');
+      });
 
-      const targetZone = this;
-      const newStatus = targetZone.getAttribute('data-status');
-      const currentParent = draggedCard.parentElement;
-      const oldStatus = currentParent.getAttribute('data-status');
+      zone.addEventListener('drop', function (e) {
+        e.preventDefault();
+        this.classList.remove('drag-over');
+        if (!draggedCard || draggedCard.getAttribute('draggable') !== 'true') return;
 
-      if (oldStatus === newStatus) return;
+        const targetZone = this;
+        const newStatus = targetZone.getAttribute('data-status');
+        const currentParent = draggedCard.parentElement;
+        const oldStatus = currentParent.getAttribute('data-status');
 
-      const taskId = draggedCard.getAttribute('data-task-id');
-      const taskNum = draggedCard.getAttribute('data-task-num');
+        if (oldStatus === newStatus) return;
 
-      const placeholder = targetZone.querySelector('.empty-col-placeholder');
-      if (placeholder) placeholder.remove();
+        const taskId = draggedCard.getAttribute('data-task-id');
+        const taskNum = draggedCard.getAttribute('data-task-num');
 
-      targetZone.appendChild(draggedCard);
+        const placeholder = targetZone.querySelector('.empty-col-placeholder');
+        if (placeholder) placeholder.remove();
 
-      if (currentParent.querySelectorAll('.kanban-card').length === 0) {
-        currentParent.innerHTML = `
+        targetZone.appendChild(draggedCard);
+
+        if (currentParent.querySelectorAll('.kanban-card').length === 0) {
+          currentParent.innerHTML = `
           <div class="empty-col-placeholder text-center text-muted py-4" style="font-size:12px">
             <i data-lucide="inbox" style="width:24px;height:24px;opacity:0.4" class="d-block mx-auto mb-1"></i> No tasks
           </div>
         `;
-        if (window.lucide) lucide.createIcons();
-      }
+          if (window.lucide) lucide.createIcons();
+        }
 
-      updateColumnCounts();
+        updateColumnCounts();
 
-      function performTaskMove(password = '') {
-        const formData = new FormData();
-        formData.append('status', newStatus);
-        if (password) formData.append('password', password);
+        function performTaskMove(password = '') {
+          const formData = new FormData();
+          formData.append('status', newStatus);
+          if (password) formData.append('password', password);
 
-        fetch(`/tasks/${taskId}/move/`, {
-          method: 'POST',
-          headers: {
-            'X-CSRFToken': csrfToken
-          },
-          body: formData
-        })
-        .then(res => res.json())
-        .then(data => {
-          if (data.status === 'ok') {
-            showToast(`Task ${taskNum} moved to ${data.new_status_display}`, 'success');
-          } else {
-            showToast(data.error || 'Failed to update task status.', 'danger');
-            setTimeout(() => location.reload(), 1500);
-          }
-        })
-        .catch(err => {
-          console.error(err);
-          showToast('Server error while moving task.', 'danger');
-          location.reload();
-        });
-      }
+          fetch(`/tasks/${taskId}/move/`, {
+            method: 'POST',
+            headers: {
+              'X-CSRFToken': csrfToken
+            },
+            body: formData
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (data.status === 'ok') {
+                showToast(`Task ${taskNum} moved to ${data.new_status_display}`, 'success');
+              } else {
+                showToast(data.error || 'Failed to update task status.', 'danger');
+                setTimeout(() => location.reload(), 1500);
+              }
+            })
+            .catch(err => {
+              console.error(err);
+              showToast('Server error while moving task.', 'danger');
+              location.reload();
+            });
+        }
 
-      if (newStatus === 'completed' || oldStatus === 'completed') {
-        showConfirmModal({
-          title: 'Confirm Status Change',
-          subtitle: 'Organization Admin Password Security Check',
-          message: `Moving task <strong>${taskNum}</strong> to <strong>${newStatus}</strong> requires Organization Admin password verification.`,
-          btnText: 'Confirm Move',
-          btnClass: 'btn-success',
-          icon: 'bi-check-circle-fill',
-          iconBg: '#dcfce7',
-          iconColor: '#16a34a',
-          requirePassword: true,
-          onConfirm: function(pwd) {
-            performTaskMove(pwd);
-          },
-          onCancel: function() {
-            location.reload();
-          }
-        });
-      } else {
-        performTaskMove();
-      }
+        if (newStatus === 'completed' || oldStatus === 'completed') {
+          showConfirmModal({
+            title: 'Confirm Status Change',
+            subtitle: 'Organization Admin Password Security Check',
+            message: `Moving task <strong>${taskNum}</strong> to <strong>${newStatus}</strong> requires Organization Admin password verification.`,
+            btnText: 'Confirm Move',
+            btnClass: 'btn-success',
+            icon: 'bi-check-circle-fill',
+            iconBg: '#dcfce7',
+            iconColor: '#16a34a',
+            requirePassword: true,
+            onConfirm: function (pwd) {
+              performTaskMove(pwd);
+            },
+            onCancel: function () {
+              location.reload();
+            }
+          });
+        } else {
+          performTaskMove();
+        }
+      });
     });
-  });
 
-  function updateColumnCounts() {
-    document.querySelectorAll('.kanban-column').forEach(col => {
-      const list = col.querySelector('.kanban-cards-list');
-      const badge = col.querySelector('.col-count-badge');
-      const count = list.querySelectorAll('.kanban-card').length;
-      if (badge) badge.textContent = count;
-    });
-  }
-
-  function showToast(message, type = 'success') {
-    let container = document.querySelector('.toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.className = 'toast-container';
-      document.body.appendChild(container);
+    function updateColumnCounts() {
+      document.querySelectorAll('.kanban-column').forEach(col => {
+        const list = col.querySelector('.kanban-cards-list');
+        const badge = col.querySelector('.col-count-badge');
+        const count = list.querySelectorAll('.kanban-card').length;
+        if (badge) badge.textContent = count;
+      });
     }
-    const alert = document.createElement('div');
-    alert.className = `alert alert-${type} alert-dismissible fade show shadow-sm`;
-    alert.style.borderRadius = '14px';
-    alert.innerHTML = `
+
+    function showToast(message, type = 'success') {
+      let container = document.querySelector('.toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        document.body.appendChild(container);
+      }
+      const alert = document.createElement('div');
+      alert.className = `alert alert-${type} alert-dismissible fade show shadow-sm`;
+      alert.style.borderRadius = '14px';
+      alert.innerHTML = `
       ${message}
       <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
     `;
-    container.appendChild(alert);
-    setTimeout(() => {
-      try { bootstrap.Alert.getOrCreateInstance(alert).close(); } catch(e){}
-    }, 3500);
-  }
+      container.appendChild(alert);
+      setTimeout(() => {
+        try { bootstrap.Alert.getOrCreateInstance(alert).close(); } catch (e) { }
+      }, 3500);
+    }
 
-  // Board Live Search Suggestions Script
-  const boardSearchInput = document.getElementById('boardSearchInput');
-  const boardSearchSuggestions = document.getElementById('boardSearchSuggestions');
-  let boardSearchDebounce = null;
+    // Board Live Search Suggestions Script
+    const boardSearchInput = document.getElementById('boardSearchInput');
+    const boardSearchSuggestions = document.getElementById('boardSearchSuggestions');
+    let boardSearchDebounce = null;
 
-  if (boardSearchInput && boardSearchSuggestions) {
-    boardSearchInput.addEventListener('input', function() {
-      const q = this.value.trim();
-      clearTimeout(boardSearchDebounce);
+    if (boardSearchInput && boardSearchSuggestions) {
+      boardSearchInput.addEventListener('input', function () {
+        const q = this.value.trim();
+        clearTimeout(boardSearchDebounce);
 
-      if (!q || q.length < 1) {
-        boardSearchSuggestions.classList.remove('show');
-        boardSearchSuggestions.innerHTML = '';
-        return;
-      }
+        if (!q || q.length < 1) {
+          boardSearchSuggestions.classList.remove('show');
+          boardSearchSuggestions.innerHTML = '';
+          return;
+        }
 
-      boardSearchDebounce = setTimeout(() => {
-        fetch(`/tasks/search-suggestions/?q=${encodeURIComponent(q)}`)
-          .then(res => res.json())
-          .then(data => {
-            if (data.results && data.results.length > 0) {
-              boardSearchSuggestions.innerHTML = data.results.map(item => `
+        boardSearchDebounce = setTimeout(() => {
+          fetch(`/tasks/search-suggestions/?q=${encodeURIComponent(q)}`)
+            .then(res => res.json())
+            .then(data => {
+              if (data.results && data.results.length > 0) {
+                boardSearchSuggestions.innerHTML = data.results.map(item => `
                 <div class="search-suggestion-item" data-task-id="${item.id}">
                   <div>
                     <span class="badge bg-light text-primary border me-1" style="font-size:10.5px">${item.task_number}</span>
@@ -533,82 +558,82 @@ document.addEventListener('DOMContentLoaded', function() {
                   <span class="badge-status badge-${item.status}" style="font-size:10px">${item.status_display}</span>
                 </div>
               `).join('');
-              boardSearchSuggestions.classList.add('show');
-            } else {
-              boardSearchSuggestions.innerHTML = '<div class="p-3 text-muted text-center" style="font-size:12px">No matching tasks found</div>';
-              boardSearchSuggestions.classList.add('show');
-            }
-          });
-      }, 200);
-    });
+                boardSearchSuggestions.classList.add('show');
+              } else {
+                boardSearchSuggestions.innerHTML = '<div class="p-3 text-muted text-center" style="font-size:12px">No matching tasks found</div>';
+                boardSearchSuggestions.classList.add('show');
+              }
+            });
+        }, 200);
+      });
 
-    document.addEventListener('click', function(e) {
-      if (!boardSearchInput.contains(e.target) && !boardSearchSuggestions.contains(e.target)) {
-        boardSearchSuggestions.classList.remove('show');
-      }
-    });
-
-    boardSearchSuggestions.addEventListener('click', function(e) {
-      const item = e.target.closest('.search-suggestion-item');
-      if (item) {
-        const taskId = item.getAttribute('data-task-id');
-        boardSearchSuggestions.classList.remove('show');
-        openTaskModal(taskId);
-      }
-    });
-  }
-
-  // Single Delete button handler on Board
-  document.querySelectorAll('.single-delete-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      e.stopPropagation();
-      const taskId = this.getAttribute('data-task-id');
-      const taskNum = this.getAttribute('data-task-num');
-      showConfirmModal({
-        title: 'Delete Task',
-        subtitle: 'Please review before proceeding',
-        message: `Are you sure you want to delete task <strong>${taskNum}</strong>? This action cannot be undone.`,
-        btnText: 'Delete Task',
-        btnClass: 'btn-danger',
-        icon: 'bi-trash-fill',
-        iconBg: '#fee2e2',
-        iconColor: '#dc2626',
-        requirePassword: true,
-        onConfirm: function(pwd) {
-          let form = document.getElementById('boardSingleDeleteForm');
-          if (!form) {
-            form = document.createElement('form');
-            form.id = 'boardSingleDeleteForm';
-            form.method = 'POST';
-            form.className = 'd-none';
-            document.body.appendChild(form);
-          }
-          form.action = `/tasks/${taskId}/delete/`;
-          let pwdField = form.querySelector('input[name="password"]');
-          if (!pwdField) {
-            pwdField = document.createElement('input');
-            pwdField.type = 'hidden';
-            pwdField.name = 'password';
-            form.appendChild(pwdField);
-          }
-          pwdField.value = pwd;
-          let csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
-          if (!csrfInput) {
-            csrfInput = document.createElement('input');
-            csrfInput.type = 'hidden';
-            csrfInput.name = 'csrfmiddlewaretoken';
-            csrfInput.value = csrfToken;
-            form.appendChild(csrfInput);
-          }
-          form.submit();
+      document.addEventListener('click', function (e) {
+        if (!boardSearchInput.contains(e.target) && !boardSearchSuggestions.contains(e.target)) {
+          boardSearchSuggestions.classList.remove('show');
         }
       });
-    });
-  });
 
-  if (window.lucide) lucide.createIcons();
-  initDraggableCards();
-});
+      boardSearchSuggestions.addEventListener('click', function (e) {
+        const item = e.target.closest('.search-suggestion-item');
+        if (item) {
+          const taskId = item.getAttribute('data-task-id');
+          boardSearchSuggestions.classList.remove('show');
+          openTaskModal(taskId);
+        }
+      });
+    }
+
+    // Single Delete button handler on Board
+    document.querySelectorAll('.single-delete-btn').forEach(btn => {
+      btn.addEventListener('click', function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        const taskId = this.getAttribute('data-task-id');
+        const taskNum = this.getAttribute('data-task-num');
+        showConfirmModal({
+          title: 'Delete Task',
+          subtitle: 'Please review before proceeding',
+          message: `Are you sure you want to delete task <strong>${taskNum}</strong>? This action cannot be undone.`,
+          btnText: 'Delete Task',
+          btnClass: 'btn-danger',
+          icon: 'bi-trash-fill',
+          iconBg: '#fee2e2',
+          iconColor: '#dc2626',
+          requirePassword: true,
+          onConfirm: function (pwd) {
+            let form = document.getElementById('boardSingleDeleteForm');
+            if (!form) {
+              form = document.createElement('form');
+              form.id = 'boardSingleDeleteForm';
+              form.method = 'POST';
+              form.className = 'd-none';
+              document.body.appendChild(form);
+            }
+            form.action = `/tasks/${taskId}/delete/`;
+            let pwdField = form.querySelector('input[name="password"]');
+            if (!pwdField) {
+              pwdField = document.createElement('input');
+              pwdField.type = 'hidden';
+              pwdField.name = 'password';
+              form.appendChild(pwdField);
+            }
+            pwdField.value = pwd;
+            let csrfInput = form.querySelector('input[name="csrfmiddlewaretoken"]');
+            if (!csrfInput) {
+              csrfInput = document.createElement('input');
+              csrfInput.type = 'hidden';
+              csrfInput.name = 'csrfmiddlewaretoken';
+              csrfInput.value = csrfToken;
+              form.appendChild(csrfInput);
+            }
+            form.submit();
+          }
+        });
+      });
+    });
+
+    if (window.lucide) lucide.createIcons();
+    initDraggableCards();
+  });
 </script>
 {% endblock %}

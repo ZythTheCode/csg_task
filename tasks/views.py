@@ -160,9 +160,17 @@ class TaskListView(LoginRequiredMixin, ListView):
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         org = self.request.user.get_organization(self.request)
         if org:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role='super_super_admin').order_by('first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(
+                is_active=True, organization=org
+            ).exclude(role='super_super_admin').select_related(
+                'officer_profile', 'officer_profile__position'
+            ).order_by('first_name', 'last_name')
         else:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role='super_super_admin').order_by('organization__name', 'first_name', 'last_name')
+            ctx['officers_list'] = User.objects.filter(
+                is_active=True, organization__isnull=False
+            ).exclude(role='super_super_admin').select_related(
+                'officer_profile', 'officer_profile__position', 'organization'
+            ).order_by('organization__name', 'first_name', 'last_name')
         ctx['category_choices'] = Task.CATEGORY_CHOICES
         ctx['current_filters'] = {
             'q': self.request.GET.get('q', ''),
