@@ -213,6 +213,85 @@
   {% csrf_token %}
 </form>
 
+<script>
+  (function () {
+    function updateBulk() {
+      var checked = document.querySelectorAll('.task-checkbox:checked');
+      var count = checked.length;
+      var delBtn = document.getElementById('bulkDeleteBtn');
+      var compBtn = document.getElementById('bulkCompleteBtn');
+      if (delBtn) { if (count > 0) delBtn.classList.remove('d-none'); else delBtn.classList.add('d-none'); }
+      if (compBtn) { if (count > 0) compBtn.classList.remove('d-none'); else compBtn.classList.add('d-none'); }
+      document.querySelectorAll('.selected-count').forEach(function (el) { el.textContent = count; });
+      var selAll = document.getElementById('selectAllTasks');
+      var allBoxes = document.querySelectorAll('.task-checkbox');
+      if (selAll) { selAll.checked = allBoxes.length > 0 && count === allBoxes.length; selAll.indeterminate = count > 0 && count < allBoxes.length; }
+    }
+    document.addEventListener('change', function (e) {
+      if (e.target && e.target.id === 'selectAllTasks') {
+        document.querySelectorAll('.task-checkbox').forEach(function (cb) { cb.checked = e.target.checked; });
+        updateBulk();
+      } else if (e.target && e.target.classList.contains('task-checkbox')) {
+        updateBulk();
+      }
+    });
+    var delBtn = document.getElementById('bulkDeleteBtn');
+    if (delBtn) {
+      delBtn.addEventListener('click', function () {
+        var checked = document.querySelectorAll('.task-checkbox:checked');
+        if (checked.length === 0) return;
+        window.showConfirmModal({
+          title: 'Bulk Delete Tasks',
+          subtitle: checked.length + ' task(s) selected',
+          message: 'Are you sure you want to delete <strong>' + checked.length + ' selected task(s)</strong>? This action cannot be undone.',
+          btnText: 'Delete ' + checked.length + ' Task(s)',
+          btnClass: 'btn-danger',
+          icon: 'bi-trash-fill',
+          iconBg: '#fee2e2',
+          iconColor: '#dc2626',
+          requirePassword: true,
+          onConfirm: function (pwd) {
+            var form = document.getElementById('bulkDeleteForm');
+            form.querySelectorAll('input[name="task_ids"]').forEach(function (el) { el.remove(); });
+            checked.forEach(function (cb) { var inp = document.createElement('input'); inp.type = 'hidden'; inp.name = 'task_ids'; inp.value = cb.value; form.appendChild(inp); });
+            var pwdField = form.querySelector('input[name="password"]');
+            if (!pwdField) { pwdField = document.createElement('input'); pwdField.type = 'hidden'; pwdField.name = 'password'; form.appendChild(pwdField); }
+            pwdField.value = pwd;
+            form.submit();
+          }
+        });
+      });
+    }
+    var compBtn = document.getElementById('bulkCompleteBtn');
+    if (compBtn) {
+      compBtn.addEventListener('click', function () {
+        var checked = document.querySelectorAll('.task-checkbox:checked');
+        if (checked.length === 0) return;
+        window.showConfirmModal({
+          title: 'Bulk Mark Tasks Complete',
+          subtitle: checked.length + ' task(s) selected',
+          message: 'Mark <strong>' + checked.length + ' selected task(s)</strong> as completed?',
+          btnText: 'Mark Complete',
+          btnClass: 'btn-success',
+          icon: 'bi-check-circle-fill',
+          iconBg: '#dcfce7',
+          iconColor: '#16a34a',
+          requirePassword: true,
+          onConfirm: function (pwd) {
+            var form = document.getElementById('bulkCompleteForm');
+            form.querySelectorAll('input[name="task_ids"]').forEach(function (el) { el.remove(); });
+            checked.forEach(function (cb) { var inp = document.createElement('input'); inp.type = 'hidden'; inp.name = 'task_ids'; inp.value = cb.value; form.appendChild(inp); });
+            var pwdField = form.querySelector('input[name="password"]');
+            if (!pwdField) { pwdField = document.createElement('input'); pwdField.type = 'hidden'; pwdField.name = 'password'; form.appendChild(pwdField); }
+            pwdField.value = pwd;
+            form.submit();
+          }
+        });
+      });
+    }
+  })();
+</script>
+
 <div class="table-custom-container">
   <div class="table-responsive">
     <table class="table-custom table-sortable w-100" id="taskTable">
@@ -566,7 +645,7 @@
       const detailModalEl = document.getElementById('taskDetailModal');
       let detailModal = null;
       if (detailModalEl) {
-        detailModal = new bootstrap.Modal(detailModalEl);
+        detailModal = bootstrap.Modal.getOrCreateInstance(detailModalEl);
       }
       let savedScrollY = 0;
 
@@ -998,7 +1077,7 @@
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', initTaskList);
     } else {
-      initTaskList();
+      try { initTaskList(); } catch (err) { console.error('[CSG] initTaskList error:', err); }
     }
   })();
 </script>
@@ -1006,7 +1085,8 @@
 <script>
   (function () {
     var modalEl = document.getElementById('taskDetailModal');
-    var modal = new bootstrap.Modal(modalEl);
+    if (!modalEl) return;
+    var modal = bootstrap.Modal.getOrCreateInstance(modalEl);
 
     function openListTaskModal(taskId) {
       var spinner = document.getElementById('modalLoadingSpinner');
