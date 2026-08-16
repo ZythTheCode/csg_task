@@ -8,6 +8,7 @@ from django.db.models.functions import TruncMonth, Coalesce, Cast
 from tasks.models import Task, TaskAssignment
 from notifications.models import Notification
 from accounts.models import User
+from core.query_utils import get_dashboard_stats
 import datetime
 import logging
 
@@ -33,6 +34,7 @@ class DashboardStatsAPIView(APIView):
         if user.organization:
             base_qs = base_qs.filter(organization=user.organization)
 
+<<<<<<< HEAD
         counts = base_qs.aggregate(
             active=Count('id', filter=Q(status__in=self.ACTIVE_STATUSES)),
             completed=Count('id', filter=Q(status='completed')),
@@ -50,6 +52,17 @@ class DashboardStatsAPIView(APIView):
         response = Response(counts)
         response['Cache-Control'] = 'private, max-age=30'
         return response
+=======
+        # Single aggregate query for all dashboard counts (replaces 4 separate count() calls)
+        stats = get_dashboard_stats(base_qs, today)
+
+        return Response({
+            'active': stats['active'],
+            'completed': stats['completed'],
+            'overdue': stats['overdue'],
+            'upcoming': stats['upcoming'],
+        })
+>>>>>>> fix/optimization
 
 
 class DashboardChartsAPIView(APIView):
@@ -81,6 +94,7 @@ class DashboardChartsAPIView(APIView):
 
         today = timezone.now().date()
 
+<<<<<<< HEAD
         # Status and priority distribution (single aggregate query)
         agg = base_qs.aggregate(
             **{f'status_{s}': Count('id', filter=Q(status=s)) for s, _ in Task.STATUS_CHOICES},
@@ -126,6 +140,46 @@ class DashboardChartsAPIView(APIView):
             month_key = datetime.date(curr_year, curr_month, 1)
             monthly_labels.append(month_key.strftime('%b %Y'))
             monthly_data.append(month_counts.get(month_key, 0))
+=======
+        # Status + Priority distributions in a single aggregate query
+        from core.query_utils import get_distributions, get_monthly_completed, get_weekly_trend
+
+        distributions = get_distributions(base_qs)
+
+        # Build status distribution labels/data from the aggregate result
+        status_labels = []
+        status_data = []
+        for code, label in Task.STATUS_CHOICES:
+            status_labels.append(label)
+            status_data.append(distributions.get(f'status_{code}', 0))
+
+        # Build priority distribution labels/data from the aggregate result
+        priority_labels = []
+        priority_data = []
+        for code, label in Task.PRIORITY_CHOICES:
+            priority_labels.append(label)
+            priority_data.append(distributions.get(f'priority_{code}', 0))
+
+        # Monthly completed using TruncMonth (single query)
+        start_date = datetime.date(2026, 8, 1)
+        monthly_qs = get_monthly_completed(base_qs, start_date)
+
+        # Build a lookup of month -> count from the aggregate result
+        monthly_counts = {item['month'].date() if hasattr(item['month'], 'date') else item['month']: item['count'] for item in monthly_qs}
+
+        # Generate all month labels from start_date to today
+        monthly_labels = []
+        monthly_data_list = []
+        num_months = max(6, (today.year - 2026) * 12 + (today.month - 8 + 1))
+        curr_year = 2026
+        curr_month = 8
+
+        for _ in range(num_months):
+            month_start = datetime.date(curr_year, curr_month, 1)
+            monthly_labels.append(month_start.strftime('%b %Y'))
+            monthly_data_list.append(monthly_counts.get(month_start, 0))
+
+>>>>>>> fix/optimization
             if curr_month == 12:
                 curr_year += 1
                 curr_month = 1
@@ -149,7 +203,7 @@ class DashboardChartsAPIView(APIView):
             'P.V.': 'PV',
         }
 
-        # Tasks per officer (top 8)
+        # Tasks per officer (top 8) - already efficient with single annotated query
         officer_data = []
         officer_labels = []
         officer_counts = base_qs.values(
@@ -170,6 +224,7 @@ class DashboardChartsAPIView(APIView):
             officer_labels.append(label)
             officer_data.append(item['count'])
 
+<<<<<<< HEAD
         # Weekly trend (last 7 days) — single query with conditional aggregation
         weekly_agg = base_qs.filter(status='completed').aggregate(
             **{
@@ -196,6 +251,31 @@ class DashboardChartsAPIView(APIView):
 
         response = Response(response_data)
         response['Cache-Control'] = 'private, max-age=30'
+=======
+        # Weekly trend using TruncDate (single query for last 7 days)
+        week_start = today - datetime.timedelta(days=6)
+        weekly_qs = get_weekly_trend(base_qs, week_start, today)
+
+        # Build a lookup of day -> count from the aggregate result
+        weekly_counts = {item['day']: item['count'] for item in weekly_qs}
+
+        # Generate all day labels for the last 7 days
+        weekly_labels = []
+        weekly_data = []
+        for i in range(6, -1, -1):
+            day = today - datetime.timedelta(days=i)
+            weekly_labels.append(day.strftime('%a %d'))
+            weekly_data.append(weekly_counts.get(day, 0))
+
+        response = Response({
+            'status_distribution': {'labels': status_labels, 'data': status_data},
+            'priority_distribution': {'labels': priority_labels, 'data': priority_data},
+            'monthly_completed': {'labels': monthly_labels, 'data': monthly_data_list},
+            'tasks_per_officer': {'labels': officer_labels, 'data': officer_data},
+            'weekly_trend': {'labels': weekly_labels, 'data': weekly_data},
+        })
+        response['Cache-Control'] = 'max-age=15'
+>>>>>>> fix/optimization
         return response
 
 
@@ -211,6 +291,7 @@ class TaskListAPIView(APIView):
         if user.organization:
             tasks = tasks.filter(organization=user.organization)
 
+<<<<<<< HEAD
         data = list(tasks.select_related('created_by', 'organization').values(
             'id', 'task_number', 'title', 'status',
             'priority', 'progress', 'due_date'
@@ -218,6 +299,25 @@ class TaskListAPIView(APIView):
         response = Response(data)
         response['Cache-Control'] = 'private, max-age=0'
         return response
+=======
+        tasks = tasks.select_related('organization').only(
+            'id', 'task_number', 'title', 'status', 'priority', 'progress', 'due_date',
+            'organization__id', 'organization__name',
+        )
+
+        data = []
+        for t in tasks[:50]:
+            data.append({
+                'id': t.id,
+                'task_number': t.task_number,
+                'title': t.title,
+                'status': t.status,
+                'priority': t.priority,
+                'progress': t.progress,
+                'due_date': str(t.due_date) if t.due_date else None,
+            })
+        return Response(data)
+>>>>>>> fix/optimization
 
 
 class TaskDetailAPIView(APIView):
@@ -245,6 +345,7 @@ class UnreadNotificationsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
+<<<<<<< HEAD
         notifs = list(
             Notification.objects.filter(recipient=request.user, is_read=False)
             .select_related('related_task')
@@ -255,6 +356,15 @@ class UnreadNotificationsAPIView(APIView):
         response = Response({'count': len(notifs), 'notifications': data})
         response['Cache-Control'] = 'private, max-age=0'
         return response
+=======
+        notifs = (
+            Notification.objects.filter(recipient=request.user, is_read=False)
+            .select_related('related_task')
+            .only('id', 'title', 'message', 'notification_type', 'created_at', 'related_task_id')
+        )[:10]
+        data = [{'id': n.id, 'title': n.title, 'message': n.message, 'type': n.notification_type, 'created_at': str(n.created_at), 'related_task_id': n.related_task_id} for n in notifs]
+        return Response({'count': len(data), 'notifications': data})
+>>>>>>> fix/optimization
 
 
 class MarkNotificationReadAPIView(APIView):

@@ -4,6 +4,7 @@ from django.urls import reverse_lazy
 from django.contrib import messages
 from django.shortcuts import redirect
 from core.mixins import FragmentResponseMixin
+from core.cache_utils import safe_cache_get, invalidate_officers_cache
 from .models import Position, Officer
 from .forms import PositionForm, OfficerForm
 from accounts.models import User
@@ -14,9 +15,9 @@ class OfficerListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
     template_name = 'officers/list.html'
     context_object_name = 'officers'
 
-    def get_queryset(self):
+    def _build_queryset(self, org):
+        """Build the officers queryset with annotations."""
         from django.db.models import Count, Q
-        org = self.request.user.get_organization(self.request)
         qs = Officer.objects.select_related('user', 'position').exclude(
             user__role__in=['super_admin', 'super_super_admin']
         ).annotate(
@@ -27,6 +28,19 @@ class OfficerListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
         if org:
             qs = qs.filter(user__organization=org)
         return qs
+
+    def get_queryset(self):
+        org = self.request.user.get_organization(self.request)
+        # Use organization-scoped cache key with 60-second TTL
+        if org:
+            cache_key = f'officers_list_{org.pk}'
+        else:
+            cache_key = 'officers_list_all'
+
+        def _fetch_officers():
+            return list(self._build_queryset(org))
+
+        return safe_cache_get(cache_key, _fetch_officers, timeout=60)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -102,6 +116,10 @@ class OfficerCreateView(LoginRequiredMixin, CreateView):
         response = super().form_valid(form)
         user = self.object.user
         created_pass = form.cleaned_data.get('password') or 'admin123'
+        # Invalidate officers cache for this organization
+        org = self.request.user.get_organization(self.request)
+        if org:
+            invalidate_officers_cache(org.pk)
         messages.success(
             self.request,
             f"Officer '{user.get_full_name()}' created successfully! Assigned Username: '{user.username}' (Password: '{created_pass}')."
@@ -154,9 +172,21 @@ class OfficerUpdateView(LoginRequiredMixin, UpdateView):
                 self.object.user.save(update_fields=['profile_picture'])
                 from core.services.audit import log_activity
                 log_activity(request, 'OFFICER_PHOTO_REMOVE', f"Removed profile photo for officer '{user_name}'.", resource_type='Officer', resource_id=self.object.pk)
+                # Invalidate officers cache for this organization
+                org = request.user.get_organization(request)
+                if org:
+                    invalidate_officers_cache(org.pk)
                 messages.success(request, f"Profile picture for '{user_name}' removed successfully.")
             return redirect('officers:list')
         return super().post(request, *args, **kwargs)
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        # Invalidate officers cache for this organization
+        org = self.request.user.get_organization(self.request)
+        if org:
+            invalidate_officers_cache(org.pk)
+        return response
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -219,6 +249,11 @@ class OfficerDeleteView(LoginRequiredMixin, DeleteView):
                 user.delete()
             else:
                 self.object.delete()
+
+        # Invalidate officers cache for this organization
+        org = request.user.get_organization(request)
+        if org:
+            invalidate_officers_cache(org.pk)
 
         from core.services.audit import log_activity
         log_activity(request, 'OFFICER_DELETE', f"Deleted officer account '{user_name}'", resource_type='Officer', resource_id=user_pk)

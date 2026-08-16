@@ -1,7 +1,110 @@
 from django.db import models, transaction
 from django.utils import timezone
 from tasks.models import Task, TaskAssignment, TaskHistory, TaskAttachment, TaskComment
+from notifications.models import Notification
 from core.services.audit import log_activity
+
+
+# Maximum number of tasks allowed per bulk operation
+BULK_OPERATION_MAX_TASKS = 50
+
+
+def bulk_complete_tasks(queryset, user):
+    """
+    Mark multiple tasks as completed using bulk operations.
+    Returns (count, error) tuple where error is None on success.
+
+    Uses at most 3 write queries:
+    - 1 bulk_update for task fields (status, progress, completion_date)
+    - 1 bulk_create for TaskHistory records
+    - 1 bulk_create for Notification records
+
+    All wrapped in transaction.atomic() for atomicity.
+    Caps at BULK_OPERATION_MAX_TASKS tasks per request.
+    Excludes already-completed tasks.
+    """
+    # Validate task count cap
+    task_count = queryset.count()
+    if task_count > BULK_OPERATION_MAX_TASKS:
+        return 0, f"Maximum {BULK_OPERATION_MAX_TASKS} tasks per bulk operation. Got {task_count}."
+
+    now_date = timezone.now().date()
+    status_dict = dict(Task.STATUS_CHOICES)
+
+    # Exclude already-completed tasks, prefetch assignments for notifications
+    tasks = list(
+        queryset.exclude(status='completed')
+        .prefetch_related('assignments__officer')
+    )
+
+    if not tasks:
+        return 0, None
+
+    tasks_to_update = []
+    history_records = []
+    notification_records = []
+
+    for task in tasks:
+        old_status = task.status
+        task.status = 'completed'
+        task.completion_date = now_date
+        task.progress = 100
+        tasks_to_update.append(task)
+
+        history_records.append(TaskHistory(
+            task=task,
+            changed_by=user,
+            field_changed='Status',
+            old_value=status_dict.get(old_status, old_status),
+            new_value='Completed'
+        ))
+
+        for assignment in task.assignments.all():
+            notification_records.append(Notification(
+                recipient=assignment.officer,
+                title='Task Completed',
+                message=f'Task "{task.title}" has been marked as completed.',
+                notification_type='task_completed',
+                related_task=task
+            ))
+
+    try:
+        with transaction.atomic():
+            if tasks_to_update:
+                Task.objects.bulk_update(
+                    tasks_to_update,
+                    fields=['status', 'completion_date', 'progress']
+                )
+            if history_records:
+                TaskHistory.objects.bulk_create(history_records)
+            if notification_records:
+                Notification.objects.bulk_create(notification_records)
+    except Exception as e:
+        return 0, f"Operation did not complete: {str(e)}"
+
+    return len(tasks_to_update), None
+
+
+def bulk_reassign_officers(task, new_officers, assigned_by):
+    """
+    Reassign officers to a task using bulk operations.
+    Single delete + bulk_create within a transaction.
+
+    Returns (count, error) tuple where count is the number of new assignments created.
+    """
+    try:
+        with transaction.atomic():
+            TaskAssignment.objects.filter(task=task).delete()
+            assignments = [
+                TaskAssignment(task=task, officer=officer, assigned_by=assigned_by)
+                for officer in new_officers
+            ]
+            if assignments:
+                TaskAssignment.objects.bulk_create(assignments)
+    except Exception as e:
+        return 0, f"Operation did not complete: {str(e)}"
+
+    return len(assignments) if new_officers else 0, None
 
 
 class TaskService:

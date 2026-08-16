@@ -1,10 +1,12 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.views.generic import TemplateView, View
 from django.http import HttpResponse
 from django.utils import timezone
 from django.core.cache import cache
 from django.db.models import Count, Q
 from core.mixins import FragmentResponseMixin
+from core.query_utils import get_report_counts
 from tasks.models import Task
 from officers.models import Officer
 from accounts.models import User
@@ -14,6 +16,7 @@ import datetime
 
 class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
     template_name = 'reports/dashboard.html'
+    paginate_by = 25
 
     def dispatch(self, request, *args, **kwargs):
         if not request.user.can_view_reports:
@@ -45,6 +48,7 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
         # Apply filters
         filters = self._get_filters()
         tasks = self._get_filtered_tasks(filters)
+<<<<<<< HEAD
         ctx['tasks'] = tasks
         ctx['active_tasks'] = tasks.exclude(status='completed')[:200]
         ctx['completed_tasks'] = tasks.filter(status='completed')[:200]
@@ -64,6 +68,56 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
         ctx['active_count'] = summary['active']
         ctx['completed_count'] = summary['completed']
         ctx['summary'] = summary
+=======
+        ctx['filters'] = filters
+        ctx['scope'] = filters['scope']
+
+        # Use single aggregate query for all counts instead of multiple count() calls
+        today = timezone.now().date()
+        report_counts = get_report_counts(tasks, today)
+        ctx['task_count'] = report_counts['total']
+        ctx['active_count'] = report_counts['active']
+        ctx['completed_count'] = report_counts['completed']
+
+        # Summary stats from the single aggregate (no additional queries)
+        ctx['summary'] = {
+            'total': report_counts['total'],
+            'completed': report_counts['completed'],
+            'overdue': report_counts['overdue'],
+            'in_progress': report_counts['in_progress'],
+        }
+
+        # Paginate active tasks at 25 items per page
+        active_tasks_qs = tasks.exclude(status='completed')
+        active_paginator = Paginator(active_tasks_qs, self.paginate_by)
+        active_page_number = self.request.GET.get('active_page', 1)
+        try:
+            active_page = active_paginator.page(active_page_number)
+        except PageNotAnInteger:
+            active_page = active_paginator.page(1)
+        except EmptyPage:
+            active_page = active_paginator.page(active_paginator.num_pages)
+
+        ctx['active_tasks'] = active_page
+        ctx['active_page_obj'] = active_page
+
+        # Paginate completed tasks at 25 items per page
+        completed_tasks_qs = tasks.filter(status='completed')
+        completed_paginator = Paginator(completed_tasks_qs, self.paginate_by)
+        completed_page_number = self.request.GET.get('completed_page', 1)
+        try:
+            completed_page = completed_paginator.page(completed_page_number)
+        except PageNotAnInteger:
+            completed_page = completed_paginator.page(1)
+        except EmptyPage:
+            completed_page = completed_paginator.page(completed_paginator.num_pages)
+
+        ctx['completed_tasks'] = completed_page
+        ctx['completed_page_obj'] = completed_page
+
+        # Keep full queryset reference for exports (not evaluated here)
+        ctx['tasks'] = tasks
+>>>>>>> fix/optimization
         return ctx
 
     def _get_filters(self):

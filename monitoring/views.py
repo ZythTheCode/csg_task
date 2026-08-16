@@ -1,7 +1,7 @@
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db.models import Count, Q, Case, When, Value, FloatField
 from tasks.models import Task, TaskAssignment
 from officers.models import Officer
 from accounts.models import User
@@ -27,29 +27,32 @@ class MonitoringDashboardView(FragmentResponseMixin, LoginRequiredMixin, Templat
         else:
             tasks_base_qs = Task.objects.all()
 
+        # Single annotated queryset for all officer metrics (total, completed, active, overdue)
+        # Uses two chained .annotate() calls: first computes counts, second computes rate
+        # Sorted by completion rate descending, limited to 50 officers
         officers_qs = officers_qs.annotate(
             total_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__is_archived=False)),
             completed_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__status='completed', user__assigned_tasks__is_archived=False)),
             active_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__is_archived=False) & ~Q(user__assigned_tasks__status='completed')),
-            overdue_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__due_date__lt=today, user__assigned_tasks__is_archived=False) & ~Q(user__assigned_tasks__status='completed'))
-        )
+            overdue_count=Count('user__assigned_tasks', filter=Q(user__assigned_tasks__due_date__lt=today, user__assigned_tasks__is_archived=False) & ~Q(user__assigned_tasks__status='completed')),
+        ).annotate(
+            completion_rate=Case(
+                When(total_count=0, then=Value(0.0)),
+                default=100.0 * Count('user__assigned_tasks', filter=Q(user__assigned_tasks__status='completed', user__assigned_tasks__is_archived=False)) / Count('user__assigned_tasks', filter=Q(user__assigned_tasks__is_archived=False)),
+                output_field=FloatField(),
+            )
+        ).order_by('-completion_rate')[:50]
 
         officers_data = []
         for officer in officers_qs:
-            total = officer.total_count
-            completed = officer.completed_count
-            active = officer.active_count
-            overdue = officer.overdue_count
-            rate = round(completed / total * 100) if total > 0 else 0
             officers_data.append({
                 'officer': officer,
-                'total': total,
-                'completed': completed,
-                'active': active,
-                'overdue': overdue,
-                'completion_rate': rate,
+                'total': officer.total_count,
+                'completed': officer.completed_count,
+                'active': officer.active_count,
+                'overdue': officer.overdue_count,
+                'completion_rate': round(officer.completion_rate) if officer.completion_rate else 0,
             })
-        officers_data.sort(key=lambda x: x['completion_rate'], reverse=True)
         ctx['officers_data'] = officers_data
 
         # Upcoming deadlines (next 7 days) - limit to 20

@@ -3,6 +3,7 @@ from django.views.generic import ListView, View
 from django.shortcuts import get_object_or_404, redirect
 from django.contrib import messages
 from django.core.cache import cache
+from django.core.paginator import EmptyPage, PageNotAnInteger
 from core.mixins import FragmentResponseMixin
 from .models import Notification
 
@@ -15,6 +16,24 @@ class NotificationListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
 
     def get_queryset(self):
         return Notification.objects.filter(recipient=self.request.user).select_related('related_task')
+
+    def paginate_queryset(self, queryset, page_size):
+        """Override to return last available page if requested page exceeds total."""
+        paginator = self.get_paginator(
+            queryset, page_size, orphans=self.get_paginate_orphans(),
+            allow_empty_first_page=self.get_allow_empty()
+        )
+        page_kwarg = self.page_kwarg
+        page = self.kwargs.get(page_kwarg) or self.request.GET.get(page_kwarg) or 1
+        try:
+            page_number = paginator.validate_number(page)
+        except PageNotAnInteger:
+            page_number = 1
+        except EmptyPage:
+            # Return last available page if requested page exceeds total
+            page_number = paginator.num_pages
+        page = paginator.page(page_number)
+        return (paginator, page, page.object_list, page.has_other_pages())
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
