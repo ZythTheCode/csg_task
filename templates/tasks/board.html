@@ -202,6 +202,13 @@
         <i data-lucide="inbox" style="width:24px;height:24px;opacity:0.4" class="d-block mx-auto mb-1"></i> No tasks
       </div>
       {% endfor %}
+      {% if col.has_overflow %}
+      <div class="text-center text-muted py-2"
+        style="font-size:11px;font-weight:600;border-top:1px dashed var(--slate-200);margin-top:8px;padding-top:8px">
+        <i data-lucide="more-horizontal" style="width:14px;height:14px;opacity:0.5" class="me-1"></i>
+        Showing 50 of {{ col.count }} tasks
+      </div>
+      {% endif %}
     </div>
   </div>
   {% endfor %}

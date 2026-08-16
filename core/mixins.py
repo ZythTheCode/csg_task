@@ -82,6 +82,7 @@ class FragmentResponseMixin:
             page_title = context.get('page_title', '')
             response['X-Page-Title'] = page_title
             response['X-Fragment-Response'] = 'true'
+            response['Content-Length'] = str(len(response.content))
             return response
 
         # Slice content between markers (after the start marker, before the end marker)
@@ -105,11 +106,14 @@ class FragmentResponseMixin:
             body = body + '\n' + fragment_scripts
 
         # Build an HttpResponse with the extracted fragment
-        fragment_response = HttpResponse(body, content_type='text/html; charset=utf-8')
+        # Encode to bytes for accurate Content-Length calculation
+        body_bytes = body.encode('utf-8')
+        fragment_response = HttpResponse(body_bytes, content_type='text/html; charset=utf-8')
 
         # Set response headers
         page_title = context.get('page_title', '')
         fragment_response['X-Page-Title'] = page_title
         fragment_response['X-Fragment-Response'] = 'true'
+        fragment_response['Content-Length'] = str(len(body_bytes))
 
         return fragment_response

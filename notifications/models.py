@@ -48,7 +48,10 @@ class Notification(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [
+            # Covers: Notification context processor — unread count + recent unread list
+            # filtered by recipient + is_read, ordered by created_at descending
             models.Index(fields=['recipient', 'is_read', '-created_at']),
+            # Covers: Notification list view — all notifications for a user ordered by newest
             models.Index(fields=['recipient', '-created_at']),
         ]
 

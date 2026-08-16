@@ -71,7 +71,7 @@
           style="font-size:11px;font-weight:700;text-transform:uppercase">Officer</label>
         <select name="officer" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Officers</option>
-          {% for o in officers %}<option value="{{ o.user.pk }}" {% if filters.officer == o.user.pk|stringformat:"s" %}selected{% endif %}>{{ o.user.get_full_name }}</option>{% endfor %}
+          {% for o in officers %}<option value="{{ o.user.pk }}" {%  if filters.officer == o.user.pk|stringformat:"s"  %}selected{% endif %}>{{ o.user.get_full_name }}</option>{% endfor %}
         </select>
       </div>
       <div class="col-12 col-sm-6 col-lg-2">
@@ -82,7 +82,7 @@
           <option value="in_progress" {% if filters.status == 'in_progress' %}selected{% endif %}
             style="font-weight:700;color:var(--primary)">In Progress (Active)</option>
           <option value="" disabled>──────────</option>
-          {% for val, label in status_choices %}<option value="{{ val }}" {% if filters.status == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          {% for val, label in status_choices %}<option value="{{ val }}" {% if filters.status == val %}selected{%  endif  %}>{{ label }}</option>{% endfor %}
         </select>
       </div>
       <div class="col-12 col-sm-6 col-lg-2">
@@ -90,7 +90,7 @@
           style="font-size:11px;font-weight:700;text-transform:uppercase">Priority</label>
         <select name="priority" class="form-select form-select-sm" style="font-size:13px">
           <option value="">All Priority</option>
-          {% for val, label in priority_choices %}<option value="{{ val }}" {% if filters.priority == val %}selected{% endif %}>{{ label }}</option>{% endfor %}
+          {% for val, label in priority_choices %}<option value="{{ val }}" {% if filters.priority == val %}selected{%  endif  %}>{{ label }}</option>{% endfor %}
         </select>
       </div>
       <div class="col-6 col-sm-6 col-lg-2">
@@ -179,7 +179,7 @@
       <tbody>
         {% for task in active_tasks %}
         <tr>
-          <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
+          <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{  task.task_number  }}</span></td>
           <td
             style="font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)"
             title="{{ task.title }}">{{ task.title }}</td>
@@ -199,7 +199,7 @@
                 {% endfor %}
                 {% if task.assigned_officers_count > 2 %}
                 <span class="badge bg-secondary text-white"
-                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{ task.assigned_officers_count|add:"-2" }}</span>
+                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{  task.assigned_officers_count|add:"-2"  }}</span>
                 {% endif %}
               </div>
               <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
@@ -210,7 +210,7 @@
                 <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
                   style="background:var(--pink-50);border-radius:6px">
                   <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
-                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
+                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{  officer.get_full_name|default:officer.username  }}</span>
                 </li>
                 {% endfor %}
               </ul>
@@ -236,7 +236,7 @@
               <div class="progress-custom" style="width:70px;height:6px">
                 <div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div>
               </div>
-              <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
+              <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{  task.progress  }}%</small>
             </div>
           </td>
         </tr>
@@ -252,6 +252,35 @@
       </tbody>
     </table>
   </div>
+  {% if active_page_obj.has_other_pages %}
+  <div class="d-flex justify-content-center align-items-center py-3 px-4 border-top">
+    <nav aria-label="Active tasks pagination">
+      <ul class="pagination pagination-sm mb-0">
+        {% if active_page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link"
+            href="?{% for key, value in request.GET.items %}{% if key != 'active_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}active_page={{ active_page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        {% for num in active_page_obj.paginator.page_range %}
+        {% if active_page_obj.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > active_page_obj.number|add:"-3" and num < active_page_obj.number|add:"3" %} <li class="page-item">
+          <a class="page-link"
+            href="?{% for key, value in request.GET.items %}{% if key != 'active_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}active_page={{ num }}">{{  num  }}</a>
+          </li>
+          {% endif %}
+          {% endfor %}
+          {% if active_page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?{% for key, value in request.GET.items %}{% if key != 'active_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}active_page={{ active_page_obj.next_page_number }}">Next</a>
+          </li>
+          {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
 </div>
 
 <!-- Completed Tasks Table -->
@@ -292,7 +321,7 @@
       <tbody>
         {% for task in completed_tasks %}
         <tr>
-          <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span></td>
+          <td><span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{  task.task_number  }}</span></td>
           <td
             style="font-weight:700;font-size:13.5px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--slate-800)"
             title="{{ task.title }}">{{ task.title }}</td>
@@ -312,7 +341,7 @@
                 {% endfor %}
                 {% if task.assigned_officers_count > 2 %}
                 <span class="badge bg-secondary text-white"
-                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{ task.assigned_officers_count|add:"-2" }}</span>
+                  style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">+{{  task.assigned_officers_count|add:"-2"  }}</span>
                 {% endif %}
               </div>
               <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
@@ -323,7 +352,7 @@
                 <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
                   style="background:var(--pink-50);border-radius:6px">
                   <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
-                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
+                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{  officer.get_full_name|default:officer.username  }}</span>
                 </li>
                 {% endfor %}
               </ul>
@@ -356,6 +385,36 @@
       </tbody>
     </table>
   </div>
+  {% if completed_page_obj.has_other_pages %}
+  <div class="d-flex justify-content-center align-items-center py-3 px-4 border-top">
+    <nav aria-label="Completed tasks pagination">
+      <ul class="pagination pagination-sm mb-0">
+        {% if completed_page_obj.has_previous %}
+        <li class="page-item">
+          <a class="page-link"
+            href="?{% for key, value in request.GET.items %}{% if key != 'completed_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}completed_page={{ completed_page_obj.previous_page_number }}">Previous</a>
+        </li>
+        {% endif %}
+        {% for num in completed_page_obj.paginator.page_range %}
+        {% if completed_page_obj.number == num %}
+        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+        {% elif num > completed_page_obj.number|add:"-3" and num < completed_page_obj.number|add:"3" %} <li
+          class="page-item">
+          <a class="page-link"
+            href="?{% for key, value in request.GET.items %}{% if key != 'completed_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}completed_page={{ num }}">{{  num  }}</a>
+          </li>
+          {% endif %}
+          {% endfor %}
+          {% if completed_page_obj.has_next %}
+          <li class="page-item">
+            <a class="page-link"
+              href="?{% for key, value in request.GET.items %}{% if key != 'completed_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}completed_page={{ completed_page_obj.next_page_number }}">Next</a>
+          </li>
+          {% endif %}
+      </ul>
+    </nav>
+  </div>
+  {% endif %}
 </div>
 {% endblock %}
 
@@ -366,6 +425,6 @@
     url.searchParams.set('scope', scopeVal);
     window.location.href = url.toString();
   };
-  if (window.lucide) lucide.createIcons();
+  if (window..createIcons();
 </script>
 {% endblock %}

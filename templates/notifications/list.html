@@ -3,87 +3,99 @@
 
 {% block extra_css %}
 <style>
-.notif-item-container {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--glass-border, rgba(255,255,255,0.08));
-  border-radius: 14px;
-  transition: all 0.2s ease;
-  margin-bottom: 6px;
-}
-.notif-item-container:last-child {
-  border-bottom: none;
-  margin-bottom: 0;
-}
-.notif-item-container:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-.notif-item-container.unread {
-  background: rgba(255, 79, 163, 0.06);
-}
-.notif-checkbox-box {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.notif-checkbox-box input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-.notif-icon-box {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 18px;
-}
-.notif-main-content {
-  flex-grow: 1;
-  min-width: 0;
-}
-.notif-title-row {
-  font-weight: 700;
-  font-size: 14.5px;
-  margin-bottom: 3px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.notif-body-text {
-  font-size: 13px;
-  color: var(--slate-400, #94a3b8);
-  margin-bottom: 4px;
-  line-height: 1.4;
-  word-break: break-word;
-}
-.notif-side-meta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  justify-content: center;
-  gap: 6px;
-  flex-shrink: 0;
-  margin-left: 12px;
-}
-.notif-time-stamp {
-  font-size: 12px;
-  color: var(--slate-400, #94a3b8);
-  white-space: nowrap;
-  font-weight: 500;
-}
-.notif-action-links {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
+  .notif-item-container {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+    border-radius: 14px;
+    transition: all 0.2s ease;
+    margin-bottom: 6px;
+  }
+
+  .notif-item-container:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+  }
+
+  .notif-item-container:hover {
+    background: rgba(255, 255, 255, 0.04);
+  }
+
+  .notif-item-container.unread {
+    background: rgba(255, 79, 163, 0.06);
+  }
+
+  .notif-checkbox-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .notif-checkbox-box input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+  }
+
+  .notif-icon-box {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-size: 18px;
+  }
+
+  .notif-main-content {
+    flex-grow: 1;
+    min-width: 0;
+  }
+
+  .notif-title-row {
+    font-weight: 700;
+    font-size: 14.5px;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .notif-body-text {
+    font-size: 13px;
+    color: var(--slate-400, #94a3b8);
+    margin-bottom: 4px;
+    line-height: 1.4;
+    word-break: break-word;
+  }
+
+  .notif-side-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  .notif-time-stamp {
+    font-size: 12px;
+    color: var(--slate-400, #94a3b8);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .notif-action-links {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
 </style>
 {% endblock %}
 
@@ -92,10 +104,11 @@
   <div>
     <h5 class="mb-1 fw-bold" style="color:var(--primary)">Notifications</h5>
     <p class="text-muted mb-0" style="font-size:13px">
-      {% if unread_count > 0 %}{{ unread_count }} unread notification{{ unread_count|pluralize }}{% else %}All notifications are up to date{% endif %}
+      {% if unread_count > 0 %}{{ unread_count }} unread notification{{ unread_count|pluralize }}{% else %}All
+      notifications are up to date{% endif %}
     </p>
   </div>
-  
+
   <div class="d-flex align-items-center gap-2 flex-wrap">
     {% if unread_count > 0 %}
     <form method="post" action="{% url 'notifications:mark_all_read' %}" class="d-inline">
@@ -110,8 +123,11 @@
     <button type="button" class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled style="border-radius:8px">
       <i class="bi bi-trash me-1"></i>Delete Selected (<span id="selectedCount">0</span>)
     </button>
-    
-    <form method="post" action="{% url 'notifications:bulk_delete' %}" class="d-inline" data-confirm="Are you sure you want to permanently delete ALL your notifications from the database?" data-confirm-title="Clear All Notifications" data-confirm-btn="Delete All" data-confirm-class="btn-danger" data-confirm-icon="bi-trash-fill">
+
+    <form method="post" action="{% url 'notifications:bulk_delete' %}" class="d-inline"
+      data-confirm="Are you sure you want to permanently delete ALL your notifications from the database?"
+      data-confirm-title="Clear All Notifications" data-confirm-btn="Delete All" data-confirm-class="btn-danger"
+      data-confirm-icon="bi-trash-fill">
       {% csrf_token %}
       <input type="hidden" name="action_type" value="all">
       <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius:8px">
@@ -128,11 +144,13 @@
     <form method="post" action="{% url 'notifications:bulk_delete' %}" id="bulkDeleteForm">
       {% csrf_token %}
       <input type="hidden" name="action_type" value="selected">
-      
+
       <div class="d-flex align-items-center pb-3 mb-3 border-bottom px-2">
         <div class="d-flex align-items-center gap-2">
-          <input class="form-check-input" type="checkbox" id="selectAllCheckbox" style="width:18px;height:18px;cursor:pointer">
-          <label class="form-check-label fw-bold text-muted mb-0" for="selectAllCheckbox" style="font-size:13px;cursor:pointer">
+          <input class="form-check-input" type="checkbox" id="selectAllCheckbox"
+            style="width:18px;height:18px;cursor:pointer">
+          <label class="form-check-label fw-bold text-muted mb-0" for="selectAllCheckbox"
+            style="font-size:13px;cursor:pointer">
             Select All
           </label>
         </div>
@@ -144,7 +162,7 @@
         <div class="notif-checkbox-box">
           <input class="form-check-input notif-checkbox" type="checkbox" name="notification_ids" value="{{ notif.pk }}">
         </div>
-        
+
         <!-- 2. Notification Type Icon -->
         <div class="notif-icon-box bg-{{ notif.color }}-subtle">
           <i class="bi {{ notif.icon }} text-{{ notif.color }}"></i>
@@ -160,7 +178,8 @@
           </div>
           <div class="notif-body-text">{{ notif.message }}</div>
           {% if notif.related_task %}
-          <a href="{% url 'tasks:detail' notif.related_task.pk %}" style="font-size:12px;color:var(--accent);text-decoration:none" class="fw-semibold">
+          <a href="{% url 'tasks:detail' notif.related_task.pk %}"
+            style="font-size:12px;color:var(--accent);text-decoration:none" class="fw-semibold">
             <i class="bi bi-link-45deg"></i> View Task: {{ notif.related_task.task_number }}
           </a>
           {% endif %}
@@ -171,11 +190,13 @@
           <span class="notif-time-stamp">{{ notif.created_at|date:"M d, H:i" }}</span>
           <div class="notif-action-links">
             {% if not notif.is_read %}
-            <button type="submit" form="markReadForm{{ notif.pk }}" class="btn btn-link p-0 text-decoration-none" style="font-size:11.5px;color:var(--accent)">
+            <button type="submit" form="markReadForm{{ notif.pk }}" class="btn btn-link p-0 text-decoration-none"
+              style="font-size:11.5px;color:var(--accent)">
               Mark read
             </button>
             {% endif %}
-            <button type="submit" form="deleteForm{{ notif.pk }}" class="btn btn-link text-danger p-0 border-0" title="Delete notification" style="font-size:13px">
+            <button type="submit" form="deleteForm{{ notif.pk }}" class="btn btn-link text-danger p-0 border-0"
+              title="Delete notification" style="font-size:13px">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -186,10 +207,14 @@
 
     <!-- Auxiliary forms for individual actions -->
     {% for notif in notifications %}
-      {% if not notif.is_read %}
-      <form id="markReadForm{{ notif.pk }}" method="post" action="{% url 'notifications:mark_read' notif.pk %}" style="display:none">{% csrf_token %}</form>
-      {% endif %}
-      <form id="deleteForm{{ notif.pk }}" method="post" action="{% url 'notifications:delete' notif.pk %}" style="display:none" data-confirm="Are you sure you want to delete this notification permanently?" data-confirm-title="Delete Notification" data-confirm-btn="Delete" data-confirm-class="btn-danger" data-confirm-icon="bi-trash-fill">{% csrf_token %}</form>
+    {% if not notif.is_read %}
+    <form id="markReadForm{{ notif.pk }}" method="post" action="{% url 'notifications:mark_read' notif.pk %}"
+      style="display:none">{% csrf_token %}</form>
+    {% endif %}
+    <form id="deleteForm{{ notif.pk }}" method="post" action="{% url 'notifications:delete' notif.pk %}"
+      style="display:none" data-confirm="Are you sure you want to delete this notification permanently?"
+      data-confirm-title="Delete Notification" data-confirm-btn="Delete" data-confirm-class="btn-danger"
+      data-confirm-icon="bi-trash-fill">{% csrf_token %}</form>
     {% endfor %}
 
     {% else %}
@@ -203,9 +228,11 @@
     <div class="d-flex justify-content-center mt-3">
       <nav>
         <ul class="pagination pagination-sm mb-0">
-          {% if page_obj.has_previous %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">‹</a></li>{% endif %}
+          {% if page_obj.has_previous %}<li class="page-item"><a class="page-link"
+              href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">‹</a></li>{% endif %}
           <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
-          {% if page_obj.has_next %}<li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">›</a></li>{% endif %}
+          {% if page_obj.has_next %}<li class="page-item"><a class="page-link"
+              href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">›</a></li>{% endif %}
         </ul>
       </nav>
     </div>
@@ -214,54 +241,54 @@
 </div>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  const selectAll = document.getElementById('selectAllCheckbox');
-  const checkboxes = document.querySelectorAll('.notif-checkbox');
-  const deleteBtn = document.getElementById('deleteSelectedBtn');
-  const selectedCountEl = document.getElementById('selectedCount');
-  const bulkForm = document.getElementById('bulkDeleteForm');
+  document.addEventListener('DOMContentLoaded', function () {
+    const selectAll = document.getElementById('selectAllCheckbox');
+    const checkboxes = document.querySelectorAll('.notif-checkbox');
+    const deleteBtn = document.getElementById('deleteSelectedBtn');
+    const selectedCountEl = document.getElementById('selectedCount');
+    const bulkForm = document.getElementById('bulkDeleteForm');
 
-  function updateDeleteBtn() {
-    const checkedCount = document.querySelectorAll('.notif-checkbox:checked').length;
-    if (selectedCountEl) selectedCountEl.textContent = checkedCount;
-    if (deleteBtn) deleteBtn.disabled = (checkedCount === 0);
-    if (selectAll) selectAll.checked = (checkboxes.length > 0 && checkedCount === checkboxes.length);
-  }
-
-  if (selectAll) {
-    selectAll.addEventListener('change', function() {
-      checkboxes.forEach(cb => cb.checked = selectAll.checked);
-      updateDeleteBtn();
-    });
-  }
-
-  checkboxes.forEach(cb => {
-    cb.addEventListener('change', updateDeleteBtn);
-  });
-
-  if (deleteBtn && bulkForm) {
-    deleteBtn.addEventListener('click', function() {
+    function updateDeleteBtn() {
       const checkedCount = document.querySelectorAll('.notif-checkbox:checked').length;
-      if (checkedCount > 0) {
-        if (typeof window.showConfirmModal === 'function') {
-          window.showConfirmModal({
-            title: 'Delete Selected Notifications',
-            message: `Are you sure you want to permanently delete ${checkedCount} selected notification(s) from the database?`,
-            btnText: 'Delete Selected',
-            btnClass: 'btn-danger',
-            icon: 'bi-trash-fill',
-            iconBg: '#fee2e2',
-            iconColor: '#dc2626',
-            onConfirm: function() {
-              bulkForm.submit();
-            }
-          });
-        } else {
-          bulkForm.submit();
-        }
-      }
+      if (selectedCountEl) selectedCountEl.textContent = checkedCount;
+      if (deleteBtn) deleteBtn.disabled = (checkedCount === 0);
+      if (selectAll) selectAll.checked = (checkboxes.length > 0 && checkedCount === checkboxes.length);
+    }
+
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        checkboxes.forEach(cb => cb.checked = selectAll.checked);
+        updateDeleteBtn();
+      });
+    }
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', updateDeleteBtn);
     });
-  }
-});
+
+    if (deleteBtn && bulkForm) {
+      deleteBtn.addEventListener('click', function () {
+        const checkedCount = document.querySelectorAll('.notif-checkbox:checked').length;
+        if (checkedCount > 0) {
+          if (typeof window.showConfirmModal === 'function') {
+            window.showConfirmModal({
+              title: 'Delete Selected Notifications',
+              message: `Are you sure you want to permanently delete ${checkedCount} selected notification(s) from the database?`,
+              btnText: 'Delete Selected',
+              btnClass: 'btn-danger',
+              icon: 'bi-trash-fill',
+              iconBg: '#fee2e2',
+              iconColor: '#dc2626',
+              onConfirm: function () {
+                bulkForm.submit();
+              }
+            });
+          } else {
+            bulkForm.submit();
+          }
+        }
+      });
+    }
+  });
 </script>
 {% endblock %}

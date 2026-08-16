@@ -96,9 +96,13 @@ class Task(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [
+            # Covers: TaskListView, TaskBoardView filtered by org + status + archived flag
             models.Index(fields=['organization', 'status', 'is_archived']),
+            # Covers: Calendar view and overdue/upcoming queries filtered by org + due_date
             models.Index(fields=['organization', 'due_date']),
+            # Covers: Dashboard stats aggregate filtering by status + due_date (overdue/upcoming)
             models.Index(fields=['status', 'due_date']),
+            # Covers: Default ordering by newest-first across all task list views
             models.Index(fields=['-created_at']),
         ]
 
@@ -201,7 +205,9 @@ class TaskAssignment(models.Model):
     class Meta:
         unique_together = ('task', 'officer')
         indexes = [
+            # Covers: Officer-scoped task lookups (e.g. "tasks assigned to this officer")
             models.Index(fields=['officer', 'task']),
+            # Covers: Task-scoped assignment lookups (e.g. "all officers on this task")
             models.Index(fields=['task']),
         ]
 

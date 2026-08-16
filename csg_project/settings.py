@@ -81,11 +81,16 @@ if NEON_DB_URL:
     DATABASES = {
         'default': dj_database_url.parse(
             NEON_DB_URL,
-            ssl_require=False if ('localhost' in NEON_DB_URL or '127.0.0.1' in NEON_DB_URL) else True,
+            ssl_require=not ('localhost' in NEON_DB_URL or '127.0.0.1' in NEON_DB_URL),
             conn_max_age=600,
-            conn_health_checks=True
+            conn_health_checks=True,
         )
     }
+    DATABASES['default'].setdefault('OPTIONS', {})
+    DATABASES['default']['OPTIONS'].update({
+        'connect_timeout': 10,
+        'keepalives_idle': 30,
+    })
 else:
     DATABASES = {
         'default': {
@@ -155,14 +160,28 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
 
         RAW_MEDIA_ASSETS_STORAGE = 'core.storage.SmartRawMediaCloudinaryStorage'
 
-        STORAGES = {
-            "default": {
-                "BACKEND": "core.storage.SmartMediaCloudinaryStorage",
-            },
-            "staticfiles": {
-                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
-            },
-        }
+        if not DEBUG:
+            STORAGES = {
+                "default": {
+                    "BACKEND": "core.storage.SmartMediaCloudinaryStorage",
+                },
+                "staticfiles": {
+                    "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+                },
+            }
+        else:
+            STORAGES = {
+                "default": {
+                    "BACKEND": "core.storage.SmartMediaCloudinaryStorage",
+                },
+                "staticfiles": {
+                    "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                },
+            }
+
+# WhiteNoise configuration
+WHITENOISE_MAX_AGE = 31536000  # 365 days for hashed files
+WHITENOISE_ALLOW_ALL_ORIGINS = True  # CORS for static assets
 
 # Cache configuration for performance (file-based survives process restarts)
 CACHES = {
@@ -263,5 +282,27 @@ LOGGING = {
             'level': 'INFO',
             'propagate': False,
         },
+        'csg.performance': {
+            'handlers': ['console'],
+            'level': 'WARNING',
+            'propagate': False,
+        },
     },
 }
+
+# Performance monitoring thresholds
+PERF_QUERY_COUNT_THRESHOLD = 15
+PERF_REQUEST_DURATION_THRESHOLD_MS = 2000
+
+# Django Debug Toolbar and performance logging (DEBUG only)
+if DEBUG:
+    INSTALLED_APPS += ['debug_toolbar']
+    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
+    INTERNAL_IPS = ['127.0.0.1']
+
+    # Database query logging for slow queries (>100ms)
+    LOGGING['loggers']['django.db.backends'] = {
+        'handlers': ['console'],
+        'level': 'WARNING',
+        'propagate': False,
+    }

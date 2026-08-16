@@ -5,17 +5,19 @@ from django.shortcuts import get_object_or_404, redirect
 from django.http import HttpResponse, JsonResponse, FileResponse
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Q, Case, When, Value, IntegerField
-from django.core.paginator import Paginator
+from django.db.models import Q, Case, When, Value, IntegerField, Prefetch
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.core.cache import cache
 from django.core.mail import send_mail
 from django.conf import settings as django_settings
 from decouple import config
 from .models import Task, TaskComment, TaskAttachment, TaskHistory, TaskAssignment
 from .forms import TaskForm, TaskProgressForm, CommentForm, AttachmentForm
+from .services import bulk_complete_tasks, bulk_reassign_officers
 from notifications.models import Notification
 from accounts.models import User
 from core.mixins import FragmentResponseMixin
+from core.cache_utils import invalidate_task_caches
 import io
 
 
@@ -41,6 +43,24 @@ class TaskListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
     template_name = 'tasks/list.html'
     context_object_name = 'tasks'
     paginate_by = 10
+
+    def paginate_queryset(self, queryset, page_size):
+        """Override to return last available page if requested page exceeds total."""
+        paginator = self.get_paginator(
+            queryset, page_size, orphans=self.get_paginate_orphans(),
+            allow_empty_first_page=self.get_allow_empty()
+        )
+        page_kwarg = self.page_kwarg
+        page = self.kwargs.get(page_kwarg) or self.request.GET.get(page_kwarg) or 1
+        try:
+            page_number = paginator.validate_number(page)
+        except PageNotAnInteger:
+            page_number = 1
+        except EmptyPage:
+            # Return last available page if requested page exceeds total
+            page_number = paginator.num_pages
+        page = paginator.page(page_number)
+        return (paginator, page, page.object_list, page.has_other_pages())
 
     def get_queryset(self):
         org = self.request.user.get_organization(self.request)
@@ -153,7 +173,12 @@ class TaskListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
         else:
             qs = qs.order_by('-created_at')
 
-        return qs.select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')
+        return qs.select_related('created_by', 'organization').prefetch_related(
+            Prefetch(
+                'assigned_officers',
+                queryset=User.objects.select_related('officer_profile', 'officer_profile__position')
+            )
+        )
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
@@ -201,6 +226,25 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
     template_name = 'tasks/detail.html'
     context_object_name = 'task'
 
+    def get_queryset(self):
+        return Task.objects.select_related(
+            'organization', 'created_by'
+        ).prefetch_related(
+            Prefetch(
+                'comments',
+                queryset=TaskComment.objects.select_related('author').order_by('created_at')
+            ),
+            'attachments',
+            Prefetch(
+                'history',
+                queryset=TaskHistory.objects.select_related('changed_by').order_by('-timestamp')
+            ),
+            Prefetch(
+                'assigned_officers',
+                queryset=User.objects.select_related('officer_profile', 'officer_profile__position')
+            ),
+        )
+
     def dispatch(self, request, *args, **kwargs):
         try:
             self.object = self.get_object()
@@ -215,7 +259,8 @@ class TaskDetailView(LoginRequiredMixin, DetailView):
         ctx['comment_form'] = CommentForm()
         ctx['attachment_form'] = AttachmentForm()
         ctx['progress_form'] = TaskProgressForm(instance=self.object)
-        ctx['history'] = self.object.history.select_related('changed_by')[:20]
+        # Use prefetched history, limited to 20 entries (already ordered by -timestamp via model Meta)
+        ctx['history'] = list(self.object.history.all())[:20]
         ctx['can_edit_task'] = self.request.user.can_edit_task(self.object)
         ctx['can_update_progress'] = self.request.user.can_update_task_progress(self.object)
         return ctx
@@ -264,6 +309,9 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
             task=task, changed_by=self.request.user,
             field_changed='Created', old_value='', new_value='Task created'
         )
+        # Invalidate task-related caches for this organization
+        if task.organization_id:
+            invalidate_task_caches(task.organization_id)
         from core.services.audit import log_activity
         log_activity(self.request, 'TASK_CREATE', f"Created task {task.task_number}: '{task.title}'", resource_type='Task', resource_id=task.pk)
         messages.success(self.request, f'Task {task.task_number} created successfully.')
@@ -322,10 +370,15 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
                     task=task, changed_by=self.request.user,
                     field_changed=field.title(), old_value=old_val, new_value=new_val
                 )
-        # Re-assign officers
-        TaskAssignment.objects.filter(task=task).delete()
-        for officer in form.cleaned_data.get('assigned_officers', []):
-            TaskAssignment.objects.create(task=task, officer=officer, assigned_by=self.request.user)
+        # Re-assign officers using bulk operation
+        new_officers = form.cleaned_data.get('assigned_officers', [])
+        _, reassign_error = bulk_reassign_officers(task, new_officers, self.request.user)
+        if reassign_error:
+            messages.error(self.request, reassign_error)
+            return response
+        # Invalidate task-related caches for this organization
+        if task.organization_id:
+            invalidate_task_caches(task.organization_id)
         messages.success(self.request, f'Task {task.task_number} updated successfully.')
         return response
 
@@ -388,10 +441,15 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
             return redirect(self._get_next_url(request))
         task_num = task.task_number
         task_pk = task.pk
+        task_org_id = task.organization_id
         from core.services.audit import log_activity
         log_activity(request, 'TASK_DELETE', f"Deleted task {task_num}", resource_type='Task', resource_id=task_pk)
         messages.success(request, f'Task {task_num} deleted.')
-        return super().delete(request, *args, **kwargs)
+        response = super().delete(request, *args, **kwargs)
+        # Invalidate task-related caches for this organization
+        if task_org_id:
+            invalidate_task_caches(task_org_id)
+        return response
 
 
 class TaskBulkDeleteView(LoginRequiredMixin, View):
@@ -408,7 +466,12 @@ class TaskBulkDeleteView(LoginRequiredMixin, View):
         task_ids = request.POST.getlist('task_ids')
         if task_ids:
             from tasks.services import TaskService
+            # Get org_id before deletion for cache invalidation
+            org = request.user.get_organization(request)
             deleted_count = TaskService.bulk_delete_tasks(task_ids, request.user, request)
+            # Invalidate task-related caches for this organization
+            if org:
+                invalidate_task_caches(org.pk)
             messages.success(request, f'Successfully deleted {deleted_count} task(s).')
         else:
             messages.warning(request, 'No tasks selected for deletion.')
@@ -434,39 +497,14 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
         else:
             qs = Task.objects.filter(pk__in=task_ids, is_archived=False)
 
-        # Prefetch assignments to avoid N+1 when creating notifications
-        qs = qs.prefetch_related('assignments__officer')
+        updated_count, error = bulk_complete_tasks(qs, request.user)
 
-        updated_count = 0
-        now_date = timezone.now().date()
-        status_dict = dict(Task.STATUS_CHOICES)
-
-        for task in qs:
-            old_status = task.status
-            if old_status != 'completed':
-                task.status = 'completed'
-                task.completion_date = now_date
-                task.progress = 100
-                task.save()
-                updated_count += 1
-
-                TaskHistory.objects.create(
-                    task=task,
-                    changed_by=request.user,
-                    field_changed='Status',
-                    old_value=status_dict.get(old_status, old_status),
-                    new_value='Completed'
-                )
-                for assignment in task.assignments.all():
-                    Notification.objects.create(
-                        recipient=assignment.officer,
-                        title='Task Completed',
-                        message=f'Task "{task.title}" has been marked as completed.',
-                        notification_type='task_completed',
-                        related_task=task
-                    )
-
-        if updated_count > 0:
+        if error:
+            messages.error(request, error)
+        elif updated_count > 0:
+            # Invalidate task-related caches for this organization
+            if org:
+                invalidate_task_caches(org.pk)
             messages.success(request, f'Successfully marked {updated_count} task(s) as completed.')
         else:
             messages.info(request, 'No tasks were updated (either already completed or permission denied).')
@@ -481,6 +519,8 @@ class TaskBoardView(FragmentResponseMixin, LoginRequiredMixin, ListView):
     context_object_name = 'tasks'
 
     def get_context_data(self, **kwargs):
+        from core.query_utils import group_tasks_by_status
+
         ctx = super().get_context_data(**kwargs)
         org = self.request.user.get_organization(self.request)
         if org:
@@ -508,16 +548,33 @@ class TaskBoardView(FragmentResponseMixin, LoginRequiredMixin, ListView):
         if officers:
             base_qs = base_qs.filter(assigned_officers__id__in=officers).distinct()
 
+        # Exclude completed tasks from board, apply select_related/prefetch_related once
+        board_qs = base_qs.exclude(status='completed').select_related(
+            'created_by', 'organization'
+        ).prefetch_related(
+            Prefetch(
+                'assigned_officers',
+                queryset=User.objects.select_related('officer_profile', 'officer_profile__position')
+            )
+        )
+
+        # Single base queryset grouped in Python + single aggregate count query
+        board_statuses = [
+            (code, label) for code, label in Task.STATUS_CHOICES
+            if code not in ['overdue', 'completed']
+        ]
+        grouped, counts = group_tasks_by_status(board_qs, board_statuses, limit_per_group=50)
+
         columns = []
-        for status_code, status_label in Task.STATUS_CHOICES:
-            if status_code in ['overdue', 'completed']:
-                continue
-            col_tasks = base_qs.filter(status=status_code).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:50]
+        for status_code, status_label in board_statuses:
+            total_count = counts.get(status_code, 0)
+            col_tasks = grouped.get(status_code, [])
             columns.append({
                 'code': status_code,
                 'label': status_label,
                 'tasks': col_tasks,
-                'count': base_qs.filter(status=status_code).count(),
+                'count': total_count,
+                'has_overflow': total_count > 50,
             })
 
         ctx['page_title'] = 'Task Kanban Board'
@@ -597,8 +654,10 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
             qs = qs.filter(priority=priority)
 
         qs = qs.select_related('organization', 'created_by').prefetch_related(
-            'assigned_officers', 'assigned_officers__officer_profile',
-            'assigned_officers__officer_profile__position'
+            Prefetch(
+                'assigned_officers',
+                queryset=User.objects.select_related('officer_profile__position')
+            )
         )
 
         events = []

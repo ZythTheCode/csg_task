@@ -17,8 +17,11 @@ class ActivityLog(models.Model):
     class Meta:
         ordering = ['-timestamp']
         indexes = [
+            # Covers: Global activity log display ordered by most recent
             models.Index(fields=['-timestamp']),
+            # Covers: Org-scoped audit log — filtered by organization, ordered by timestamp desc
             models.Index(fields=['organization', '-timestamp']),
+            # Covers: Action-type filtering in audit log (e.g. "all login events")
             models.Index(fields=['action', '-timestamp']),
         ]
 

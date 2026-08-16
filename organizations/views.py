@@ -6,6 +6,7 @@ from datetime import timedelta
 from .models import Organization
 from .forms import OrganizationRegistrationForm
 from accounts.models import User
+from core.cache_utils import invalidate_org_cache
 
 def register_organization(request):
     if request.method == 'POST':
@@ -55,6 +56,8 @@ def delete_organization(request, org_id):
         org.status = 'marked_for_deletion'
         org.marked_for_deletion_at = timezone.now()
         org.save()
+        # Invalidate approved organizations cache
+        invalidate_org_cache()
         messages.warning(request, f'Organization "{org_name}" marked for deletion. It will be permanently removed in 24 hours.')
     return redirect('pending_organizations')
 
@@ -69,6 +72,8 @@ def restore_organization(request, org_id):
         org.status = 'approved'
         org.marked_for_deletion_at = None
         org.save()
+        # Invalidate approved organizations cache
+        invalidate_org_cache()
         messages.success(request, f'Organization "{org.name}" has been restored.')
     return redirect('pending_organizations')
 
@@ -88,6 +93,8 @@ def force_delete_organization(request, org_id):
 
         org_name = org.name
         org.delete()
+        # Invalidate approved organizations cache
+        invalidate_org_cache()
         messages.success(request, f'Organization "{org_name}" has been permanently force deleted.')
     return redirect('pending_organizations')
 
@@ -100,6 +107,9 @@ def approve_organization(request, org_id):
         return redirect('pending_organizations')
     org.status = 'approved'
     org.save()
+    
+    # Invalidate approved organizations cache
+    invalidate_org_cache()
     
     # Activate the admin user
     admin_user = org.users.filter(role='org_admin').first()
@@ -119,6 +129,8 @@ def reject_organization(request, org_id):
         return redirect('pending_organizations')
     org.status = 'rejected'
     org.save()
+    # Invalidate approved organizations cache
+    invalidate_org_cache()
     messages.info(request, f'Organization {org.name} has been rejected.')
     return redirect('pending_organizations')
 
