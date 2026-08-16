@@ -117,18 +117,22 @@ class User(AbstractUser):
             return True
         if task.created_by_id == self.id:
             return True
-        if task.assigned_officers.filter(id=self.id).exists():
-            return True
-        return False
+        # Use prefetch cache if available (avoids DB query)
+        if hasattr(task, '_prefetched_objects_cache') and 'assigned_officers' in task._prefetched_objects_cache:
+            return any(u.id == self.id for u in task.assigned_officers.all())
+        # Fallback to efficient exists() query
+        return task.assigned_officers.filter(id=self.id).exists()
 
     def can_update_task_progress(self, task):
         if self.has_task_override:
             return True
         if task.created_by_id == self.id:
             return True
-        if task.assigned_officers.filter(id=self.id).exists():
-            return True
-        return False
+        # Use prefetch cache if available (avoids DB query)
+        if hasattr(task, '_prefetched_objects_cache') and 'assigned_officers' in task._prefetched_objects_cache:
+            return any(u.id == self.id for u in task.assigned_officers.all())
+        # Fallback to efficient exists() query
+        return task.assigned_officers.filter(id=self.id).exists()
 
     def can_nudge_task(self, task):
         if not task or not task.assigned_officers.exists():
@@ -140,6 +144,11 @@ class User(AbstractUser):
         if task.assigned_officers.filter(id=self.id).exists():
             return True
         return False
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['organization', 'is_active', 'role']),
+        ]
 
     @property
     def can_manage_officers(self):

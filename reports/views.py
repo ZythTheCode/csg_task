@@ -2,6 +2,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import TemplateView, View
 from django.http import HttpResponse
 from django.utils import timezone
+from django.core.cache import cache
+from django.db.models import Count, Q
 from core.mixins import FragmentResponseMixin
 from tasks.models import Task
 from officers.models import Officer
@@ -27,30 +29,41 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
         ctx['status_choices'] = Task.STATUS_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         org = self.request.user.get_organization(self.request)
-        officers_qs = Officer.objects.select_related('user').exclude(user__role__in=['super_admin', 'super_super_admin'])
-        if org:
-            officers_qs = officers_qs.filter(user__organization=org)
-        ctx['officers'] = officers_qs.all()
+        
+        # Cache officers list for filter dropdown (TTL 300s)
+        org_id = org.pk if org else 'all'
+        cache_key = f'reports_officers_{org_id}'
+        officers = cache.get(cache_key)
+        if officers is None:
+            officers_qs = Officer.objects.select_related('user').exclude(user__role__in=['super_admin', 'super_super_admin'])
+            if org:
+                officers_qs = officers_qs.filter(user__organization=org)
+            officers = list(officers_qs.all())
+            cache.set(cache_key, officers, 300)
+        ctx['officers'] = officers
 
         # Apply filters
         filters = self._get_filters()
         tasks = self._get_filtered_tasks(filters)
         ctx['tasks'] = tasks
-        ctx['active_tasks'] = tasks.exclude(status='completed')
-        ctx['completed_tasks'] = tasks.filter(status='completed')
+        ctx['active_tasks'] = tasks.exclude(status='completed')[:200]
+        ctx['completed_tasks'] = tasks.filter(status='completed')[:200]
         ctx['filters'] = filters
-        ctx['task_count'] = tasks.count()
-        ctx['active_count'] = ctx['active_tasks'].count()
-        ctx['completed_count'] = ctx['completed_tasks'].count()
         ctx['scope'] = filters['scope']
 
-        # Summary stats
-        ctx['summary'] = {
-            'total': tasks.count(),
-            'completed': ctx['completed_count'],
-            'overdue': tasks.filter(due_date__lt=timezone.now().date()).exclude(status='completed').count(),
-            'in_progress': tasks.exclude(status__in=['not_started', 'completed']).count(),
-        }
+        # Single aggregate query for all counts
+        today = timezone.now().date()
+        summary = tasks.aggregate(
+            total=Count('id'),
+            completed=Count('id', filter=Q(status='completed')),
+            overdue=Count('id', filter=Q(due_date__lt=today) & ~Q(status='completed')),
+            in_progress=Count('id', filter=~Q(status__in=['not_started', 'completed'])),
+            active=Count('id', filter=~Q(status='completed')),
+        )
+        ctx['task_count'] = summary['total']
+        ctx['active_count'] = summary['active']
+        ctx['completed_count'] = summary['completed']
+        ctx['summary'] = summary
         return ctx
 
     def _get_filters(self):
@@ -71,20 +84,17 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
             qs = qs.filter(organization=org)
             
         if filters['scope'] == 'my_tasks':
-            from django.db.models import Q
             qs = qs.filter(Q(assigned_officers=self.request.user) | Q(created_by=self.request.user)).distinct()
 
         if filters['officer']:
             qs = qs.filter(assigned_officers__id=filters['officer'])
         if filters['year']:
-            from django.db.models import Q
             try:
                 y = int(filters['year'])
                 qs = qs.filter(Q(due_date__year=y) | Q(created_at__year=y))
             except ValueError:
                 pass
         if filters['month']:
-            from django.db.models import Q
             try:
                 m = int(filters['month'])
                 qs = qs.filter(Q(due_date__month=m) | Q(created_at__month=m))
@@ -117,7 +127,7 @@ class ExportReportPDFView(LoginRequiredMixin, View):
 
         scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
 
-        qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
+        qs = Task.objects.filter(is_archived=False).select_related('created_by')
         if request.user.organization:
             qs = qs.filter(organization=request.user.organization)
             
@@ -151,12 +161,20 @@ class ExportReportPDFView(LoginRequiredMixin, View):
         title_style = ParagraphStyle('Title', parent=styles['Title'], fontSize=20, spaceAfter=4, textColor=colors.HexColor('#1e3a5f'))
         sub_style = ParagraphStyle('Sub', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor('#666666'))
 
+        task_count = qs.count()
         story.append(Paragraph('CSG Task Management Report', title_style))
-        story.append(Paragraph(f'Generated: {timezone.now().strftime("%B %d, %Y %I:%M %p")}  |  Total Tasks: {qs.count()}', sub_style))
+        story.append(Paragraph(f'Generated: {timezone.now().strftime("%B %d, %Y %I:%M %p")}  |  Total Tasks: {task_count}', sub_style))
         story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#1e3a5f'), spaceAfter=10))
 
         data = [['Task No.', 'Title', 'Status', 'Priority', 'Assigned To', 'Due Date', 'Progress']]
-        for t in qs:
+        # Use iterator with chunked fetching for large querysets to limit peak memory.
+        # For large exports (>500), drop prefetch_related since iterator() ignores it;
+        # the N+1 on assigned_officers is acceptable for batch file exports.
+        if task_count > 500:
+            task_iter = qs.iterator(chunk_size=200)
+        else:
+            task_iter = qs.prefetch_related('assigned_officers')
+        for t in task_iter:
             officers = ', '.join([f"{o.get_full_name() or o.username} ({o.position_initials})" for o in t.sorted_assigned_officers])
             data.append([
                 t.task_number,
@@ -206,7 +224,7 @@ class ExportReportExcelView(LoginRequiredMixin, View):
 
         scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
 
-        qs = Task.objects.filter(is_archived=False).select_related('created_by').prefetch_related('assigned_officers')
+        qs = Task.objects.filter(is_archived=False).select_related('created_by')
         if request.user.organization:
             qs = qs.filter(organization=request.user.organization)
             
@@ -248,7 +266,15 @@ class ExportReportExcelView(LoginRequiredMixin, View):
             cell.fill = header_fill
             cell.alignment = Alignment(horizontal='center', vertical='center')
 
-        for i, t in enumerate(qs, 2):
+        # Use iterator with chunked fetching for large querysets to limit peak memory.
+        # For large exports (>500), drop prefetch_related since iterator() ignores it;
+        # the N+1 on assigned_officers is acceptable for batch file exports.
+        task_count = qs.count()
+        if task_count > 500:
+            task_iter = qs.iterator(chunk_size=200)
+        else:
+            task_iter = qs.prefetch_related('assigned_officers')
+        for i, t in enumerate(task_iter, 2):
             officers = ', '.join([f"{o.get_full_name() or o.username} ({o.position_initials})" for o in t.sorted_assigned_officers])
             ws.append([
                 t.task_number, t.title, t.get_status_display(), t.get_priority_display(),

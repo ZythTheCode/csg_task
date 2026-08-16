@@ -7,6 +7,8 @@ class TenantScopedQuerySetMixin(LoginRequiredMixin):
     """
     QuerySet mixin ensuring queries automatically filter by the user's organization.
     Super Admins can view across all organizations.
+    Uses get_organization(request) to leverage request-level caching and avoid
+    redundant SELECT queries on the user.organization FK.
     """
     def get_queryset(self):
         qs = super().get_queryset()
@@ -15,10 +17,13 @@ class TenantScopedQuerySetMixin(LoginRequiredMixin):
             return qs.none()
         if user.is_super_admin:
             return qs
+        # Use get_organization(request) to leverage request-level caching
+        # This avoids triggering an additional SELECT on user.organization FK
+        org = user.get_organization(self.request)
         if hasattr(qs.model, 'organization'):
-            return qs.filter(organization=user.organization)
+            return qs.filter(organization=org)
         elif hasattr(qs.model, 'user') and hasattr(qs.model.user.field.related_model, 'organization'):
-            return qs.filter(user__organization=user.organization)
+            return qs.filter(user__organization=org)
         return qs
 
 
@@ -26,6 +31,7 @@ class TenantObjectPermissionMixin(TenantScopedQuerySetMixin):
     """
     Object-level mixin preventing Cross-Tenant IDOR access.
     Raises PermissionDenied if the requested object belongs to another tenant.
+    Uses get_organization(request) to leverage request-level caching.
     """
     def get_object(self, queryset=None):
         obj = super().get_object(queryset)
@@ -36,8 +42,10 @@ class TenantObjectPermissionMixin(TenantScopedQuerySetMixin):
         obj_org = getattr(obj, 'organization', None)
         if obj_org is None and hasattr(obj, 'user'):
             obj_org = getattr(obj.user, 'organization', None)
-            
-        if obj_org and user.organization and obj_org != user.organization:
+        
+        # Use get_organization(request) for cached organization lookup
+        user_org = user.get_organization(self.request)
+        if obj_org and user_org and obj_org != user_org:
             raise PermissionDenied("You do not have permission to access resources outside your organization.")
         return obj
 
@@ -64,6 +72,7 @@ class RoleRequiredMixin(LoginRequiredMixin):
 class IsSameOrganizationPermission(permissions.BasePermission):
     """
     DRF Permission class enforcing tenant boundary for API endpoints.
+    Uses get_organization(request) to leverage request-level caching.
     """
     def has_permission(self, request, view):
         return request.user and request.user.is_authenticated
@@ -74,7 +83,9 @@ class IsSameOrganizationPermission(permissions.BasePermission):
         obj_org = getattr(obj, 'organization', None)
         if obj_org is None and hasattr(obj, 'user'):
             obj_org = getattr(obj.user, 'organization', None)
-        return obj_org == request.user.organization
+        # Use get_organization(request) for cached organization lookup
+        user_org = request.user.get_organization(request)
+        return obj_org == user_org
 
 
 class IsOrgAdminPermission(permissions.BasePermission):

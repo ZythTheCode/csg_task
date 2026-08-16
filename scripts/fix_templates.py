@@ -4,13 +4,13 @@ Fix Django template syntax issues that break on Python 3.13 / strict Django temp
 2. == without spaces in {% if %} tags
 3. >= without spaces in {% if %} tags
 
-Run: python fix_templates.py
+Run: python scripts/fix_templates.py
 """
 import re
 import sys
 import os
 
-TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+TEMPLATE_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'templates')
 
 def fix_template(filepath):
     content = open(filepath, encoding='utf-8').read()

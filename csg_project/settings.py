@@ -44,6 +44,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'django.middleware.gzip.GZipMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -77,6 +78,13 @@ WSGI_APPLICATION = 'csg_project.wsgi.application'
 
 NEON_DB_URL = config('DATABASE_URL', default='')
 
+# Database connection persistence strategy:
+# - conn_max_age=600: Keep connections alive for 10 minutes to avoid TCP/SSL
+#   handshake overhead on every request to Neon PostgreSQL.
+# - conn_health_checks=True: Verify connection is usable before executing a query
+#   on a reused connection (Django 4.1+). Stale connections are transparently replaced.
+# - Connection limit: 1 persistent connection per gunicorn worker. Render free tier
+#   runs 1-2 workers, so total connections = 1-2, well within Neon free-tier limit of 5.
 if NEON_DB_URL:
     DATABASES = {
         'default': dj_database_url.parse(
@@ -160,9 +168,12 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
                 "BACKEND": "core.storage.SmartMediaCloudinaryStorage",
             },
             "staticfiles": {
-                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
             },
         }
+
+# WhiteNoise: 1-year immutable caching headers for hashed static filenames
+WHITENOISE_MAX_AGE = 31536000
 
 # Cache configuration for performance (file-based survives process restarts)
 CACHES = {

@@ -1,16 +1,26 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from django.core.cache import cache
 from django.utils import timezone
-from django.db.models import Count, Q
+from django.db.models import Count, Q, DateField
+from django.db.models.functions import TruncMonth, Coalesce, Cast
 from tasks.models import Task, TaskAssignment
 from notifications.models import Notification
 from accounts.models import User
 import datetime
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class DashboardStatsAPIView(APIView):
     permission_classes = [IsAuthenticated]
+
+    ACTIVE_STATUSES = [
+        'not_started', 'processing', 'to_advisers', 'accounting',
+        'oca', 'osas', 'ppss', 'supply',
+    ]
 
     def get(self, request):
         user = request.user
@@ -23,15 +33,23 @@ class DashboardStatsAPIView(APIView):
         if user.organization:
             base_qs = base_qs.filter(organization=user.organization)
 
-        return Response({
-            'active': base_qs.exclude(status='completed').count(),
-            'completed': base_qs.filter(status='completed').count(),
-            'overdue': base_qs.filter(due_date__lt=today).exclude(status='completed').count(),
-            'upcoming': base_qs.filter(
+        counts = base_qs.aggregate(
+            active=Count('id', filter=Q(status__in=self.ACTIVE_STATUSES)),
+            completed=Count('id', filter=Q(status='completed')),
+            overdue=Count('id', filter=Q(
+                due_date__lt=today,
+                status__in=self.ACTIVE_STATUSES,
+            )),
+            upcoming=Count('id', filter=Q(
                 due_date__gte=today,
-                due_date__lte=today + datetime.timedelta(days=7)
-            ).exclude(status='completed').count(),
-        })
+                due_date__lte=today + datetime.timedelta(days=7),
+                status__in=self.ACTIVE_STATUSES,
+            )),
+        )
+
+        response = Response(counts)
+        response['Cache-Control'] = 'private, max-age=30'
+        return response
 
 
 class DashboardChartsAPIView(APIView):
@@ -40,63 +58,79 @@ class DashboardChartsAPIView(APIView):
     def get(self, request):
         user = request.user
         org = user.get_organization(request)
+        org_id = org.id if org else 'none'
+        scope = request.GET.get('scope', 'all' if user.has_task_override else 'my_tasks')
+
+        # Check cache first
+        cache_key = f'dashboard_charts_{user.id}_{org_id}_{scope}'
+        cached_data = cache.get(cache_key)
+        if cached_data is not None:
+            response = Response(cached_data)
+            response['Cache-Control'] = 'private, max-age=30'
+            return response
+        else:
+            logger.debug("Cache miss for key: %s", cache_key)
 
         if org:
             base_qs = Task.objects.filter(organization=org, is_archived=False)
         else:
             base_qs = Task.objects.filter(is_archived=False)
 
-        scope = request.GET.get('scope', 'all' if user.has_task_override else 'my_tasks')
         if scope == 'my_tasks':
-            from django.db.models import Q
             base_qs = base_qs.filter(Q(assigned_officers=user) | Q(created_by=user)).distinct()
 
         today = timezone.now().date()
 
-        # Status distribution
-        status_data = {}
-        for s, label in Task.STATUS_CHOICES:
-            status_data[label] = base_qs.filter(status=s).count()
+        # Status and priority distribution (single aggregate query)
+        agg = base_qs.aggregate(
+            **{f'status_{s}': Count('id', filter=Q(status=s)) for s, _ in Task.STATUS_CHOICES},
+            **{f'priority_{p}': Count('id', filter=Q(priority=p)) for p, _ in Task.PRIORITY_CHOICES},
+        )
 
-        # Priority distribution
-        priority_data = {}
-        for p, label in Task.PRIORITY_CHOICES:
-            priority_data[label] = base_qs.filter(priority=p).count()
+        status_data = {label: agg[f'status_{s}'] for s, label in Task.STATUS_CHOICES}
+        priority_data = {label: agg[f'priority_{p}'] for p, label in Task.PRIORITY_CHOICES}
 
-        # Monthly completed (starting in August 2026)
-        monthly_labels = []
-        monthly_data = []
-
+        # Monthly completed (starting in August 2026) — single TruncMonth query
         start_year = 2026
         start_month = 8  # August 2026
+        start_date = datetime.date(start_year, start_month, 1)
 
+        # Annotate effective completion date: completion_date if set, else updated_at cast to date
+        monthly_qs = (
+            base_qs
+            .filter(status='completed')
+            .annotate(
+                effective_date=Coalesce(
+                    'completion_date',
+                    Cast('updated_at', output_field=DateField()),
+                    output_field=DateField()
+                )
+            )
+            .filter(effective_date__gte=start_date)
+            .annotate(month=TruncMonth('effective_date'))
+            .values('month')
+            .annotate(count=Count('id'))
+            .order_by('month')
+        )
+
+        # Build a lookup from month to count
+        month_counts = {entry['month']: entry['count'] for entry in monthly_qs}
+
+        # Generate all months from start to current, filling in 0 for months with no completions
         num_months = max(6, (today.year - start_year) * 12 + (today.month - start_month + 1))
+        monthly_labels = []
+        monthly_data = []
         curr_year = start_year
         curr_month = start_month
-
         for _ in range(num_months):
-            month_start = datetime.date(curr_year, curr_month, 1)
+            month_key = datetime.date(curr_year, curr_month, 1)
+            monthly_labels.append(month_key.strftime('%b %Y'))
+            monthly_data.append(month_counts.get(month_key, 0))
             if curr_month == 12:
-                month_end = datetime.date(curr_year + 1, 1, 1) - datetime.timedelta(days=1)
-                next_year = curr_year + 1
-                next_month = 1
+                curr_year += 1
+                curr_month = 1
             else:
-                month_end = datetime.date(curr_year, curr_month + 1, 1) - datetime.timedelta(days=1)
-                next_year = curr_year
-                next_month = curr_month + 1
-
-            from django.db.models import Q
-            count = base_qs.filter(
-                Q(status='completed') & (
-                    Q(completion_date__gte=month_start, completion_date__lte=month_end) |
-                    Q(completion_date__isnull=True, updated_at__date__gte=month_start, updated_at__date__lte=month_end)
-                )
-            ).count()
-            monthly_labels.append(month_start.strftime('%b %Y'))
-            monthly_data.append(count)
-
-            curr_year = next_year
-            curr_month = next_month
+                curr_month += 1
 
         # Position abbreviation lookup
         POSITION_ABBREV = {
@@ -136,26 +170,33 @@ class DashboardChartsAPIView(APIView):
             officer_labels.append(label)
             officer_data.append(item['count'])
 
-        # Weekly trend (last 7 days)
-        weekly_labels = []
-        weekly_data = []
-        for i in range(6, -1, -1):
-            day = today - datetime.timedelta(days=i)
-            count = base_qs.filter(
-                Q(status='completed') & (
-                    Q(completion_date=day) | Q(completion_date__isnull=True, updated_at__date=day)
-                )
-            ).count()
-            weekly_labels.append(day.strftime('%a %d'))
-            weekly_data.append(count)
+        # Weekly trend (last 7 days) — single query with conditional aggregation
+        weekly_agg = base_qs.filter(status='completed').aggregate(
+            **{
+                f'day_{i}': Count('id', filter=Q(
+                    Q(completion_date=today - datetime.timedelta(days=6 - i)) |
+                    Q(completion_date__isnull=True, updated_at__date=today - datetime.timedelta(days=6 - i))
+                ))
+                for i in range(7)
+            }
+        )
+        weekly_labels = [(today - datetime.timedelta(days=6 - i)).strftime('%a %d') for i in range(7)]
+        weekly_data = [weekly_agg[f'day_{i}'] for i in range(7)]
 
-        return Response({
+        response_data = {
             'status_distribution': {'labels': list(status_data.keys()), 'data': list(status_data.values())},
             'priority_distribution': {'labels': list(priority_data.keys()), 'data': list(priority_data.values())},
             'monthly_completed': {'labels': monthly_labels, 'data': monthly_data},
             'tasks_per_officer': {'labels': officer_labels, 'data': officer_data},
             'weekly_trend': {'labels': weekly_labels, 'data': weekly_data},
-        })
+        }
+
+        # Cache the response data
+        cache.set(cache_key, response_data, 30)
+
+        response = Response(response_data)
+        response['Cache-Control'] = 'private, max-age=30'
+        return response
 
 
 class TaskListAPIView(APIView):
@@ -170,18 +211,13 @@ class TaskListAPIView(APIView):
         if user.organization:
             tasks = tasks.filter(organization=user.organization)
 
-        data = []
-        for t in tasks[:50]:
-            data.append({
-                'id': t.id,
-                'task_number': t.task_number,
-                'title': t.title,
-                'status': t.status,
-                'priority': t.priority,
-                'progress': t.progress,
-                'due_date': str(t.due_date) if t.due_date else None,
-            })
-        return Response(data)
+        data = list(tasks.select_related('created_by', 'organization').values(
+            'id', 'task_number', 'title', 'status',
+            'priority', 'progress', 'due_date'
+        )[:50])
+        response = Response(data)
+        response['Cache-Control'] = 'private, max-age=0'
+        return response
 
 
 class TaskDetailAPIView(APIView):
@@ -209,9 +245,16 @@ class UnreadNotificationsAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
-        notifs = Notification.objects.filter(recipient=request.user, is_read=False)[:10]
+        notifs = list(
+            Notification.objects.filter(recipient=request.user, is_read=False)
+            .select_related('related_task')
+            .only('id', 'title', 'message', 'notification_type', 'created_at')
+            .order_by('-created_at')[:10]
+        )
         data = [{'id': n.id, 'title': n.title, 'message': n.message, 'type': n.notification_type, 'created_at': str(n.created_at)} for n in notifs]
-        return Response({'count': notifs.count(), 'notifications': data})
+        response = Response({'count': len(notifs), 'notifications': data})
+        response['Cache-Control'] = 'private, max-age=0'
+        return response
 
 
 class MarkNotificationReadAPIView(APIView):

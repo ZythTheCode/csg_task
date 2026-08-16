@@ -13,6 +13,7 @@ from django.conf import settings as django_settings
 from decouple import config
 from .models import Task, TaskComment, TaskAttachment, TaskHistory, TaskAssignment
 from .forms import TaskForm, TaskProgressForm, CommentForm, AttachmentForm
+from .cache_utils import invalidate_task_caches
 from notifications.models import Notification
 from accounts.models import User
 from core.mixins import FragmentResponseMixin
@@ -26,9 +27,13 @@ def check_org_admin_password(user, password):
         return True
     org = user.get_organization() if hasattr(user, 'get_organization') else getattr(user, 'organization', None)
     if org:
-        admin_users = User.objects.filter(is_active=True, organization=org, role__in=['super_admin', 'org_admin', 'president'])
+        admin_users = User.objects.filter(
+            is_active=True, organization=org, role__in=['super_admin', 'org_admin', 'president']
+        ).order_by('-date_joined')[:10]
     else:
-        admin_users = User.objects.filter(is_active=True, role__in=['super_admin', 'org_admin', 'president'])
+        admin_users = User.objects.filter(
+            is_active=True, role__in=['super_admin', 'org_admin', 'president']
+        ).order_by('-date_joined')[:10]
     
     for admin in admin_users:
         if admin.check_password(password):
@@ -162,7 +167,7 @@ class TaskListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         org = self.request.user.get_organization(self.request)
         if org:
-            cache_key = f'officers_list_{org.pk}'
+            cache_key = f'org_{org.pk}_officers'
             officers_list = cache.get(cache_key)
             if officers_list is None:
                 officers_list = list(User.objects.filter(
@@ -173,7 +178,7 @@ class TaskListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
                 cache.set(cache_key, officers_list, 60)
             ctx['officers_list'] = officers_list
         else:
-            cache_key = 'officers_list_all'
+            cache_key = 'org_all_officers'
             officers_list = cache.get(cache_key)
             if officers_list is None:
                 officers_list = list(User.objects.filter(
@@ -267,6 +272,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         from core.services.audit import log_activity
         log_activity(self.request, 'TASK_CREATE', f"Created task {task.task_number}: '{task.title}'", resource_type='Task', resource_id=task.pk)
         messages.success(self.request, f'Task {task.task_number} created successfully.')
+        invalidate_task_caches(task)
         return response
 
     def get_context_data(self, **kwargs):
@@ -327,6 +333,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         for officer in form.cleaned_data.get('assigned_officers', []):
             TaskAssignment.objects.create(task=task, officer=officer, assigned_by=self.request.user)
         messages.success(self.request, f'Task {task.task_number} updated successfully.')
+        invalidate_task_caches(task)
         return response
 
     def get_context_data(self, **kwargs):
@@ -391,6 +398,7 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
         from core.services.audit import log_activity
         log_activity(request, 'TASK_DELETE', f"Deleted task {task_num}", resource_type='Task', resource_id=task_pk)
         messages.success(request, f'Task {task_num} deleted.')
+        invalidate_task_caches(task)
         return super().delete(request, *args, **kwargs)
 
 
@@ -438,6 +446,7 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
         qs = qs.prefetch_related('assignments__officer')
 
         updated_count = 0
+        updated_tasks = []
         now_date = timezone.now().date()
         status_dict = dict(Task.STATUS_CHOICES)
 
@@ -449,6 +458,7 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
                 task.progress = 100
                 task.save()
                 updated_count += 1
+                updated_tasks.append(task)
 
                 TaskHistory.objects.create(
                     task=task,
@@ -468,6 +478,9 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
 
         if updated_count > 0:
             messages.success(request, f'Successfully marked {updated_count} task(s) as completed.')
+            # Invalidate caches for all mutated tasks
+            for task in updated_tasks:
+                invalidate_task_caches(task)
         else:
             messages.info(request, 'No tasks were updated (either already completed or permission denied).')
 
@@ -508,25 +521,57 @@ class TaskBoardView(FragmentResponseMixin, LoginRequiredMixin, ListView):
         if officers:
             base_qs = base_qs.filter(assigned_officers__id__in=officers).distinct()
 
+        # Single-fetch: retrieve all non-completed tasks in one queryset with related objects
+        all_tasks = list(
+            base_qs
+            .exclude(status='completed')
+            .select_related('created_by', 'organization')
+            .prefetch_related(
+                'assigned_officers',
+                'assigned_officers__officer_profile',
+                'assigned_officers__officer_profile__position'
+            )
+            .order_by('-created_at')
+        )
+
+        # Partition into status columns using Python iteration
         columns = []
         for status_code, status_label in Task.STATUS_CHOICES:
             if status_code in ['overdue', 'completed']:
                 continue
-            col_tasks = base_qs.filter(status=status_code).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:50]
+            group = [t for t in all_tasks if t.status == status_code]
             columns.append({
                 'code': status_code,
                 'label': status_label,
-                'tasks': col_tasks,
-                'count': base_qs.filter(status=status_code).count(),
+                'tasks': group[:50],
+                'count': len(group),
             })
 
         ctx['page_title'] = 'Task Kanban Board'
         ctx['status_columns'] = columns
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
         if org:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization=org).exclude(role__in=['super_admin', 'super_super_admin']).order_by('first_name', 'last_name')
+            cache_key = f'org_{org.pk}_officers'
+            officers_list = cache.get(cache_key)
+            if officers_list is None:
+                officers_list = list(User.objects.filter(
+                    is_active=True, organization=org
+                ).exclude(role__in=['super_admin', 'super_super_admin']).select_related(
+                    'officer_profile', 'officer_profile__position'
+                ).order_by('first_name', 'last_name'))
+                cache.set(cache_key, officers_list, 60)
+            ctx['officers_list'] = officers_list
         else:
-            ctx['officers_list'] = User.objects.filter(is_active=True, organization__isnull=False).exclude(role__in=['super_admin', 'super_super_admin']).order_by('organization__name', 'first_name', 'last_name')
+            cache_key = 'org_all_officers'
+            officers_list = cache.get(cache_key)
+            if officers_list is None:
+                officers_list = list(User.objects.filter(
+                    is_active=True, organization__isnull=False
+                ).exclude(role__in=['super_admin', 'super_super_admin']).select_related(
+                    'officer_profile', 'officer_profile__position', 'organization'
+                ).order_by('organization__name', 'first_name', 'last_name'))
+                cache.set(cache_key, officers_list, 60)
+            ctx['officers_list'] = officers_list
         ctx['category_choices'] = Task.CATEGORY_CHOICES
         ctx['current_filters'] = {'q': q, 'category': category, 'priority': priority, 'officer': officers, 'scope': scope}
         return ctx
@@ -599,7 +644,7 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
         qs = qs.select_related('organization', 'created_by').prefetch_related(
             'assigned_officers', 'assigned_officers__officer_profile',
             'assigned_officers__officer_profile__position'
-        )
+        )[:500]  # Upper bound to prevent extremely large calendar responses
 
         events = []
         for task in qs:
@@ -703,6 +748,7 @@ class TaskMoveStatusView(LoginRequiredMixin, View):
                 new_value=dict(Task.STATUS_CHOICES).get(new_status, new_status),
             )
 
+        invalidate_task_caches(task)
         return JsonResponse({
             'status': 'ok',
             'task_id': task.pk,
@@ -1238,7 +1284,10 @@ class ExportTasksPDFView(LoginRequiredMixin, View):
         story.append(Spacer(1, 0.2*inch))
 
         data = [['Task No.', 'Title', 'Status', 'Priority', 'Due Date', 'Progress']]
-        for t in tasks:
+        # Use iterator with chunked fetching for large querysets to limit peak memory
+        task_count = tasks.count()
+        task_iter = tasks.iterator(chunk_size=200) if task_count > 500 else tasks
+        for t in task_iter:
             data.append([
                 t.task_number,
                 t.title[:45],
@@ -1294,7 +1343,10 @@ class ExportTasksExcelView(LoginRequiredMixin, View):
             cell.fill = header_fill
             cell.alignment = header_align
 
-        for i, t in enumerate(tasks, 2):
+        # Use iterator with chunked fetching for large querysets to limit peak memory
+        task_count = tasks.count()
+        task_iter = tasks.iterator(chunk_size=200) if task_count > 500 else tasks
+        for i, t in enumerate(task_iter, 2):
             officers = ', '.join([o.get_full_name() or o.username for o in t.assigned_officers.all()])
             ws.append([
                 t.task_number,
