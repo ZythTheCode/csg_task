@@ -263,10 +263,79 @@
   [data-mode="dark"] #taskCalendarDetailModal .fw-bold.text-dark {
     color: #f8fafc !important;
   }
+
+  
+  /* Force equal row heights in month view */
+  .fc-daygrid-body {
+    height: 100% !important;
+  }
+  .fc-scrollgrid-sync-table {
+    height: 100% !important;
+  }
+  .fc-daygrid-body-balanced .fc-daygrid-day {
+    height: auto !important;
+  }
+  .fc .fc-daygrid-body-unbalanced .fc-daygrid-day {
+    height: auto !important;
+  }
+  /* Set fixed row height so all weeks are equal */
+  .fc-daygrid-day-frame {
+    min-height: 120px !important;
+  }
+
+  /* "+N more" link styling */
+  .fc-daygrid-more-link {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+    padding: 2px 6px;
+    border-radius: 8px;
+    margin-top: 2px;
+  }
+  .fc-daygrid-more-link:hover {
+    background: var(--pink-50);
+    text-decoration: none;
+  }
+
+  /* Popover styling (shows all events for that day) */
+  .fc-more-popover {
+    border-radius: 16px !important;
+    border: none !important;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08) !important;
+    backdrop-filter: blur(12px);
+    overflow: hidden;
+    max-width: 280px;
+  }
+  .fc-more-popover .fc-popover-header {
+    background: var(--primary) !important;
+    color: white !important;
+    padding: 10px 14px !important;
+    font-size: 13px;
+    font-weight: 700;
+  }
+  .fc-more-popover .fc-popover-body {
+    padding: 8px !important;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+  .fc-more-popover .fc-daygrid-event {
+    margin-bottom: 3px !important;
+  }
+
+  [data-mode="dark"] .fc-more-popover {
+    background: #1e293b !important;
+  }
+  [data-mode="dark"] .fc-more-popover .fc-popover-body {
+    background: #1e293b !important;
+  }
+  [data-mode="dark"] .fc-daygrid-more-link {
+    color: var(--primary);
+  }
 </style>
 {% endblock %}
 
 {% block content %}
+<script>sessionStorage.setItem("csg_last_tasks_url", window.location.href);</script>
 <div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
   <div>
     <div class="d-flex align-items-center gap-2 mb-1">
@@ -315,7 +384,7 @@
           style="width:13px;height:13px"></i>Calendar</a>
     </div>
 
-    <a href="{% url 'tasks:create' %}" class="btn-primary-custom"
+    <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}" class="btn-primary-custom"
       style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap"><i data-lucide="plus"
         style="width:15px;height:15px"></i> New Task</a>
   </div>
@@ -488,6 +557,9 @@
 
     var calendar = new FullCalendar.Calendar(calendarEl, {
       initialView: 'dayGridMonth',
+      dayMaxEvents: 3,
+      moreLinkClick: 'popover',
+      fixedWeekCount: true,
       headerToolbar: {
         left: 'prev,next today',
         center: 'title',

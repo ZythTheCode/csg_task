@@ -225,7 +225,12 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
     model = Task
     form_class = TaskForm
     template_name = 'tasks/form.html'
-    success_url = reverse_lazy('tasks:list')
+
+    def get_success_url(self):
+        next_url = self.request.GET.get('next') or self.request.POST.get('next', '')
+        if next_url and '/tasks/' in next_url:
+            return next_url
+        return reverse('tasks:list')
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -268,6 +273,7 @@ class TaskCreateView(LoginRequiredMixin, CreateView):
         ctx = super().get_context_data(**kwargs)
         ctx['page_title'] = 'Create New Task'
         ctx['form_action'] = 'Create Task'
+        ctx['back_url'] = self.request.GET.get('next', '') or self.request.META.get('HTTP_REFERER', '') or reverse('tasks:list')
         return ctx
 
 
@@ -328,6 +334,7 @@ class TaskUpdateView(LoginRequiredMixin, UpdateView):
         ctx['page_title'] = f'Edit Task: {self.object.task_number}'
         ctx['form_action'] = 'Save Changes'
         ctx['is_edit'] = True
+        ctx['back_url'] = self.request.GET.get('next', '') or self.request.META.get('HTTP_REFERER', '') or reverse('tasks:list')
         return ctx
 
 
@@ -349,17 +356,28 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
             task = self.get_object()
         except Exception:
             messages.warning(request, 'This task has already been deleted or no longer exists.')
-            return redirect('tasks:list')
+            return redirect(self._get_next_url(request))
         if not request.user.can_edit_task(task):
             messages.error(request, 'You do not have permission to delete this task.')
-            return redirect('tasks:list')
+            return redirect(self._get_next_url(request))
         return super().dispatch(request, *args, **kwargs)
+
+    def _get_next_url(self, request):
+        """Get the URL to redirect back to (preserves current view)."""
+        next_url = request.POST.get('next') or request.GET.get('next') or request.META.get('HTTP_REFERER', '')
+        # Only use referer if it's on the same host and is a tasks page
+        if next_url and '/tasks/' in next_url:
+            return next_url
+        return reverse('tasks:list')
+
+    def get_success_url(self):
+        return self._get_next_url(self.request)
 
     def post(self, request, *args, **kwargs):
         password = request.POST.get('password', '')
         if not check_org_admin_password(request.user, password):
             messages.error(request, 'Incorrect admin password. Task deletion cancelled.')
-            return redirect('tasks:list')
+            return redirect(self._get_next_url(request))
         return self.delete(request, *args, **kwargs)
 
     def delete(self, request, *args, **kwargs):
@@ -367,7 +385,7 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
             task = self.get_object()
         except Exception:
             messages.warning(request, 'This task has already been deleted or no longer exists.')
-            return redirect('tasks:list')
+            return redirect(self._get_next_url(request))
         task_num = task.task_number
         task_pk = task.pk
         from core.services.audit import log_activity
@@ -378,10 +396,14 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
 
 class TaskBulkDeleteView(LoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
+        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER', '')
+        if not next_url or '/tasks/' not in next_url:
+            next_url = reverse('tasks:list')
+
         password = request.POST.get('password', '')
         if not check_org_admin_password(request.user, password):
             messages.error(request, 'Incorrect admin password. Bulk task deletion cancelled.')
-            return redirect('tasks:list')
+            return redirect(next_url)
 
         task_ids = request.POST.getlist('task_ids')
         if task_ids:
@@ -391,7 +413,7 @@ class TaskBulkDeleteView(LoginRequiredMixin, View):
         else:
             messages.warning(request, 'No tasks selected for deletion.')
 
-        return redirect('tasks:list')
+        return redirect(next_url)
 
 
 class TaskBulkCompleteView(LoginRequiredMixin, View):
@@ -885,17 +907,21 @@ class MarkCompleteView(LoginRequiredMixin, View):
 
 class ArchiveTaskView(LoginRequiredMixin, View):
     def post(self, request, pk):
+        next_url = request.POST.get('next') or request.META.get('HTTP_REFERER', '')
+        if not next_url or '/tasks/' not in next_url:
+            next_url = reverse('tasks:list')
+
         if not request.user.has_task_override:
             messages.error(request, 'Permission denied. Only Super Admin can archive tasks.')
-            return redirect('tasks:list')
+            return redirect(next_url)
         task = Task.objects.filter(pk=pk).first()
         if not task:
             messages.warning(request, 'This task has already been deleted or no longer exists.')
-            return redirect('tasks:list')
+            return redirect(next_url)
         task.is_archived = True
         task.save()
         messages.success(request, f'Task {task.task_number} archived.')
-        return redirect('tasks:list')
+        return redirect(next_url)
 
 
 class AddCommentView(LoginRequiredMixin, View):

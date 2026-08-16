@@ -3,8 +3,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <a href="{% url 'tasks:list' %}" class="text-muted text-decoration-none fw-semibold" style="font-size:12.5px"><i
-        data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back to Tasks</a>
+    <a href="{% url 'tasks:list' %}" id="backToTasksLink" class="text-muted text-decoration-none fw-semibold" style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back to Tasks</a><script>var _bl=document.getElementById('backToTasksLink');var _sv=sessionStorage.getItem('csg_last_tasks_url');if(_bl&&_sv){_bl.href=_sv;}</script>
     <h5 class="mb-0 mt-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px"><span
         style="color:var(--primary);font-family:monospace">{{ task.task_number }}</span> {% if task.is_overdue %}<span
         class="badge bg-danger align-middle ms-1 me-1"
@@ -19,6 +18,7 @@
       data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
       data-confirm-icon="bi-trash-fill" data-require-password="true">
       {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'tasks:list' %}">
       <button type="submit" class="btn btn-danger btn-sm" style="border-radius:30px;font-weight:700;padding:8px 18px"><i
           data-lucide="trash-2" style="width:14px;height:14px"></i> Delete</button>
     </form>
@@ -36,6 +36,7 @@
       data-confirm-icon="bi-check-circle-fill" data-confirm-icon-bg="#dcfce7" data-confirm-icon-color="#16a34a"
       data-require-password="true">
       {% csrf_token %}
+      <input type="hidden" name="next" value="{% url 'tasks:list' %}">
       <button type="submit" class="btn btn-success btn-sm"
         style="border-radius:30px;font-weight:700;padding:8px 18px"><i data-lucide="check-circle"
           style="width:14px;height:14px"></i> Mark Complete</button>

@@ -3,7 +3,9 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <a href="{% url 'tasks:list' %}" class="text-muted text-decoration-none fw-semibold" style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back</a>
+    <a href="{{ back_url|default:'/tasks/' }}" class="text-muted text-decoration-none fw-semibold"
+      style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back</a>
+    <script>var _fb = document.querySelector('a[href*="/tasks/"]'); var _fv = sessionStorage.getItem("csg_last_tasks_url"); if (_fb && _fv) { _fb.href = _fv; }</script>
     <h5 class="mb-0 mt-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">{{ page_title }}</h5>
   </div>
 </div>
@@ -11,7 +13,10 @@
 <div class="row justify-content-center">
   <div class="col-md-10">
     <div class="glass-card">
-      <div class="card-header-custom"><h6><i data-lucide="edit" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Information</h6></div>
+      <div class="card-header-custom">
+        <h6><i data-lucide="edit" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Information
+        </h6>
+      </div>
       <div class="p-4">
         <form method="post" enctype="multipart/form-data">
           {% csrf_token %}
@@ -46,35 +51,32 @@
             </div>
             <div class="col-12">
               <label class="form-label fw-bold" style="font-size:13px">Assign Officers</label>
-              <div style="max-height:220px;overflow-y:auto;border:1.5px solid var(--slate-200);border-radius:14px;padding:14px;background:var(--pink-50)">
+              <div
+                style="max-height:220px;overflow-y:auto;border:1.5px solid var(--slate-200);border-radius:14px;padding:14px;background:var(--pink-50)">
                 {% for checkbox in form.assigned_officers %}
                 <div class="form-check mb-2">
-                  {{ checkbox.tag }} <label class="form-check-label fw-semibold" style="font-size:13px;color:var(--slate-800);cursor:pointer" for="{{ checkbox.id_for_label }}">{{ checkbox.choice_label }}</label>
+                  {{ checkbox.tag }} <label class="form-check-label fw-semibold"
+                    style="font-size:13px;color:var(--slate-800);cursor:pointer" for="{{ checkbox.id_for_label }}">{{  checkbox.choice_label  }}</label>
                 </div>
                 {% endfor %}
               </div>
             </div>
             {% if is_edit %}
-            <div class="col-12 mt-3">
-              <div class="p-3 border rounded-3 bg-light" style="border-left:4px solid var(--primary) !important">
-                <label class="form-label fw-bold text-dark mb-1" style="font-size:13px"><i class="bi bi-shield-lock-fill text-primary me-1"></i>Confirm Organization Admin Password to Save Task Changes <span class="text-danger">*</span></label>
-                <small class="d-block text-muted mb-2" style="font-size:11.5px">For security authorization, enter the Organization Admin password to save changes to task {{ form.instance.task_number }}.</small>
-                <input type="password" name="admin_password" id="adminPasswordInput" class="form-control {% if admin_password_error %}is-invalid{% endif %}" placeholder="Enter Organization Admin password to authorize edit" required style="border-radius:12px">
-                {% if admin_password_error %}
-                <div class="invalid-feedback d-block fw-bold mt-1" style="font-size:12px">{{ admin_password_error }}</div>
-                {% endif %}
-              </div>
+            <div class="col-12 mt-3" id="adminPasswordSection" style="display:none">
+              <input type="hidden" name="admin_password" id="adminPasswordInput" value="">
             </div>
             {% endif %}
           </div>
           <hr class="my-4" style="border-color:rgba(249, 168, 212, 0.2)">
           <div class="d-flex gap-2">
             {% if is_edit %}
-            <button type="button" id="saveEditBtn" class="btn-primary-custom"><i data-lucide="check" style="width:16px;height:16px"></i>{{ form_action }}</button>
+            <button type="button" id="saveEditBtn" class="btn-primary-custom"><i data-lucide="check"
+                style="width:16px;height:16px"></i>{{ form_action }}</button>
             {% else %}
-            <button type="submit" class="btn-primary-custom"><i data-lucide="check" style="width:16px;height:16px"></i>{{ form_action }}</button>
+            <button type="submit" class="btn-primary-custom"><i data-lucide="check"
+                style="width:16px;height:16px"></i>{{ form_action }}</button>
             {% endif %}
-            <a href="{% url 'tasks:list' %}" class="btn btn-secondary-custom">Cancel</a>
+            <a href="{% url 'tasks:list' %}" id="formCancelLink" class="btn btn-secondary-custom">Cancel</a>
           </div>
         </form>
       </div>
@@ -86,36 +88,80 @@
 
 {% block extra_js %}
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-  if (window.lucide) lucide.createIcons();
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) lucide.createIcons();
 
-  const saveEditBtn = document.getElementById('saveEditBtn');
-  const adminPasswordInput = document.getElementById('adminPasswordInput');
+    // --- Cancel link: use sessionStorage for navigation persistence ---
+    var cancelLink = document.getElementById('formCancelLink');
+    var lastUrl = sessionStorage.getItem('csg_last_tasks_url');
+    if (cancelLink && lastUrl) { cancelLink.href = lastUrl; }
 
-  if (saveEditBtn) {
-    saveEditBtn.addEventListener('click', function(e) {
-      e.preventDefault();
-      const taskNum = '{{ form.instance.task_number|default:"" }}';
-      const taskMsg = taskNum ? `task <strong>${taskNum}</strong>` : 'this task';
-      showConfirmModal({
-        title: 'Edit Task',
-        subtitle: 'Please review before proceeding',
-        message: `Are you sure you want to save changes to ${taskMsg}?`,
-        btnText: 'Save Changes',
-        btnClass: 'btn-primary',
-        icon: 'bi-pencil-fill',
-        iconBg: '#E0E7FF',
-        iconColor: '#4338CA',
-        requirePassword: true,
-        onConfirm: function(pwd) {
-          if (adminPasswordInput) {
-            adminPasswordInput.value = pwd;
-          }
-          saveEditBtn.closest('form').submit();
+    var saveEditBtn = document.getElementById('saveEditBtn');
+    var adminPasswordInput = document.getElementById('adminPasswordInput');
+    var form = saveEditBtn ? saveEditBtn.closest('form') : null;
+
+    // --- Change detection: disable Save button until form changes ---
+    if (saveEditBtn && form) {
+      var initialState = new FormData(form);
+      var initialValues = {};
+      for (var pair of initialState.entries()) {
+        if (pair[0] === 'csrfmiddlewaretoken' || pair[0] === 'admin_password') continue;
+        initialValues[pair[0]] = (initialValues[pair[0]] || []).concat(pair[1]);
+      }
+
+      saveEditBtn.disabled = true;
+      saveEditBtn.style.opacity = '0.5';
+      saveEditBtn.style.pointerEvents = 'none';
+
+      function checkChanges() {
+        var current = new FormData(form);
+        var changed = false;
+        var currentValues = {};
+        for (var pair of current.entries()) {
+          if (pair[0] === 'csrfmiddlewaretoken' || pair[0] === 'admin_password') continue;
+          currentValues[pair[0]] = (currentValues[pair[0]] || []).concat(pair[1]);
         }
+        // Compare
+        var allKeys = new Set([...Object.keys(initialValues), ...Object.keys(currentValues)]);
+        for (var key of allKeys) {
+          var a = (initialValues[key] || []).join(',');
+          var b = (currentValues[key] || []).join(',');
+          if (a !== b) { changed = true; break; }
+        }
+        saveEditBtn.disabled = !changed;
+        saveEditBtn.style.opacity = changed ? '1' : '0.5';
+        saveEditBtn.style.pointerEvents = changed ? 'auto' : 'none';
+      }
+
+      form.addEventListener('input', checkChanges);
+      form.addEventListener('change', checkChanges);
+    }
+
+    // --- Save button: show confirmation modal with password ---
+    if (saveEditBtn) {
+      saveEditBtn.addEventListener('click', function (e) {
+        e.preventDefault();
+        var taskNum = '{{ form.instance.task_number|default:"" }}';
+        var taskMsg = taskNum ? 'task <strong>' + taskNum + '</strong>' : 'this task';
+        showConfirmModal({
+          title: 'Save Task Changes',
+          subtitle: taskNum ? ('Task ' + taskNum) : 'Confirm changes',
+          message: 'Enter your Organization Admin password to save changes to ' + taskMsg + '.',
+          btnText: 'Save Changes',
+          btnClass: 'btn-primary',
+          icon: 'bi-check-circle-fill',
+          iconBg: '#E0E7FF',
+          iconColor: '#4338CA',
+          requirePassword: true,
+          onConfirm: function (pwd) {
+            if (adminPasswordInput) {
+              adminPasswordInput.value = pwd;
+            }
+            form.submit();
+          }
+        });
       });
-    });
-  }
-});
+    }
+  });
 </script>
 {% endblock %}

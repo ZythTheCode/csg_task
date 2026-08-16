@@ -2,6 +2,7 @@
 {% load task_filters %}
 {% block title %}Tasks{% endblock %}
 {% block content %}
+<script>sessionStorage.setItem("csg_last_tasks_url", window.location.href);</script>
 <div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-2 mb-3">
   <div>
     <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Task Management</h5>
@@ -40,7 +41,7 @@
           class="me-1" style="width:13px;height:13px"></i>Calendar</a>
     </div>
     {% endif %}
-    <a href="{% url 'tasks:create' %}" class="btn-primary-custom"
+    <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}" class="btn-primary-custom"
       style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap"><i data-lucide="plus"
         style="width:15px;height:15px"></i> New Task</a>
   </div>
@@ -48,45 +49,28 @@
 
 {% if current_filters.status == 'completed' %}
 <!-- Toast: Completed tasks auto-deletion reminder (shows once per session) -->
-<div id="completedInfoToastWrapper" class="position-fixed top-0 end-0 p-3 d-none"
-  style="z-index:9999;margin-top:72px;pointer-events:none">
-  <div class="toast align-items-center border-0 shadow" role="alert" aria-live="polite" aria-atomic="true"
-    id="completedInfoToast" data-bs-autohide="true" data-bs-delay="6000"
-    style="border-radius:16px;background:rgba(255,255,255,0.98);backdrop-filter:blur(12px);max-width:340px;border:1px solid rgba(59,130,246,0.15);pointer-events:auto;opacity:0;transform:translateX(20px);transition:opacity 0.35s ease,transform 0.35s ease">
-    <div class="d-flex align-items-start gap-2 p-3">
-      <div class="d-flex align-items-center justify-content-center flex-shrink-0"
-        style="width:30px;height:30px;border-radius:8px;background:linear-gradient(135deg,#DBEAFE,#BFDBFE);color:#2563EB;margin-top:1px">
-        <i class="bi bi-info-circle-fill" style="font-size:14px"></i>
-      </div>
-      <div style="flex:1;min-width:0">
-        <p class="mb-0" style="font-size:12.5px;color:var(--slate-700);line-height:1.45">Completed tasks are <strong
-            style="color:var(--slate-800)">automatically deleted after 7 days</strong>.</p>
-      </div>
-      <button type="button" class="btn-close flex-shrink-0" data-bs-dismiss="toast" aria-label="Close"
-        style="font-size:9px;margin-top:2px;opacity:0.5"></button>
-    </div>
+<div class="toast-container" id="completedInfoToastWrapper" style="display:none">
+  <div class="alert alert-info alert-dismissible fade show" role="alert" id="completedInfoToast">
+    <i class="bi bi-info-circle me-2"></i>
+    Completed tasks are <strong>automatically deleted after 7 days</strong>.
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
   </div>
 </div>
 <script>
   (function () {
-    // Show every time completed section is viewed
-
     document.addEventListener('DOMContentLoaded', function () {
       var wrapper = document.getElementById('completedInfoToastWrapper');
-      var el = document.getElementById('completedInfoToast');
-      wrapper.classList.remove('d-none');
-      var toast = new bootstrap.Toast(el);
-      el.addEventListener('show.bs.toast', function () {
-        setTimeout(function () { el.style.opacity = '1'; el.style.transform = 'translateX(0)'; }, 50);
-      });
-      el.addEventListener('hide.bs.toast', function () {
-        el.style.opacity = '0'; el.style.transform = 'translateX(20px)';
-      });
-      el.addEventListener('hidden.bs.toast', function () {
-        wrapper.classList.add('d-none');
-      });
-      toast.show();
-
+      if (wrapper) {
+        wrapper.style.display = 'block';
+        // Auto-dismiss after 4 seconds (same as other alerts)
+        setTimeout(function () {
+          var alert = document.getElementById('completedInfoToast');
+          if (alert) {
+            try { bootstrap.Alert.getOrCreateInstance(alert).close(); } catch (e) { alert.remove(); }
+          }
+          wrapper.remove();
+        }, 4000);
+      }
     });
   })();
 </script>
@@ -141,7 +125,7 @@
       size="1">
       <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
       {% for off in officers_list %}
-      <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{ off.get_full_name|default:off.username }}</option>
+      <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{  off.get_full_name|default:off.username  }}</option>
       {% endfor %}
     </select>
     {% endif %}
@@ -178,7 +162,7 @@
 <div class="d-flex align-items-center justify-content-between mb-3 px-1">
   <div class="d-flex align-items-center gap-2 flex-wrap">
     <h6 class="mb-0 fw-bold" style="color:var(--slate-800);font-size:15px">Task Items</h6>
-    <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600">{{ tasks|length }} task{% if tasks|length != 1 %}s{% endif %}</span>
+    <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600">{{  tasks|length  }} task{% if tasks|length != 1 %}s{% endif %}</span>
     <div class="btn-group p-1" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.85);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?status=active{% if current_filters.scope %}&scope={{ current_filters.scope }}{% endif %}"
@@ -210,6 +194,7 @@
 
 <form method="post" action="{% url 'tasks:bulk_delete' %}" id="bulkDeleteForm" class="d-none">
   {% csrf_token %}
+  <input type="hidden" name="next" value="{{ request.get_full_path }}">
 </form>
 
 <form method="post" action="" id="singleDeleteForm" class="d-none">
@@ -381,7 +366,7 @@
           </td>
           {% endif %}
           <td style="white-space:nowrap">
-            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12.5px">{{ task.task_number }}</span>
+            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12.5px">{{  task.task_number  }}</span>
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
@@ -389,9 +374,9 @@
               title="{{ task.title }}">{{ task.title }}</a>
             <div class="d-flex align-items-center gap-1.5 mt-0.5">
               <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px">
-                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
+                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{  task.get_category_display  }}
               </span>
-              <span style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</span>
+              <span style="font-size:11px;color:var(--slate-400)">by {{  task.created_by.get_full_name|default:task.created_by.username  }}</span>
             </div>
           </td>
           <td style="font-size:12.5px;color:var(--slate-600);max-width:350px">
@@ -415,7 +400,7 @@
                 data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This cannot be undone."
                 data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
                 data-confirm-icon="bi-trash-fill" data-confirm-icon-bg="#fee2e2" data-confirm-icon-color="#dc2626"
-                data-require-password="true">{% csrf_token %}<button type="submit" class="btn-sm-icon"
+                data-require-password="true">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon"
                   style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
                   title="Delete"><i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i></button></form>
             </div>
@@ -428,7 +413,7 @@
           </td>
           {% endif %}
           <td style="white-space:nowrap">
-            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span>
+            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{  task.task_number  }}</span>
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
@@ -436,9 +421,9 @@
               title="{{ task.title }}">{{ task.title }}</a>
             <div class="d-flex align-items-center gap-1.5 mt-0.5">
               <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px">
-                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
+                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{  task.get_category_display  }}
               </span>
-              <span style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</span>
+              <span style="font-size:11px;color:var(--slate-400)">by {{  task.created_by.get_full_name|default:task.created_by.username  }}</span>
             </div>
           </td>
           <td>
@@ -468,7 +453,7 @@
                 <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
                   style="background:var(--pink-50);border-radius:6px">
                   <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
-                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
+                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{  officer.get_full_name|default:officer.username  }}</span>
                 </li>
                 {% endfor %}
               </ul>
@@ -477,7 +462,7 @@
             <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
             {% endif %}
           </td>
-          <td style="white-space:nowrap"><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+          <td style="white-space:nowrap"><span class="badge-status badge-priority-{{ task.priority }}">{{  task.get_priority_display  }}</span></td>
           <td style="white-space:nowrap">
             <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
           </td>
@@ -498,7 +483,7 @@
               <div class="progress-custom flex-grow-1" style="min-width:50px">
                 <div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div>
               </div>
-              <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
+              <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{  task.progress  }}%</small>
             </div>
           </td>
           <td style="white-space:nowrap;text-align:right" class="pe-4">
@@ -530,7 +515,7 @@
                 data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This cannot be undone."
                 data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
                 data-confirm-icon="bi-trash-fill" data-confirm-icon-bg="#fee2e2" data-confirm-icon-color="#dc2626"
-                data-require-password="true">{% csrf_token %}<button type="submit" class="btn-sm-icon"
+                data-require-password="true">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon"
                   style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
                   title="Delete"><i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i></button></form>
               {% endif %}

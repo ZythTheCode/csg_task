@@ -9,37 +9,48 @@
     <p class="text-muted mb-0" style="font-size:13px">Overview of your tasks and productivity</p>
   </div>
   <!-- Scope Switcher -->
-  <div class="btn-group p-1" role="group" style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
-    <button type="button" onclick="setScope('my_tasks')" class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1" style="width:14px;height:14px"></i> My Tasks</button>
-    <button type="button" onclick="setScope('all')" class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}" style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1" style="width:14px;height:14px"></i> All Tasks</button>
+  <div class="btn-group p-1" role="group"
+    style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+    <button type="button" onclick="setScope('my_tasks')"
+      class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+      style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1"
+        style="width:14px;height:14px"></i> My Tasks</button>
+    <button type="button" onclick="setScope('all')"
+      class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+      style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1"
+        style="width:14px;height:14px"></i> All Tasks</button>
   </div>
 </div>
 
 <!-- Stat Cards -->
 <div class="row g-2 g-sm-3 mb-4">
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?status=active&scope={{ scope }}" class="stat-card primary text-decoration-none" id="stat-active" title="View all tasks that are currently active (not completed)">
+    <a href="{% url 'tasks:list' %}?status=active&scope={{ scope }}" class="stat-card primary text-decoration-none"
+      id="stat-active" title="View all tasks that are currently active (not completed)">
       <div class="stat-icon"><i class="bi bi-clipboard-data-fill"></i></div>
       <div class="stat-value" id="val-active">{{ active_tasks }}</div>
       <div class="stat-label">Active Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none" title="View all successfully completed tasks">
+    <a href="{% url 'tasks:list' %}?status=completed&scope={{ scope }}" class="stat-card success text-decoration-none"
+      title="View all successfully completed tasks">
       <div class="stat-icon"><i class="bi bi-check-circle-fill"></i></div>
       <div class="stat-value" id="val-completed">{{ completed_tasks }}</div>
       <div class="stat-label">Completed Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none" title="View tasks that have passed their deadline">
+    <a href="{% url 'tasks:list' %}?status=overdue&scope={{ scope }}" class="stat-card danger text-decoration-none"
+      title="View tasks that have passed their deadline">
       <div class="stat-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
       <div class="stat-value" id="val-overdue">{{ overdue_tasks }}</div>
       <div class="stat-label">Overdue Tasks</div>
     </a>
   </div>
   <div class="col-6 col-sm-6 col-md-3">
-    <a href="{% url 'tasks:list' %}?due_this_week=true&scope={{ scope }}" class="stat-card warning text-decoration-none" title="View tasks that are due within the next 7 days">
+    <a href="{% url 'tasks:list' %}?due_this_week=true&scope={{ scope }}" class="stat-card warning text-decoration-none"
+      title="View tasks that are due within the next 7 days">
       <div class="stat-icon"><i class="bi bi-calendar-event-fill"></i></div>
       <div class="stat-value" id="val-upcoming">{{ upcoming_tasks }}</div>
       <div class="stat-label">Due This Week</div>
@@ -51,20 +62,47 @@
 <div class="row g-3 mb-3">
   <div class="col-12 col-md-4">
     <div class="card h-100">
-      <div class="card-header-custom"><h6><i data-lucide="pie-chart" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Status</h6></div>
-      <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="statusChart"></canvas></div></div>
+      <div class="card-header-custom">
+        <h6><i data-lucide="pie-chart" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Status
+        </h6>
+      </div>
+      <div class="p-3">
+        <div class="chart-container position-relative" style="height:220px">
+          <div class="chart-loading-overlay">
+            <div class="chart-spinner"></div>
+          </div><canvas id="statusChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
   <div class="col-12 col-md-4">
     <div class="card h-100">
-      <div class="card-header-custom"><h6><i data-lucide="bar-chart-2" class="me-2" style="width:18px;height:18px;color:var(--success)"></i>Monthly Completed</h6></div>
-      <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="monthlyChart"></canvas></div></div>
+      <div class="card-header-custom">
+        <h6><i data-lucide="bar-chart-2" class="me-2" style="width:18px;height:18px;color:var(--success)"></i>Monthly
+          Completed</h6>
+      </div>
+      <div class="p-3">
+        <div class="chart-container position-relative" style="height:220px">
+          <div class="chart-loading-overlay">
+            <div class="chart-spinner"></div>
+          </div><canvas id="monthlyChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
   <div class="col-12 col-md-4">
     <div class="card h-100">
-      <div class="card-header-custom"><h6><i data-lucide="layers" class="me-2" style="width:18px;height:18px;color:var(--warning)"></i>Priority Distribution</h6></div>
-      <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="priorityChart"></canvas></div></div>
+      <div class="card-header-custom">
+        <h6><i data-lucide="layers" class="me-2" style="width:18px;height:18px;color:var(--warning)"></i>Priority
+          Distribution</h6>
+      </div>
+      <div class="p-3">
+        <div class="chart-container position-relative" style="height:220px">
+          <div class="chart-loading-overlay">
+            <div class="chart-spinner"></div>
+          </div><canvas id="priorityChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -73,14 +111,32 @@
 <div class="row g-3 mb-4">
   <div class="col-12 col-lg-7">
     <div class="card h-100">
-      <div class="card-header-custom"><h6><i data-lucide="users" class="me-2" style="width:18px;height:18px;color:var(--info)"></i>Tasks Per Officer</h6></div>
-      <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="officerChart"></canvas></div></div>
+      <div class="card-header-custom">
+        <h6><i data-lucide="users" class="me-2" style="width:18px;height:18px;color:var(--info)"></i>Tasks Per Officer
+        </h6>
+      </div>
+      <div class="p-3">
+        <div class="chart-container position-relative" style="height:220px">
+          <div class="chart-loading-overlay">
+            <div class="chart-spinner"></div>
+          </div><canvas id="officerChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
   <div class="col-12 col-lg-5">
     <div class="card h-100">
-      <div class="card-header-custom"><h6><i data-lucide="trending-up" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Weekly Trend</h6></div>
-      <div class="p-3"><div class="chart-container" style="height:220px"><canvas id="weeklyChart"></canvas></div></div>
+      <div class="card-header-custom">
+        <h6><i data-lucide="trending-up" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Weekly
+          Trend</h6>
+      </div>
+      <div class="p-3">
+        <div class="chart-container position-relative" style="height:220px">
+          <div class="chart-loading-overlay">
+            <div class="chart-spinner"></div>
+          </div><canvas id="weeklyChart"></canvas>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -90,98 +146,121 @@
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-const STATUS_COLOR_MAP = {
-  'Not Started':  '#94A3B8',  // slate
-  'Processing':   '#3B82F6',  // blue
-  'To Advisers':  '#6366F1',  // indigo
-  'Accounting':   '#F59E0B',  // amber
-  'OCA':          '#A855F7',  // purple
-  'OSAS':         '#0EA5E9',  // sky
-  'PPSS':         '#14B8A6',  // teal
-  'Supply':       '#F97316',  // orange
-  'Completed':    '#22C55E',  // green
-  'Overdue':      '#EF4444',  // red
-};
+  const STATUS_COLOR_MAP = {
+    'Not Started': '#94A3B8',  // slate
+    'Processing': '#3B82F6',  // blue
+    'To Advisers': '#6366F1',  // indigo
+    'Accounting': '#F59E0B',  // amber
+    'OCA': '#A855F7',  // purple
+    'OSAS': '#0EA5E9',  // sky
+    'PPSS': '#14B8A6',  // teal
+    'Supply': '#F97316',  // orange
+    'Completed': '#22C55E',  // green
+    'Overdue': '#EF4444',  // red
+  };
 
-/* Priority color scheme per specification: High -> Red, Medium -> Orange, Low -> Blue */
-const PRIORITY_COLOR_MAP = {
-  'Low':    '#3B82F6',  // Blue
-  'Medium': '#F59E0B',  // Orange
-  'High':   '#EF4444',  // Red
-  'Urgent': '#1E293B',  // Dark
-};
+  /* Priority color scheme per specification: High -> Red, Medium -> Orange, Low -> Blue */
+  const PRIORITY_COLOR_MAP = {
+    'Low': '#3B82F6',  // Blue
+    'Medium': '#F59E0B',  // Orange
+    'High': '#EF4444',  // Red
+    'Urgent': '#1E293B',  // Dark
+  };
 
-const OFFICER_PALETTE = [
-  '#FF4FA3','#FF6FB5','#3B82F6','#F59E0B',
-  '#A855F7','#EF4444','#14B8A6','#F97316',
-  '#0EA5E9','#EC4899',
-];
+  const OFFICER_PALETTE = [
+    '#FF4FA3', '#FF6FB5', '#3B82F6', '#F59E0B',
+    '#A855F7', '#EF4444', '#14B8A6', '#F97316',
+    '#0EA5E9', '#EC4899',
+  ];
 
-async function loadCharts() {
-  try {
-    const searchParams = window.location.search || '';
-    const res = await fetch('/api/dashboard/charts/' + searchParams);
-    const d = await res.json();
-
-    const isDarkMode = document.documentElement.getAttribute('data-mode') === 'dark';
-    const textColor = isDarkMode ? '#CBD5E1' : '#475569';
-    const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(249, 168, 212, 0.15)';
-
-    const statusColors   = d.status_distribution.labels.map(l => STATUS_COLOR_MAP[l] || '#94A3B8');
-    const priorityColors = d.priority_distribution.labels.map(l => PRIORITY_COLOR_MAP[l] || '#94A3B8');
-    const officerColors  = d.tasks_per_officer.labels.map((_, i) => OFFICER_PALETTE[i % OFFICER_PALETTE.length]);
-
-    const chartIds = ['statusChart', 'monthlyChart', 'priorityChart', 'officerChart', 'weeklyChart'];
-    chartIds.forEach(id => {
-      const existingChart = Chart.getChart(id);
-      if (existingChart) {
-        existingChart.destroy();
+  async function loadCharts() {
+    // Show spinners if they don't already exist (for re-loads like dark mode toggle)
+    document.querySelectorAll('.chart-container').forEach(function (container) {
+      if (!container.querySelector('.chart-loading-overlay')) {
+        var overlay = document.createElement('div');
+        overlay.className = 'chart-loading-overlay';
+        overlay.innerHTML = '<div class="chart-spinner"></div>';
+        container.insertBefore(overlay, container.firstChild);
       }
     });
 
-    // Status Doughnut
-    new Chart(document.getElementById('statusChart'), {
-      type: 'doughnut',
-      data: { labels: d.status_distribution.labels, datasets: [{ data: d.status_distribution.data, backgroundColor: statusColors, borderWidth: 0, hoverOffset: 8 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } }, cutout: '70%' }
+    try {
+      const searchParams = window.location.search || '';
+      const res = await fetch('/api/dashboard/charts/' + searchParams);
+      const d = await res.json();
+
+      const isDarkMode = document.documentElement.getAttribute('data-mode') === 'dark';
+      const textColor = isDarkMode ? '#CBD5E1' : '#475569';
+      const gridColor = isDarkMode ? 'rgba(255, 255, 255, 0.08)' : 'rgba(249, 168, 212, 0.15)';
+
+      const statusColors = d.status_distribution.labels.map(l => STATUS_COLOR_MAP[l] || '#94A3B8');
+      const priorityColors = d.priority_distribution.labels.map(l => PRIORITY_COLOR_MAP[l] || '#94A3B8');
+      const officerColors = d.tasks_per_officer.labels.map((_, i) => OFFICER_PALETTE[i % OFFICER_PALETTE.length]);
+
+      const chartIds = ['statusChart', 'monthlyChart', 'priorityChart', 'officerChart', 'weeklyChart'];
+      chartIds.forEach(id => {
+        const existingChart = Chart.getChart(id);
+        if (existingChart) {
+          existingChart.destroy();
+        }
+      });
+
+      // Status Doughnut
+      new Chart(document.getElementById('statusChart'), {
+        type: 'doughnut',
+        data: { labels: d.status_distribution.labels, datasets: [{ data: d.status_distribution.data, backgroundColor: statusColors, borderWidth: 0, hoverOffset: 8 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } }, cutout: '70%' }
+      });
+
+      // Monthly Bar
+      new Chart(document.getElementById('monthlyChart'), {
+        type: 'bar',
+        data: { labels: d.monthly_completed.labels, datasets: [{ label: 'Completed', data: d.monthly_completed.data, backgroundColor: 'rgba(255, 79, 163, 0.85)', borderRadius: 8, borderSkipped: false }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
+      });
+
+      // Priority Pie
+      new Chart(document.getElementById('priorityChart'), {
+        type: 'pie',
+        data: { labels: d.priority_distribution.labels, datasets: [{ data: d.priority_distribution.data, backgroundColor: priorityColors, borderWidth: 0 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } } }
+      });
+
+      // Officer Horizontal Bar
+      new Chart(document.getElementById('officerChart'), {
+        type: 'bar',
+        data: { labels: d.tasks_per_officer.labels, datasets: [{ label: 'Tasks', data: d.tasks_per_officer.data, backgroundColor: officerColors, borderRadius: 8 }] },
+        options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } } } }
+      });
+
+      // Weekly Line
+      new Chart(document.getElementById('weeklyChart'), {
+        type: 'line',
+        data: { labels: d.weekly_trend.labels, datasets: [{ label: 'Completed', data: d.weekly_trend.data, borderColor: '#FF4FA3', backgroundColor: 'rgba(255, 79, 163, 0.12)', tension: 0.4, fill: true, pointBackgroundColor: '#FF4FA3', pointRadius: 5, pointHoverRadius: 7, borderWidth: 3 }] },
+        options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
+      });
+    } catch (e) {
+      console.error('Chart load error:', e);
+      // On error, show a subtle error state in chart containers
+      document.querySelectorAll('.chart-loading-overlay').forEach(function (overlay) {
+        overlay.innerHTML = '<span class="text-muted" style="font-size:12px"><i class="bi bi-exclamation-circle me-1"></i>Failed to load</span>';
+      });
+      return;
+    }
+
+    // Hide all chart loading spinners with a fade-out
+    document.querySelectorAll('.chart-loading-overlay').forEach(function (overlay) {
+      overlay.style.opacity = '0';
+      setTimeout(function () { overlay.remove(); }, 300);
     });
+  }
 
-    // Monthly Bar
-    new Chart(document.getElementById('monthlyChart'), {
-      type: 'bar',
-      data: { labels: d.monthly_completed.labels, datasets: [{ label: 'Completed', data: d.monthly_completed.data, backgroundColor: 'rgba(255, 79, 163, 0.85)', borderRadius: 8, borderSkipped: false }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
-    });
+  function setScope(scopeVal) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('scope', scopeVal);
+    window.location.href = url.toString();
+  }
 
-    // Priority Pie
-    new Chart(document.getElementById('priorityChart'), {
-      type: 'pie',
-      data: { labels: d.priority_distribution.labels, datasets: [{ data: d.priority_distribution.data, backgroundColor: priorityColors, borderWidth: 0 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' }, padding: 12, boxWidth: 12 } } } }
-    });
-
-    // Officer Horizontal Bar
-    new Chart(document.getElementById('officerChart'), {
-      type: 'bar',
-      data: { labels: d.tasks_per_officer.labels, datasets: [{ label: 'Tasks', data: d.tasks_per_officer.data, backgroundColor: officerColors, borderRadius: 8 }] },
-      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, y: { grid: { display: false }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } } } }
-    });
-
-    // Weekly Line
-    new Chart(document.getElementById('weeklyChart'), {
-      type: 'line',
-      data: { labels: d.weekly_trend.labels, datasets: [{ label: 'Completed', data: d.weekly_trend.data, borderColor: '#FF4FA3', backgroundColor: 'rgba(255, 79, 163, 0.12)', tension: 0.4, fill: true, pointBackgroundColor: '#FF4FA3', pointRadius: 5, pointHoverRadius: 7, borderWidth: 3 }] },
-      options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: gridColor }, ticks: { color: textColor, font: { size: 11, family: 'Plus Jakarta Sans' } } }, x: { grid: { display: false }, ticks: { color: textColor, font: { size: 10, family: 'Plus Jakarta Sans' } } } } }
-    });
-  } catch(e) { console.error('Chart load error:', e); }
-}
-
-function setScope(scopeVal) {
-  const url = new URL(window.location.href);
-  url.searchParams.set('scope', scopeVal);
-  window.location.href = url.toString();
-}
-
-loadCharts();
+  loadCharts();
 </script>
 {% endblock %}

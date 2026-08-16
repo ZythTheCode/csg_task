@@ -79,9 +79,91 @@
     document.addEventListener('DOMContentLoaded', function () { window.updateTabFavicon(); });
   </script>
   {% block extra_css %}{% endblock %}
+
+  <!-- Top Navigation Progress Bar — inline CSS for instant cold-start visibility -->
+  <style>
+    #nav-progress {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 0;
+      height: 3px;
+      background: var(--primary, #FF4FA3);
+      z-index: 99999;
+      transition: width .3s ease;
+      pointer-events: none;
+      opacity: 1;
+      border-radius: 0 2px 2px 0
+    }
+
+    #nav-progress.active {
+      animation: progress-indeterminate 1.5s infinite linear
+    }
+
+    @keyframes progress-indeterminate {
+      0% {
+        width: 15%;
+        left: 0
+      }
+
+      50% {
+        width: 45%;
+        left: 30%
+      }
+
+      100% {
+        width: 15%;
+        left: 85%
+      }
+    }
+
+    /* Chart spinner loading overlay */
+    .chart-loading-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--card-bg, rgba(255, 255, 255, 0.85));
+      border-radius: 8px;
+      z-index: 2;
+      transition: opacity .3s ease
+    }
+
+    [data-mode="dark"] .chart-loading-overlay {
+      background: rgba(30, 41, 59, 0.85)
+    }
+
+    .chart-spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--skeleton-bg, #e2e8f0);
+      border-top-color: var(--primary, #FF4FA3);
+      border-radius: 50%;
+      animation: chart-spin .8s linear infinite
+    }
+
+    [data-mode="dark"] .chart-spinner {
+      border-color: #334155;
+      border-top-color: var(--primary, #FF4FA3)
+    }
+
+    @keyframes chart-spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+  </style>
 </head>
 
 <body>
+
+  <!-- Top Progress Bar (visible immediately on cold start) -->
+  <div id="nav-progress" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="width:30%">
+  </div>
 
   <!-- Ambient Animated Background Blobs -->
   <div class="bg-ambient-blob bg-blob-1"></div>
@@ -365,6 +447,11 @@
   {% endif %}
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{% static 'js/progress-bar.js' %}"></script>
+  <script>
+    // Complete the cold-start progress bar immediately (was at 30% from inline style)
+    if (window.CSGProgress) window.CSGProgress.complete();
+  </script>
   <!-- FRAGMENT_SCRIPTS_START -->
   {% block extra_js %}{% endblock %}
   <!-- FRAGMENT_SCRIPTS_END -->
@@ -436,8 +523,8 @@
                   .then(data => {
                     if (data.status === 'ok') {
                       editLink.setAttribute('data-auth-verified', 'true');
-                      document.body.classList.add('page-transitioning');
-                      setTimeout(() => { window.location.href = href; }, 100);
+                      if (window.CSGProgress) window.CSGProgress.start();
+                      window.location.href = href;
                     } else {
                       alert(data.error || 'Incorrect Organization Admin password. Access denied.');
                     }
@@ -458,8 +545,9 @@
         if (!href || href.startsWith('#') || href.startsWith('javascript:') || link.getAttribute('target') === '_blank' || link.hasAttribute('data-bs-toggle') || link.hasAttribute('data-bs-dismiss') || link.classList.contains('no-transition')) return;
         if (link.hostname === window.location.hostname && href !== window.location.href) {
           e.preventDefault();
-          document.body.classList.add('page-transitioning');
-          setTimeout(function () { window.location.href = href; }, 180);
+          // Start progress bar for immediate visual feedback
+          if (window.CSGProgress) window.CSGProgress.start();
+          window.location.href = href;
         }
       });
 
@@ -749,7 +837,7 @@
           }
         }, mimeType, quality);
       }
-    };
+      ;
   </script>
 
   <!-- Global Facebook-Style Profile Photo & Logo Cropper Modal -->
@@ -814,67 +902,67 @@
   {% block modals %}{% endblock %}
 
   <script>
-    // Global broken image fallback handler - automatically catches load failures for any image tag
-    document.addEventListener('error', function (e) {
-      if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
-        const img = e.target;
-        if (img.dataset.broken) return;
-        img.dataset.broken = 'true';
+      // Global broken image fallback handler - automatically catches load failures for any image tag
+      document.addEventListener('error', function (e) {
+        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
+          const img = e.target;
+          if (img.dataset.broken) return;
+          img.dataset.broken = 'true';
 
-        // Hide the broken img tag cleanly
-        img.style.display = 'none';
-        img.classList.add('d-none');
+          // Hide the broken img tag cleanly
+          img.style.display = 'none';
+          img.classList.add('d-none');
 
-        // Look for sibling or parent container fallback element
-        const container = img.closest('.brand-logo-container, .org-logo-preview, .avatar-upload-circle, .officer-avatar, .topbar-avatar, .position-relative, .card, .glass-card, td, div') || img.parentElement;
-        if (container) {
-          const fallback = container.querySelector('#orgLogoFallback, #avatarFallbackForm, #avatarFallbackProfile, .brand-logo, .avatar-fallback, .officer-avatar, .sidebar-logo-icon, [data-fallback="true"]');
-          if (fallback) {
-            fallback.style.display = 'flex';
-            fallback.classList.remove('d-none');
-            return;
+          // Look for sibling or parent container fallback element
+          const container = img.closest('.brand-logo-container, .org-logo-preview, .avatar-upload-circle, .officer-avatar, .topbar-avatar, .position-relative, .card, .glass-card, td, div') || img.parentElement;
+          if (container) {
+            const fallback = container.querySelector('#orgLogoFallback, #avatarFallbackForm, #avatarFallbackProfile, .brand-logo, .avatar-fallback, .officer-avatar, .sidebar-logo-icon, [data-fallback="true"]');
+            if (fallback) {
+              fallback.style.display = 'flex';
+              fallback.classList.remove('d-none');
+              return;
+            }
+          }
+
+          // Fallback: If no dedicated element found, insert a clean icon placeholder
+          const parent = img.parentElement;
+          if (parent && !parent.querySelector('.auto-broken-fallback')) {
+            const fallbackDiv = document.createElement('div');
+            fallbackDiv.className = 'auto-broken-fallback d-inline-flex align-items-center justify-content-center fw-bold text-muted bg-light border rounded-3 p-2';
+            fallbackDiv.style.cssText = img.style.cssText;
+            fallbackDiv.style.display = 'inline-flex';
+            fallbackDiv.innerHTML = '<i class="bi bi-image text-secondary"></i>';
+            parent.insertBefore(fallbackDiv, img);
           }
         }
-
-        // Fallback: If no dedicated element found, insert a clean icon placeholder
-        const parent = img.parentElement;
-        if (parent && !parent.querySelector('.auto-broken-fallback')) {
-          const fallbackDiv = document.createElement('div');
-          fallbackDiv.className = 'auto-broken-fallback d-inline-flex align-items-center justify-content-center fw-bold text-muted bg-light border rounded-3 p-2';
-          fallbackDiv.style.cssText = img.style.cssText;
-          fallbackDiv.style.display = 'inline-flex';
-          fallbackDiv.innerHTML = '<i class="bi bi-image text-secondary"></i>';
-          parent.insertBefore(fallbackDiv, img);
-        }
-      }
-      window.downloadAttachmentToDevice = function (event, url, filename) {
-        if (event) {
-          if (event.preventDefault) event.preventDefault();
-          if (event.stopPropagation) event.stopPropagation();
-        }
-        fetch(url)
-          .then(function (res) {
-            if (!res.ok) throw new Error('Network error');
-            return res.blob();
-          })
-          .then(function (blob) {
-            var blobUrl = window.URL.createObjectURL(blob);
-            var a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = blobUrl;
-            a.download = filename || 'download';
-            document.body.appendChild(a);
-            a.click();
-            setTimeout(function () {
-              window.URL.revokeObjectURL(blobUrl);
-              a.remove();
-            }, 1000);
-          })
-          .catch(function () {
-            window.location.href = url;
-          });
-        return false;
-      };
+        window.downloadAttachmentToDevice = function (event, url, filename) {
+          if (event) {
+            if (event.preventDefault) event.preventDefault();
+            if (event.stopPropagation) event.stopPropagation();
+          }
+          fetch(url)
+            .then(function (res) {
+              if (!res.ok) throw new Error('Network error');
+              return res.blob();
+            })
+            .then(function (blob) {
+              var blobUrl = window.URL.createObjectURL(blob);
+              var a = document.createElement('a');
+              a.style.display = 'none';
+              a.href = blobUrl;
+              a.download = filename || 'download';
+              document.body.appendChild(a);
+              a.click();
+              setTimeout(function () {
+                window.URL.revokeObjectURL(blobUrl);
+                a.remove();
+              }, 1000);
+            })
+            .catch(function () {
+              window.location.href = url;
+            });
+          return false;
+          ;
   </script>
 
 </body>

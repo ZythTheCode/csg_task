@@ -1,0 +1,16 @@
+{
+  "enabled": true,
+  "name": "Fix Django Template Syntax",
+  "description": "After writing any Django template file, verify there are no multi-line template tags ({% %} or {{ }} split across lines) and no == or != operators without spaces, which cause Django TemplateSyntaxError. Automatically fix any issues found.",
+  "version": "1",
+  "when": {
+    "type": "postToolUse",
+    "toolTypes": [
+      "write"
+    ]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "A Django template file was just written. Check if the file is in the templates/ directory (*.html). If so, run this PowerShell command to check for and fix common Django template syntax issues:\n\n1. Multi-line {% %} tags (e.g., {% if something\\n   continuation %}) - these MUST be on a single line\n2. Multi-line {{ }} tags (e.g., {{ variable\\n   }}) - these MUST be on a single line  \n3. Comparison operators without spaces (e.g., ==val, !='value') - Django requires spaces around == and !=\n\nRun this fix command:\n```\n$file = \"THE_FILE_PATH\"; $c = Get-Content $file -Raw; $changed = $false; $orig = $c; while ($c -match '\\{%([^%]*)\\r?\\n([^%]*)%\\}') { $c = [regex]::Replace($c, '\\{%([^%]*?)\\s*\\r?\\n\\s*([^%]*?)%\\}', '{% $1 $2 %}'); if ($c -eq $orig) { break } }; while ($c -match '\\{\\{([^}]*)\\r?\\n([^}]*)\\}\\}') { $c = [regex]::Replace($c, '\\{\\{([^}]*?)\\s*\\r?\\n\\s*([^}]*?)\\}\\}', '{{ $1 $2 }}'); if ($c -eq $orig) { break } }; $c = $c -replace '(\\w)==(\\w)', '$1 == $2'; $c = $c -replace \"(\\w)==(')\", '$1 == $2'; $c = $c -replace \"(\\w)!='\", \"$1 != '\"; if ($c -ne $orig) { Set-Content $file -Value $c -NoNewline; Write-Output \"Fixed template syntax issues in $file\" }\n```\n\nOnly do this for .html files in the templates/ directory."
+  }
+}

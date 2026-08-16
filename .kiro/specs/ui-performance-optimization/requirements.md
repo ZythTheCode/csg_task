@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This feature optimizes the perceived performance and responsiveness of the CSG Task Management System's UI. The system is a server-side rendered Django application deployed on Render free tier with Neon PostgreSQL and Cloudinary free tier storage. Current navigation relies entirely on full-page reloads with an artificial 180ms fade delay, and provides no visual feedback during data loading. This optimization introduces AJAX-based partial page updates for same-section navigation, skeleton loading states, and intelligent prefetching — all within the constraints of vanilla JavaScript, no build tools, and free-tier hosting limits.
+This feature optimizes the perceived performance and responsiveness of the CSG Task Management System's UI and backend. The system is a server-side rendered Django application deployed on Render free tier with Neon PostgreSQL and Cloudinary free tier storage. Current navigation relies entirely on full-page reloads with an artificial 180ms fade delay, and provides no visual feedback during data loading. This optimization introduces AJAX-based partial page updates for same-section navigation, skeleton loading states, intelligent prefetching, server-side query optimization, and strategic caching — all within the constraints of vanilla JavaScript, no build tools, and free-tier hosting limits.
 
 ## Glossary
 
@@ -17,6 +17,8 @@ This feature optimizes the perceived performance and responsiveness of the CSG T
 - **Filter_Panel**: The UI section containing task filters (status, priority, category, officer) that refine displayed results.
 - **Cold_Start**: The initial server response delay (2-5 seconds) caused by Render free tier spinning up the application after inactivity.
 - **Content_Cache**: The client-side in-memory storage that holds recently fetched page fragments to enable instant back-navigation.
+- **Query_Optimizer**: The server-side Django queryset optimization layer that ensures database queries use appropriate select_related, prefetch_related, indexing, and caching strategies.
+- **View_Cache**: The server-side Django cache layer that stores computed view data (aggregated counts, officer lists, frequently accessed querysets) to reduce database round-trips.
 
 ## Requirements
 
@@ -130,7 +132,44 @@ This feature optimizes the perceived performance and responsiveness of the CSG T
 5. WHEN the user performs a data-modifying action (creating, editing, or deleting a task), THE Content_Cache SHALL invalidate all cached entries for task-related pages (list, board, calendar).
 6. THE Content_Cache SHALL store entries in memory only and not persist to localStorage or sessionStorage to avoid serving stale content across sessions.
 
-### Requirement 10: Performance Budget and Free-Tier Constraints
+### Requirement 10: Server-Side Query Optimization
+
+**User Story:** As a developer, I want database queries to be optimized with proper relationship loading and indexing, so that page response times are minimized even on the free-tier Neon PostgreSQL database.
+
+#### Acceptance Criteria
+
+1. WHEN the TaskListView loads tasks, THE Query_Optimizer SHALL use select_related for single-value foreign keys (created_by, organization) and prefetch_related for many-to-many relationships (assigned_officers with officer_profile and position) in a single queryset chain.
+2. WHEN the TaskBoardView builds Kanban columns, THE Query_Optimizer SHALL execute a single base queryset and partition results in Python rather than issuing separate filtered queries per status column.
+3. WHEN the DashboardView computes task statistics, THE Query_Optimizer SHALL use a single aggregated query with conditional Count expressions rather than multiple individual count queries.
+4. WHEN the OfficerListView loads officers with task counts, THE Query_Optimizer SHALL use annotated queries with Count aggregations rather than performing per-officer task count lookups.
+5. WHEN the NotificationListView loads notifications, THE Query_Optimizer SHALL use select_related for related_task and only() to limit columns retrieved to those displayed in the list.
+6. THE Query_Optimizer SHALL ensure that all queryset slicing (e.g., [:10], [:50]) is applied after all filters and ordering to leverage database-level LIMIT rather than Python-level slicing of full result sets.
+
+### Requirement 11: Server-Side View Caching
+
+**User Story:** As a developer, I want frequently accessed computed data (officer lists, task counts, dashboard aggregates) to be cached, so that repeated page loads do not require fresh database queries.
+
+#### Acceptance Criteria
+
+1. WHEN the TaskListView or TaskBoardView retrieves the officers list for filter dropdowns, THE View_Cache SHALL cache the result per organization for 60 seconds to avoid repeated queries.
+2. WHEN the DashboardView computes task count aggregates, THE View_Cache SHALL cache the computed counts per user and scope for 30 seconds.
+3. WHEN the notifications context processor computes the unread notification count, THE View_Cache SHALL cache the count per user for 30 seconds.
+4. WHEN a data-modifying action occurs (task create, update, delete, or officer change), THE View_Cache SHALL invalidate related cache keys for the affected organization.
+5. THE View_Cache SHALL use the existing file-based Django cache backend configured in settings without introducing additional cache infrastructure.
+6. IF a cache read fails or returns stale data, THEN THE View_Cache SHALL fall back to a fresh database query without raising an error to the user.
+
+### Requirement 12: Optimized Kanban Board Queries
+
+**User Story:** As an officer, I want the Kanban Board view to load quickly even with many tasks, so that I can use the board view for daily workflow management without delays.
+
+#### Acceptance Criteria
+
+1. WHEN the TaskBoardView loads, THE Query_Optimizer SHALL fetch all non-archived tasks matching the current filters in a single query and partition them into status columns in application code.
+2. WHEN building Kanban columns, THE Query_Optimizer SHALL limit each column to 50 tasks and provide a count of total tasks per column from the pre-fetched queryset.
+3. WHEN the TaskBoardView receives a fragment request, THE Content_Fragment_View SHALL return only the board content without the full page layout to reduce payload size.
+4. THE Query_Optimizer SHALL prefetch assigned officers, their profiles, and positions for all tasks in the board queryset using a single prefetch_related call.
+
+### Requirement 13: Performance Budget and Free-Tier Constraints
 
 **User Story:** As the system administrator, I want UI performance optimizations to operate within the free-tier resource limits of Render, Neon PostgreSQL, and Cloudinary, so that the application remains deployable at no cost.
 
@@ -143,7 +182,22 @@ This feature optimizes the perceived performance and responsiveness of the CSG T
 5. THE Navigation_System SHALL not introduce any new third-party JavaScript dependencies beyond the existing Bootstrap 5 and Lucide icons.
 6. THE Skeleton_Placeholder elements SHALL use only CSS for animation without requiring additional image assets or SVG files from Cloudinary.
 
-### Requirement 11: Accessibility of Loading States
+### Requirement 14: Visual Stability and Graceful Degradation
+
+**User Story:** As an officer, I want the app to remain visually stable and fully functional regardless of whether AJAX navigation succeeds or fails, so that I never encounter broken layouts, missing content, or unresponsive states.
+
+#### Acceptance Criteria
+
+1. IF JavaScript fails to load or execute, THEN THE Navigation_System SHALL not interfere with standard full-page navigation, and the application SHALL remain fully functional via traditional page loads.
+2. WHEN an AJAX content swap occurs, THE Navigation_System SHALL ensure the replaced content area maintains its CSS layout constraints (no layout shifts, height collapses, or overflow changes).
+3. IF a fragment response returns malformed HTML or an empty body, THEN THE Navigation_System SHALL discard the response and perform a full-page navigation to the target URL instead of rendering broken content.
+4. WHEN the Navigation_System replaces content, THE Navigation_System SHALL remove all event listeners and timers from the previous content to prevent memory leaks and ghost interactions.
+5. WHILE a navigation request is in progress, THE Navigation_System SHALL disable further navigation clicks on the same target to prevent duplicate requests and content flickering.
+6. WHEN the Navigation_System re-initializes page-specific JavaScript after a content swap, THE Navigation_System SHALL wait until the new DOM is fully inserted before executing scripts to prevent null reference errors.
+7. IF a skeleton placeholder is displayed for longer than 10 seconds without content loading, THEN THE Loading_State_Manager SHALL display a retry prompt or fall back to a full-page reload to prevent indefinite loading states.
+8. THE Navigation_System SHALL preserve the scroll position of the sidebar and topbar during content swaps to prevent visual jumping of persistent UI elements.
+
+### Requirement 15: Accessibility of Loading States
 
 **User Story:** As an officer using assistive technology, I want loading states to be announced by screen readers, so that I am aware when content is being fetched and when it becomes available.
 
