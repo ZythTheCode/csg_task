@@ -635,6 +635,31 @@ class TaskCalendarView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
         ctx['status_choices'] = Task.STATUS_CHOICES
         ctx['category_choices'] = Task.CATEGORY_CHOICES
         ctx['priority_choices'] = Task.PRIORITY_CHOICES
+
+        # Officers list for filter dropdown
+        if org:
+            cache_key = f'org_{org.pk}_officers'
+            officers_list = cache.get(cache_key)
+            if officers_list is None:
+                officers_list = list(User.objects.filter(
+                    is_active=True, organization=org
+                ).exclude(role__in=['super_admin', 'super_super_admin']).select_related(
+                    'officer_profile', 'officer_profile__position'
+                ).order_by('first_name', 'last_name'))
+                cache.set(cache_key, officers_list, 60)
+            ctx['officers_list'] = officers_list
+        else:
+            cache_key = 'org_all_officers'
+            officers_list = cache.get(cache_key)
+            if officers_list is None:
+                officers_list = list(User.objects.filter(
+                    is_active=True, organization__isnull=False
+                ).exclude(role__in=['super_admin', 'super_super_admin']).select_related(
+                    'officer_profile', 'officer_profile__position', 'organization'
+                ).order_by('organization__name', 'first_name', 'last_name'))
+                cache.set(cache_key, officers_list, 60)
+            ctx['officers_list'] = officers_list
+
         ctx['current_filters'] = {
             'q': q,
             'category': category,
@@ -679,6 +704,12 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
         priority = request.GET.get('priority', '')
         if priority:
             qs = qs.filter(priority=priority)
+
+        officers = request.GET.getlist('officer')
+        if officers:
+            qs = qs.filter(
+                Q(assigned_officers__pk__in=officers) | Q(assignments__officer__pk__in=officers)
+            ).distinct()
 
         qs = qs.select_related('organization', 'created_by').prefetch_related(
             Prefetch(

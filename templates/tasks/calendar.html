@@ -264,20 +264,24 @@
     color: #f8fafc !important;
   }
 
-  
+
   /* Force equal row heights in month view */
   .fc-daygrid-body {
     height: 100% !important;
   }
+
   .fc-scrollgrid-sync-table {
     height: 100% !important;
   }
+
   .fc-daygrid-body-balanced .fc-daygrid-day {
     height: auto !important;
   }
+
   .fc .fc-daygrid-body-unbalanced .fc-daygrid-day {
     height: auto !important;
   }
+
   /* Set fixed row height so all weeks are equal */
   .fc-daygrid-day-frame {
     min-height: 120px !important;
@@ -292,6 +296,7 @@
     border-radius: 8px;
     margin-top: 2px;
   }
+
   .fc-daygrid-more-link:hover {
     background: var(--pink-50);
     text-decoration: none;
@@ -301,11 +306,12 @@
   .fc-more-popover {
     border-radius: 16px !important;
     border: none !important;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15), 0 4px 12px rgba(0, 0, 0, 0.08) !important;
     backdrop-filter: blur(12px);
     overflow: hidden;
     max-width: 280px;
   }
+
   .fc-more-popover .fc-popover-header {
     background: var(--primary) !important;
     color: white !important;
@@ -313,11 +319,13 @@
     font-size: 13px;
     font-weight: 700;
   }
+
   .fc-more-popover .fc-popover-body {
     padding: 8px !important;
     max-height: 250px;
     overflow-y: auto;
   }
+
   .fc-more-popover .fc-daygrid-event {
     margin-bottom: 3px !important;
   }
@@ -325,9 +333,11 @@
   [data-mode="dark"] .fc-more-popover {
     background: #1e293b !important;
   }
+
   [data-mode="dark"] .fc-more-popover .fc-popover-body {
     background: #1e293b !important;
   }
+
   [data-mode="dark"] .fc-daygrid-more-link {
     color: var(--primary);
   }
@@ -391,59 +401,60 @@
 </div>
 
 <!-- Filters Card -->
-<div class="glass-card glass-card-filters mb-4">
-  <div class="p-3">
-    <form method="get" class="row g-2 align-items-center" id="calendarFilterForm">
-      <input type="hidden" name="scope" id="scopeInput" value="{{ current_filters.scope }}">
-      <div class="col-12 col-sm-6 col-lg-4 position-relative">
-        <div class="input-group">
-          <span class="input-group-text border-end-0"
-            style="background:#fff;border-radius:12px 0 0 12px;border-color:var(--slate-200)">
-            <i data-lucide="search" class="text-muted" style="width:16px;height:16px"></i>
-          </span>
-          <input type="text" name="q" value="{{ current_filters.q }}" id="calendarSearchInput"
-            class="form-control border-start-0" placeholder="Search tasks by title or code..." autocomplete="off"
-            style="border-radius:0 12px 12px 0;font-size:13.5px">
-        </div>
+<div class="glass-card mb-3" style="padding:10px 16px;border-radius:16px">
+  <form method="get" class="d-flex align-items-center gap-2 flex-wrap" id="calendarFilterForm" style="row-gap:8px">
+    <input type="hidden" name="scope" id="scopeInput" value="{{ current_filters.scope }}">
+    <div class="position-relative" style="flex:1 1 180px;min-width:140px;max-width:280px">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text border-end-0"
+          style="background:#fff;border-radius:10px 0 0 10px;border-color:var(--slate-200);padding:4px 8px"><i
+            data-lucide="search" class="text-muted" style="width:14px;height:14px"></i></span>
+        <input type="text" name="q" value="{{ current_filters.q }}" id="calendarSearchInput"
+          class="form-control form-control-sm border-start-0" placeholder="Search tasks by title or code..."
+          autocomplete="off" style="border-radius:0 10px 10px 0;font-size:12.5px;padding:6px 10px">
       </div>
-
-      <div class="col-12 col-sm-6 col-lg-3">
-        <select name="category" id="categorySelect" class="form-select" style="font-size:13.5px">
-          <option value="">All Categories</option>
-          {% for val, label in category_choices %}
-          <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="col-12 col-sm-6 col-lg-3">
-        <select name="status" id="statusSelect" class="form-select" style="font-size:13.5px">
-          <option value="">All Statuses</option>
-          <option value="in_progress" {% if current_filters.status == 'in_progress' %}selected{% endif %}>In Progress
-            (Active)</option>
-          <option value="" disabled>──────────</option>
-          {% for val, label in status_choices %}
-          <option value="{{ val }}" {% if current_filters.status == val %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="col-12 col-sm-6 col-lg-2">
-        <select name="priority" id="prioritySelect" class="form-select" style="font-size:13.5px">
-          <option value="">All Priorities</option>
-          {% for val, label in priority_choices %}
-          <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
-          {% endfor %}
-        </select>
-      </div>
-
-      <div class="col-12 col-sm-6 col-lg-2 d-flex gap-2">
-        <button type="submit" class="btn btn-primary-custom w-100" style="font-size:13px;padding:8px">Filter</button>
-        <a href="{% url 'tasks:calendar' %}" class="btn btn-secondary-custom" style="font-size:13px;padding:8px 12px"
-          title="Reset Filters"><i data-lucide="rotate-ccw" style="width:14px;height:14px"></i></a>
-      </div>
-    </form>
-  </div>
+    </div>
+    <select name="category" class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:120px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
+      <option value="">All Categories</option>
+      {% for val, label in category_choices %}
+      <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    <select name="status" class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:140px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
+      <option value="">All Statuses</option>
+      {% for val, label in status_choices %}
+      {% if val != 'completed' and val != 'overdue' %}
+      <option value="{{ val }}" {% if current_filters.status == val %}selected{% endif %}>{{ label }}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
+    <select name="priority" class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:140px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
+      <option value="">All Priorities</option>
+      {% for val, label in priority_choices %}
+      <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
+      {% endfor %}
+    </select>
+    {% if current_filters.scope != 'my_tasks' %}
+    <select name="officer" multiple class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)"
+      size="1">
+      <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
+      {% for off in officers_list %}
+      <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{ off.get_full_name|default:off.username }}</option>
+      {% endfor %}
+    </select>
+    {% endif %}
+    <div class="d-flex gap-1 ms-auto">
+      <button type="submit" class="btn-primary-custom"
+        style="font-size:12px;padding:6px 14px;border-radius:10px;white-space:nowrap"><i data-lucide="filter"
+          style="width:13px;height:13px"></i> Apply</button>
+      <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}" class="btn btn-sm btn-outline-secondary"
+        style="font-size:12px;padding:5px 12px;border-radius:10px">Reset</a>
+    </div>
+  </form>
 </div>
 
 <!-- Calendar Container Card -->

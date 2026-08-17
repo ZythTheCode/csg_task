@@ -80,19 +80,17 @@
 <div class="glass-card mb-3" style="padding:10px 16px;border-radius:16px">
   <form method="get" class="d-flex align-items-center gap-2 flex-wrap" id="filterForm" style="row-gap:8px">
     <input type="hidden" name="scope" value="{{ current_filters.scope }}">
-    <!-- Search -->
-    <div class="filter-field position-relative" style="flex:1 1 140px;min-width:100px;max-width:200px">
+    <div class="position-relative" style="flex:1 1 180px;min-width:140px;max-width:280px">
       <div class="input-group input-group-sm">
         <span class="input-group-text border-end-0"
           style="background:#fff;border-radius:10px 0 0 10px;border-color:var(--slate-200);padding:4px 8px"><i
             data-lucide="search" class="text-muted" style="width:14px;height:14px"></i></span>
         <input type="text" name="q" value="{{ current_filters.q }}" id="searchInput"
-          class="form-control form-control-sm border-start-0" placeholder="Search..." autocomplete="off"
-          style="border-radius:0 10px 10px 0;font-size:12.5px;padding:6px 10px">
+          class="form-control form-control-sm border-start-0" placeholder="Search tasks by title or code..."
+          autocomplete="off" style="border-radius:0 10px 10px 0;font-size:12.5px;padding:6px 10px">
       </div>
       <div id="searchSuggestions" class="search-suggestions-dropdown shadow-lg"></div>
     </div>
-    <!-- Category -->
     <select name="category" class="form-select form-select-sm"
       style="font-size:12.5px;border-radius:10px;width:auto;min-width:120px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
       <option value="">All Categories</option>
@@ -100,7 +98,6 @@
       <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
-    <!-- Status -->
     <select name="status" class="form-select form-select-sm"
       style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:140px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
       <option value="">All Statuses</option>
@@ -110,44 +107,23 @@
       {% endif %}
       {% endfor %}
     </select>
-    <!-- Priority -->
     <select name="priority" class="form-select form-select-sm"
-      style="font-size:12.5px;border-radius:10px;width:auto;min-width:100px;max-width:130px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
-      <option value="">All Priority</option>
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:140px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
+      <option value="">All Priorities</option>
       {% for val, label in priority_choices %}
       <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
       {% endfor %}
     </select>
-    <!-- Officer Select (only show on All Tasks scope) -->
     {% if current_filters.scope != 'my_tasks' %}
-    <select name="officer" multiple class="form-select form-select-sm" id="officerSelect"
-      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200);appearance:auto"
+    <select name="officer" multiple class="form-select form-select-sm"
+      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)"
       size="1">
       <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
       {% for off in officers_list %}
-      <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{  off.get_full_name|default:off.username  }}</option>
+      <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{ off.get_full_name|default:off.username }}</option>
       {% endfor %}
     </select>
     {% endif %}
-    <!-- Sort -->
-    <select name="sort" class="form-select form-select-sm"
-      style="font-size:12.5px;border-radius:10px;width:auto;min-width:120px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)"
-      onchange="this.form.submit()">
-      <option value="-created_at" {% if current_filters.sort == '-created_at' %}selected{% endif %}>Newest First</option>
-      <option value="created_at" {% if current_filters.sort == 'created_at' %}selected{% endif %}>Oldest First</option>
-      <option value="task_number" {% if current_filters.sort == 'task_number' %}selected{% endif %}>Task No. ↑</option>
-      <option value="-task_number" {% if current_filters.sort == '-task_number' %}selected{% endif %}>Task No. ↓</option>
-      <option value="title" {% if current_filters.sort == 'title' %}selected{% endif %}>Title (A-Z)</option>
-      <option value="-title" {% if current_filters.sort == '-title' %}selected{% endif %}>Title (Z-A)</option>
-      <option value="priority" {% if current_filters.sort == 'priority' %}selected{% endif %}>Priority ↑</option>
-      <option value="-priority" {% if current_filters.sort == '-priority' %}selected{% endif %}>Priority ↓</option>
-      <option value="status" {% if current_filters.sort == 'status' %}selected{% endif %}>Status Stage</option>
-      <option value="due_date" {% if current_filters.sort == 'due_date' %}selected{% endif %}>Due Date ↑</option>
-      <option value="-due_date" {% if current_filters.sort == '-due_date' %}selected{% endif %}>Due Date ↓</option>
-      <option value="-progress" {% if current_filters.sort == '-progress' %}selected{% endif %}>Progress ↑</option>
-      <option value="progress" {% if current_filters.sort == 'progress' %}selected{% endif %}>Progress ↓</option>
-    </select>
-    <!-- Actions -->
     <div class="d-flex gap-1 ms-auto">
       <button type="submit" class="btn-primary-custom"
         style="font-size:12px;padding:6px 14px;border-radius:10px;white-space:nowrap"><i data-lucide="filter"
@@ -162,7 +138,7 @@
 <div class="d-flex align-items-center justify-content-between mb-3 px-1">
   <div class="d-flex align-items-center gap-2 flex-wrap">
     <h6 class="mb-0 fw-bold" style="color:var(--slate-800);font-size:15px">Task Items</h6>
-    <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600">{{  tasks|length  }} task{% if tasks|length != 1 %}s{% endif %}</span>
+    <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600">{{ tasks|length }} task{% if tasks|length != 1 %}s{% endif %}</span>
     <div class="btn-group p-1" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.85);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?status=active{% if current_filters.scope %}&scope={{ current_filters.scope }}{% endif %}"
@@ -366,7 +342,7 @@
           </td>
           {% endif %}
           <td style="white-space:nowrap">
-            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12.5px">{{  task.task_number  }}</span>
+            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12.5px">{{ task.task_number }}</span>
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
@@ -374,9 +350,9 @@
               title="{{ task.title }}">{{ task.title }}</a>
             <div class="d-flex align-items-center gap-1.5 mt-0.5">
               <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px">
-                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{  task.get_category_display  }}
+                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
               </span>
-              <span style="font-size:11px;color:var(--slate-400)">by {{  task.created_by.get_full_name|default:task.created_by.username  }}</span>
+              <span style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</span>
             </div>
           </td>
           <td style="font-size:12.5px;color:var(--slate-600);max-width:350px">
@@ -400,7 +376,8 @@
                 data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This cannot be undone."
                 data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
                 data-confirm-icon="bi-trash-fill" data-confirm-icon-bg="#fee2e2" data-confirm-icon-color="#dc2626"
-                data-require-password="true">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon"
+                data-require-password="true">{% csrf_token %}<input type="hidden" name="next"
+                  value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon"
                   style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
                   title="Delete"><i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i></button></form>
             </div>
@@ -413,7 +390,7 @@
           </td>
           {% endif %}
           <td style="white-space:nowrap">
-            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{  task.task_number  }}</span>
+            <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span>
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
@@ -421,9 +398,9 @@
               title="{{ task.title }}">{{ task.title }}</a>
             <div class="d-flex align-items-center gap-1.5 mt-0.5">
               <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:2px 7px">
-                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{  task.get_category_display  }}
+                <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{ task.get_category_display }}
               </span>
-              <span style="font-size:11px;color:var(--slate-400)">by {{  task.created_by.get_full_name|default:task.created_by.username  }}</span>
+              <span style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</span>
             </div>
           </td>
           <td>
@@ -453,7 +430,7 @@
                 <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
                   style="background:var(--pink-50);border-radius:6px">
                   <span class="fw-semibold text-primary" style="font-size:11px">{{ officer.position_title }}</span>
-                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{  officer.get_full_name|default:officer.username  }}</span>
+                  <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer.get_full_name|default:officer.username }}</span>
                 </li>
                 {% endfor %}
               </ul>
@@ -462,7 +439,7 @@
             <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
             {% endif %}
           </td>
-          <td style="white-space:nowrap"><span class="badge-status badge-priority-{{ task.priority }}">{{  task.get_priority_display  }}</span></td>
+          <td style="white-space:nowrap"><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
           <td style="white-space:nowrap">
             <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
           </td>
@@ -483,7 +460,7 @@
               <div class="progress-custom flex-grow-1" style="min-width:50px">
                 <div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div>
               </div>
-              <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{  task.progress  }}%</small>
+              <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
             </div>
           </td>
           <td style="white-space:nowrap;text-align:right" class="pe-4">
@@ -515,7 +492,8 @@
                 data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This cannot be undone."
                 data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
                 data-confirm-icon="bi-trash-fill" data-confirm-icon-bg="#fee2e2" data-confirm-icon-color="#dc2626"
-                data-require-password="true">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon"
+                data-require-password="true">{% csrf_token %}<input type="hidden" name="next"
+                  value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon"
                   style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important"
                   title="Delete"><i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i></button></form>
               {% endif %}
