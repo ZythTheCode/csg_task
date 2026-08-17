@@ -13,11 +13,7 @@ from django.conf import settings as django_settings
 from decouple import config
 from .models import Task, TaskComment, TaskAttachment, TaskHistory, TaskAssignment
 from .forms import TaskForm, TaskProgressForm, CommentForm, AttachmentForm
-<<<<<<< HEAD
-from .cache_utils import invalidate_task_caches
-=======
 from .services import bulk_complete_tasks, bulk_reassign_officers
->>>>>>> fix/optimization
 from notifications.models import Notification
 from accounts.models import User
 from core.mixins import FragmentResponseMixin
@@ -455,16 +451,11 @@ class TaskDeleteView(LoginRequiredMixin, DeleteView):
         from core.services.audit import log_activity
         log_activity(request, 'TASK_DELETE', f"Deleted task {task_num}", resource_type='Task', resource_id=task_pk)
         messages.success(request, f'Task {task_num} deleted.')
-<<<<<<< HEAD
-        invalidate_task_caches(task)
-        return super().delete(request, *args, **kwargs)
-=======
         response = super().delete(request, *args, **kwargs)
         # Invalidate task-related caches for this organization
         if task_org_id:
             invalidate_task_caches(task_org_id)
         return response
->>>>>>> fix/optimization
 
 
 class TaskBulkDeleteView(LoginRequiredMixin, View):
@@ -514,47 +505,12 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
 
         updated_count, error = bulk_complete_tasks(qs, request.user)
 
-<<<<<<< HEAD
-        updated_count = 0
-        updated_tasks = []
-        now_date = timezone.now().date()
-        status_dict = dict(Task.STATUS_CHOICES)
-
-        for task in qs:
-            old_status = task.status
-            if old_status != 'completed':
-                task.status = 'completed'
-                task.completion_date = now_date
-                task.progress = 100
-                task.save()
-                updated_count += 1
-                updated_tasks.append(task)
-
-                TaskHistory.objects.create(
-                    task=task,
-                    changed_by=request.user,
-                    field_changed='Status',
-                    old_value=status_dict.get(old_status, old_status),
-                    new_value='Completed'
-                )
-                for assignment in task.assignments.all():
-                    Notification.objects.create(
-                        recipient=assignment.officer,
-                        title='Task Completed',
-                        message=f'Task "{task.title}" has been marked as completed.',
-                        notification_type='task_completed',
-                        related_task=task
-                    )
-
-        if updated_count > 0:
-=======
         if error:
             messages.error(request, error)
         elif updated_count > 0:
             # Invalidate task-related caches for this organization
             if org:
                 invalidate_task_caches(org.pk)
->>>>>>> fix/optimization
             messages.success(request, f'Successfully marked {updated_count} task(s) as completed.')
             # Invalidate caches for all mutated tasks
             for task in updated_tasks:
@@ -601,32 +557,6 @@ class TaskBoardView(FragmentResponseMixin, LoginRequiredMixin, ListView):
         if officers:
             base_qs = base_qs.filter(assigned_officers__id__in=officers).distinct()
 
-<<<<<<< HEAD
-        # Single-fetch: retrieve all non-completed tasks in one queryset with related objects
-        all_tasks = list(
-            base_qs
-            .exclude(status='completed')
-            .select_related('created_by', 'organization')
-            .prefetch_related(
-                'assigned_officers',
-                'assigned_officers__officer_profile',
-                'assigned_officers__officer_profile__position'
-            )
-            .order_by('-created_at')
-        )
-
-        # Partition into status columns using Python iteration
-        columns = []
-        for status_code, status_label in Task.STATUS_CHOICES:
-            if status_code in ['overdue', 'completed']:
-                continue
-            group = [t for t in all_tasks if t.status == status_code]
-            columns.append({
-                'code': status_code,
-                'label': status_label,
-                'tasks': group[:50],
-                'count': len(group),
-=======
         # Exclude completed tasks from board, apply select_related/prefetch_related once
         board_qs = base_qs.exclude(status='completed').select_related(
             'created_by', 'organization'
@@ -654,7 +584,6 @@ class TaskBoardView(FragmentResponseMixin, LoginRequiredMixin, ListView):
                 'tasks': col_tasks,
                 'count': total_count,
                 'has_overflow': total_count > 50,
->>>>>>> fix/optimization
             })
 
         ctx['page_title'] = 'Task Kanban Board'
@@ -752,17 +681,11 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
             qs = qs.filter(priority=priority)
 
         qs = qs.select_related('organization', 'created_by').prefetch_related(
-<<<<<<< HEAD
-            'assigned_officers', 'assigned_officers__officer_profile',
-            'assigned_officers__officer_profile__position'
-        )[:500]  # Upper bound to prevent extremely large calendar responses
-=======
             Prefetch(
                 'assigned_officers',
                 queryset=User.objects.select_related('officer_profile__position')
             )
         )
->>>>>>> fix/optimization
 
         events = []
         for task in qs:

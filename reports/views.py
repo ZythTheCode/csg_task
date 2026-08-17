@@ -48,27 +48,6 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
         # Apply filters
         filters = self._get_filters()
         tasks = self._get_filtered_tasks(filters)
-<<<<<<< HEAD
-        ctx['tasks'] = tasks
-        ctx['active_tasks'] = tasks.exclude(status='completed')[:200]
-        ctx['completed_tasks'] = tasks.filter(status='completed')[:200]
-        ctx['filters'] = filters
-        ctx['scope'] = filters['scope']
-
-        # Single aggregate query for all counts
-        today = timezone.now().date()
-        summary = tasks.aggregate(
-            total=Count('id'),
-            completed=Count('id', filter=Q(status='completed')),
-            overdue=Count('id', filter=Q(due_date__lt=today) & ~Q(status='completed')),
-            in_progress=Count('id', filter=~Q(status__in=['not_started', 'completed'])),
-            active=Count('id', filter=~Q(status='completed')),
-        )
-        ctx['task_count'] = summary['total']
-        ctx['active_count'] = summary['active']
-        ctx['completed_count'] = summary['completed']
-        ctx['summary'] = summary
-=======
         ctx['filters'] = filters
         ctx['scope'] = filters['scope']
 
@@ -117,7 +96,6 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
 
         # Keep full queryset reference for exports (not evaluated here)
         ctx['tasks'] = tasks
->>>>>>> fix/optimization
         return ctx
 
     def _get_filters(self):

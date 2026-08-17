@@ -168,16 +168,6 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
 
         RAW_MEDIA_ASSETS_STORAGE = 'core.storage.SmartRawMediaCloudinaryStorage'
 
-<<<<<<< HEAD
-        STORAGES = {
-            "default": {
-                "BACKEND": "core.storage.SmartMediaCloudinaryStorage",
-            },
-            "staticfiles": {
-                "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
-            },
-        }
-=======
         if not DEBUG:
             STORAGES = {
                 "default": {
@@ -196,11 +186,6 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
                     "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
                 },
             }
-
-# WhiteNoise configuration
-WHITENOISE_MAX_AGE = 31536000  # 365 days for hashed files
-WHITENOISE_ALLOW_ALL_ORIGINS = True  # CORS for static assets
->>>>>>> fix/optimization
 
 # WhiteNoise: 1-year immutable caching headers for hashed static filenames
 WHITENOISE_MAX_AGE = 31536000

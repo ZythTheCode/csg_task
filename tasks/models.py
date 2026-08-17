@@ -96,13 +96,9 @@ class Task(models.Model):
     class Meta:
         ordering = ['-created_at']
         indexes = [
-<<<<<<< HEAD
-            models.Index(fields=['organization', 'is_archived', 'status']),
-=======
             # Covers: TaskListView, TaskBoardView filtered by org + status + archived flag
             models.Index(fields=['organization', 'status', 'is_archived']),
             # Covers: Calendar view and overdue/upcoming queries filtered by org + due_date
->>>>>>> fix/optimization
             models.Index(fields=['organization', 'due_date']),
             # Covers: Dashboard stats aggregate filtering by status + due_date (overdue/upcoming)
             models.Index(fields=['status', 'due_date']),
