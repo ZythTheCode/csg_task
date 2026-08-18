@@ -724,23 +724,17 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
             if not task_date:
                 continue
 
-            bg_color = '#3b82f6'
-            border_color = '#2563eb'
+            event_class = 'fc-event-primary'
             if task.status == 'completed':
-                bg_color = '#10b981'
-                border_color = '#059669'
+                event_class = 'fc-event-success'
             elif task.priority == 'urgent':
-                bg_color = '#ef4444'
-                border_color = '#dc2626'
+                event_class = 'fc-event-danger'
             elif task.priority == 'high':
-                bg_color = '#f97316'
-                border_color = '#ea580c'
+                event_class = 'fc-event-warning'
             elif task.priority == 'medium':
-                bg_color = '#3b82f6'
-                border_color = '#2563eb'
+                event_class = 'fc-event-primary'
             elif task.priority == 'low':
-                bg_color = '#64748b'
-                border_color = '#475569'
+                event_class = 'fc-event-secondary'
 
             officers = [
                 {
@@ -757,9 +751,7 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
                 'title': task.title,
                 'start': task_date,
                 'allDay': True,
-                'backgroundColor': bg_color,
-                'borderColor': border_color,
-                'textColor': '#ffffff',
+                'className': event_class,
                 'extendedProps': {
                     'task_id': task.id,
                     'task_number': task.task_number,

@@ -3,11 +3,13 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
-    <a href="{% url 'tasks:list' %}" id="backToTasksLink" class="text-muted text-decoration-none fw-semibold" style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back to Tasks</a><script>var _bl=document.getElementById('backToTasksLink');var _sv=sessionStorage.getItem('csg_last_tasks_url');if(_bl&&_sv){_bl.href=_sv;}</script>
+    <a href="{% url 'tasks:list' %}" id="backToTasksLink" class="text-muted text-decoration-none fw-semibold"
+      style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back to
+      Tasks</a>
+    <script>var _bl = document.getElementById('backToTasksLink'); var _sv = sessionStorage.getItem('csg_last_tasks_url'); if (_bl && _sv) { _bl.href = _sv; }</script>
     <h5 class="mb-0 mt-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px"><span
         style="color:var(--primary);font-family:monospace">{{ task.task_number }}</span> {% if task.is_overdue %}<span
-        class="badge bg-danger align-middle ms-1 me-1"
-        style="font-size:11px;padding:3px 8px;letter-spacing:0.5px">Overdue</span>{% endif %}— {{ task.title }}</h5>
+        class="badge bg-danger align-middle ms-1 me-1 badge-pill-sm">Overdue</span>{% endif %}— {{ task.title }}</h5>
   </div>
   <div class="d-flex gap-2">
     {% if can_edit_task %}
@@ -63,7 +65,7 @@
         <h6><i data-lucide="info" class="me-2" style="width:18px;height:18px;color:var(--primary)"></i>Task Details</h6>
         <div class="d-flex gap-2">
           <span class="badge-status badge-category-{{ task.category }}">
-            <i data-lucide="{{ task.category_icon }}" class="me-1" style="width:13px;height:13px"></i>{{ task.get_category_display }}
+            <i data-lucide="{{ task.category_icon }}" class="me-1" style="width:13px;height:13px"></i>{{  task.get_category_display  }}
           </span>
           <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
           <span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span>
@@ -86,8 +88,7 @@
         <hr style="border-color:rgba(249, 168, 212, 0.2)">
         <div class="row g-3">
           <div class="col-md-6">
-            <div
-              style="font-size:11px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+            <div class="label-uppercase" style="color:var(--slate-400)">
               Due Date</div>
             <div
               style="font-size:13.5px;font-weight:700;{% if task.is_overdue %}color:var(--danger){% else %}color:var(--primary){% endif %};margin-top:4px">
@@ -95,28 +96,24 @@
             </div>
           </div>
           <div class="col-md-4">
-            <div
-              style="font-size:11px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+            <div class="label-uppercase" style="color:var(--slate-400)">
               Completion Date</div>
-            <div style="font-size:13.5px;font-weight:700;color:var(--success);margin-top:4px">{{ task.completion_date|date:"F d, Y"|default:"—" }}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--success);margin-top:4px">{{  task.completion_date|date:"F d, Y"|default:"—"  }}</div>
           </div>
           <div class="col-md-4">
-            <div
-              style="font-size:11px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+            <div class="label-uppercase" style="color:var(--slate-400)">
               Created By</div>
-            <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-top:4px">{{ task.created_by.get_full_name|default:task.created_by.username }}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-top:4px">{{  task.created_by.get_full_name|default:task.created_by.username  }}</div>
           </div>
           <div class="col-md-4">
-            <div
-              style="font-size:11px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+            <div class="label-uppercase" style="color:var(--slate-400)">
               Created</div>
-            <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-top:4px">{{ task.created_at|date:"M d, Y" }}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-top:4px">{{  task.created_at|date:"M d, Y"  }}</div>
           </div>
           <div class="col-md-4">
-            <div
-              style="font-size:11px;color:var(--slate-400);font-weight:700;text-transform:uppercase;letter-spacing:0.5px">
+            <div class="label-uppercase" style="color:var(--slate-400)">
               Last Updated</div>
-            <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-top:4px">{{ task.updated_at|date:"M d, Y" }}</div>
+            <div style="font-size:13.5px;font-weight:700;color:var(--primary);margin-top:4px">{{  task.updated_at|date:"M d, Y"  }}</div>
           </div>
         </div>
       </div>
@@ -136,6 +133,7 @@
             <label class="form-label fw-bold" style="font-size:13px">Progress: <span id="progressVal"
                 style="color:var(--primary)">{{ task.progress }}</span>%</label>
             <input type="range" name="progress" class="form-range" min="0" max="100" value="{{ task.progress }}"
+              aria-label="Task completion progress"
               oninput="document.getElementById('progressVal').textContent=this.value">
           </div>
           <div class="mb-3">
@@ -158,20 +156,21 @@
       <div class="p-4">
         {% for comment in task.comments.all %}
         <div class="d-flex gap-3 mb-3">
-          <div class="officer-avatar flex-shrink-0">{{ comment.author.first_name|first }}{{ comment.author.last_name|first }}</div>
+          <div class="officer-avatar flex-shrink-0">{{ comment.author.first_name|first }}{{  comment.author.last_name|first  }}</div>
           <div class="flex-grow-1">
             <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
-              <span style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ comment.author.get_full_name|default:comment.author.username }}</span>
+              <span style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{  comment.author.get_full_name|default:comment.author.username  }}</span>
               <small class="text-muted" style="font-size:11px">@{{ comment.author.username }}</small>
-              <span class="badge bg-light text-muted border" style="font-size:10px">{{ comment.author.get_role_display }}</span>
-              <span style="font-size:11px;color:var(--slate-400)" class="ms-2">{{ comment.created_at|date:"M d, Y H:i" }}</span>
+              <span class="badge bg-light text-muted border" style="font-size:10px">{{  comment.author.get_role_display  }}</span>
+              <span style="font-size:11px;color:var(--slate-400)" class="ms-2">{{  comment.created_at|date:"M d, Y H:i"  }}</span>
               {% if user == comment.author or user == task.created_by or user.has_task_override or can_edit_task %}
               <form method="post" action="{% url 'tasks:delete_comment' comment.pk %}" class="d-inline ms-auto"
                 data-confirm="Are you sure you want to delete this comment?" data-confirm-title="Delete Comment"
                 data-confirm-btn="Delete">
                 {% csrf_token %}
                 <button type="submit" class="btn-sm-icon" style="color:#EF4444;width:24px;height:24px"
-                  title="Delete Comment"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>
+                  title="Delete Comment" aria-label="Delete comment"><i data-lucide="trash-2"
+                    style="width:12px;height:12px"></i></button>
               </form>
               {% endif %}
             </div>
@@ -211,7 +210,7 @@
             <div>
               <div style="font-size:13.5px;font-weight:700;color:var(--slate-800)">{{ att.filename }}</div>
               <div style="font-size:11.5px;color:var(--slate-500)">
-                Uploaded by <strong style="color:var(--slate-800)">{{ att.uploaded_by.get_full_name|default:att.uploaded_by.username }}</strong>
+                Uploaded by <strong style="color:var(--slate-800)">{{  att.uploaded_by.get_full_name|default:att.uploaded_by.username  }}</strong>
                 {% if att.uploaded_by.get_role_display %}<span class="badge bg-light text-muted border ms-1"
                   style="font-size:10px">{{ att.uploaded_by.get_role_display }}</span>{% endif %}
                 &nbsp;&middot;&nbsp; {{ att.created_at|date:"M d, Y H:i" }}
@@ -220,12 +219,12 @@
           </div>
           <div class="d-flex gap-2 align-items-center">
             <a href="{% url 'tasks:view_attachment' att.pk %}" target="_blank" class="btn-sm-icon text-primary"
-              title="View / Open Document">
+              title="View / Open Document" aria-label="View or open document">
               <i data-lucide="eye" style="width:14px;height:14px"></i>
             </a>
             <a href="{% url 'tasks:download_attachment' att.pk %}"
               onclick="return downloadAttachmentToDevice(event, '{% url 'tasks:download_attachment' att.pk %}', '{{ att.filename|escapejs }}')"
-              download="{{ att.filename }}" class="btn-sm-icon" title="Download File">
+              download="{{ att.filename }}" class="btn-sm-icon" title="Download File" aria-label="Download file">
               <i data-lucide="download" style="width:14px;height:14px"></i>
             </a>
             {% if can_edit_task or att.uploaded_by == user %}
@@ -233,7 +232,8 @@
               data-confirm="Are you sure you want to delete attachment <strong>{{ att.filename }}</strong>?"
               data-confirm-title="Delete Attachment" data-confirm-btn="Delete">
               {% csrf_token %}
-              <button type="submit" class="btn-sm-icon" style="color:#EF4444" title="Delete Attachment">
+              <button type="submit" class="btn-sm-icon" style="color:#EF4444" title="Delete Attachment"
+                aria-label="Delete attachment">
                 <i data-lucide="trash-2" style="width:14px;height:14px"></i>
               </button>
             </form>
@@ -298,7 +298,7 @@
             <span class="fw-bold" style="color:var(--slate-800)">{{ h.field_changed }}</span>
             {% if h.old_value %} changed from <em>{{ h.old_value }}</em>{% endif %}
             {% if h.new_value %} to <em>{{ h.new_value }}</em>{% endif %}
-            <div style="color:var(--slate-400);font-size:11px">{{ h.changed_by.get_full_name|default:"System" }} · {{ h.timestamp|date:"M d, H:i" }}</div>
+            <div style="color:var(--slate-400);font-size:11px">{{ h.changed_by.get_full_name|default:"System" }} · {{  h.timestamp|date:"M d, H:i"  }}</div>
           </div>
         </div>
         {% empty %}
@@ -334,7 +334,7 @@
     sendBtn.addEventListener('click', function () {
       const checkedIds = [...document.querySelectorAll('.nudge-officer-check:checked')].map(cb => cb.value);
       if (checkedIds.length === 0) {
-        alert('Please select at least one officer to nudge.');
+        showToastNotification('Please select at least one officer to nudge.', 'error');
         return;
       }
 
@@ -401,7 +401,7 @@
         <div>
           <h5 class="fw-bold mb-0" style="color:var(--slate-800)"><i data-lucide="bell" class="text-warning me-2"
               style="width:20px;height:20px"></i>Send Nudge</h5>
-          <p class="text-muted mb-0" style="font-size:12px">Send a reminder to assigned officers for <strong>{{ task.task_number }}</strong></p>
+          <p class="text-muted mb-0" style="font-size:12px">Send a reminder to assigned officers for <strong>{{  task.task_number  }}</strong></p>
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -422,8 +422,8 @@
               <input type="checkbox" class="nudge-officer-check form-check-input mt-0" value="{{ officer.pk }}" checked
                 style="width:16px;height:16px;cursor:pointer">
               <div class="flex-grow-1">
-                <div class="fw-bold" style="font-size:13px;color:var(--slate-800)">{{ officer.get_full_name|default:officer.username }}</div>
-                <div style="font-size:11px;color:var(--slate-500)">{{ officer.position_title }} &nbsp;&middot;&nbsp; {{ officer.email|default:"No email" }}</div>
+                <div class="fw-bold" style="font-size:13px;color:var(--slate-800)">{{  officer.get_full_name|default:officer.username  }}</div>
+                <div style="font-size:11px;color:var(--slate-500)">{{ officer.position_title }} &nbsp;&middot;&nbsp; {{  officer.email|default:"No email"  }}</div>
               </div>
             </label>
             {% endfor %}

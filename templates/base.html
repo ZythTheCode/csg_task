@@ -16,7 +16,7 @@
     as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260810_darkmode_fix">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}?v=20260818_btn_darkmode_fix">
   <link rel="stylesheet" href="{% static 'css/skeleton.css' %}">
   <script src="{% static 'js/lucide.min.js' %}"></script>
   <script>
@@ -191,7 +191,7 @@
         <div class="brand-logo">{% if current_organization %}{{ current_organization.short_name|slice:":3"|upper }}{%  elif user.organization  %}{{ user.organization.short_name|slice:":3"|upper }}{% else %}CSG{% endif %}</div>
         {% endif %}
         <button type="button" class="sidebar-expand-btn d-none d-lg-flex" onclick="toggleSidebarMin()"
-          title="Expand Sidebar">
+          title="Expand Sidebar" aria-expanded="false">
           <i data-lucide="chevrons-right" style="width:18px;height:18px"></i>
         </button>
       </div>
@@ -204,7 +204,7 @@
           title="{% if current_organization %}{{ current_organization.name }}{% elif user.organization %}{{ user.organization.name }}{% else %}Task Management{% endif %}">{%  if current_organization  %}{{ current_organization.name }}{% elif user.organization %}{{  user.organization.name  }}{% else %}Task Management{% endif %}</small>
       </div>
       <button type="button" class="sidebar-collapse-btn d-none d-lg-flex ms-auto" onclick="toggleSidebarMin()"
-        title="Collapse Sidebar">
+        title="Collapse Sidebar" aria-expanded="true">
         <i data-lucide="chevron-left" style="width:16px;height:16px"></i>
       </button>
       <button type="button" class="btn-close d-lg-none ms-auto" onclick="closeSidebar()" aria-label="Close"></button>
@@ -289,7 +289,7 @@
           <div class="user-name" title="{{ user.get_full_name }}">{{ user.get_full_name|truncatechars:20 }}</div>
           <div class="user-role">{{ user.get_role_display }}</div>
         </div>
-        <a href="{% url 'accounts:logout' %}" class="ms-auto topbar-icon-btn" title="Logout">
+        <a href="{% url 'accounts:logout' %}" class="ms-auto topbar-icon-btn" title="Logout" aria-label="Log out">
           <i data-lucide="log-out"></i>
         </a>
       </div>
@@ -302,7 +302,7 @@
     <header class="topbar">
       <div class="d-flex align-items-center gap-3">
         <button class="topbar-icon-btn d-lg-none" onclick="toggleSidebarMobile()" id="mobileMenuToggle"
-          title="Toggle Navigation Menu">
+          title="Toggle Navigation Menu" aria-label="Toggle navigation menu">
           <i data-lucide="menu"></i>
         </button>
         <div>
@@ -342,11 +342,12 @@
         </div>
         {% endif %}
         <button class="topbar-icon-btn" onclick="toggleUserDarkMode()" id="darkModeToggleBtn" type="button"
-          title="Toggle Dark/Light Mode">
+          title="Toggle Dark/Light Mode" aria-label="Toggle dark mode">
           <i data-lucide="sun" id="darkModeIconSun" style="display:none"></i>
           <i data-lucide="moon" id="darkModeIconMoon"></i>
         </button>
-        <a href="{% url 'notifications:list' %}" class="topbar-icon-btn" title="Notifications">
+        <a href="{% url 'notifications:list' %}" class="topbar-icon-btn" title="Notifications"
+          aria-label="View notifications">
           <i data-lucide="bell"></i>
           {% if unread_notifications_count > 0 %}
           <span class="topbar-badge">{{ unread_notifications_count }}</span>
@@ -381,7 +382,7 @@
 
     <!-- MESSAGES -->
     {% if messages %}
-    <div class="toast-container">
+    <div class="toast-container" role="alert" aria-live="assertive">
       {% for message in messages %}
       <div
         class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show"
@@ -451,6 +452,51 @@
   <script>
     // Complete the cold-start progress bar immediately (was at 30% from inline style)
     if (window.CSGProgress) window.CSGProgress.complete();
+  </script>
+  <script>
+    /**
+     * Show a styled toast notification replacing all alert() usage.
+     * @param {string} message - The message to display
+     * @param {string} type - 'error'|'warning'|'success'|'info'|'danger' (default: 'error')
+     * @param {number} duration - Auto-dismiss in ms (default: 5000)
+     */
+    window.showToastNotification = function (message, type, duration) {
+      type = type || 'error';
+      duration = duration || 5000;
+
+      var alertClass = type === 'error' ? 'alert-danger' : 'alert-' + type;
+      var iconClass = type === 'error' ? 'bi-exclamation-triangle'
+        : type === 'success' ? 'bi-check-circle'
+          : type === 'warning' ? 'bi-exclamation-circle'
+            : 'bi-info-circle';
+
+      // Ensure toast container exists with proper ARIA attributes
+      var container = document.querySelector('.toast-container');
+      if (!container) {
+        container = document.createElement('div');
+        container.className = 'toast-container';
+        container.setAttribute('role', 'alert');
+        container.setAttribute('aria-live', 'assertive');
+        document.body.appendChild(container);
+      } else {
+        // Ensure existing container has ARIA attributes
+        if (!container.getAttribute('role')) container.setAttribute('role', 'alert');
+        if (!container.getAttribute('aria-live')) container.setAttribute('aria-live', 'assertive');
+      }
+
+      var alertEl = document.createElement('div');
+      alertEl.className = 'alert ' + alertClass + ' alert-dismissible fade show';
+      alertEl.setAttribute('role', 'alert');
+      alertEl.innerHTML = '<i class="bi ' + iconClass + ' me-2"></i>' + message +
+        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+
+      container.appendChild(alertEl);
+
+      // Auto-dismiss after duration
+      setTimeout(function () {
+        try { bootstrap.Alert.getOrCreateInstance(alertEl).close(); } catch (e) { alertEl.remove(); }
+      }, duration);
+    };
   </script>
   <!-- FRAGMENT_SCRIPTS_START -->
   {% block extra_js %}{% endblock %}
@@ -902,67 +948,118 @@
   {% block modals %}{% endblock %}
 
   <script>
-      // Global broken image fallback handler - automatically catches load failures for any image tag
-      document.addEventListener('error', function (e) {
-        if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
-          const img = e.target;
-          if (img.dataset.broken) return;
-          img.dataset.broken = 'true';
+    // Global broken image fallback handler - automatically catches load failures for any image tag
+    document.addEventListener('error', function (e) {
+      if (e.target && e.target.tagName && e.target.tagName.toLowerCase() === 'img') {
+        const img = e.target;
+        if (img.dataset.broken) return;
+        img.dataset.broken = 'true';
 
-          // Hide the broken img tag cleanly
-          img.style.display = 'none';
-          img.classList.add('d-none');
+        // Hide the broken img tag cleanly
+        img.style.display = 'none';
+        img.classList.add('d-none');
 
-          // Look for sibling or parent container fallback element
-          const container = img.closest('.brand-logo-container, .org-logo-preview, .avatar-upload-circle, .officer-avatar, .topbar-avatar, .position-relative, .card, .glass-card, td, div') || img.parentElement;
-          if (container) {
-            const fallback = container.querySelector('#orgLogoFallback, #avatarFallbackForm, #avatarFallbackProfile, .brand-logo, .avatar-fallback, .officer-avatar, .sidebar-logo-icon, [data-fallback="true"]');
-            if (fallback) {
-              fallback.style.display = 'flex';
-              fallback.classList.remove('d-none');
-              return;
-            }
-          }
-
-          // Fallback: If no dedicated element found, insert a clean icon placeholder
-          const parent = img.parentElement;
-          if (parent && !parent.querySelector('.auto-broken-fallback')) {
-            const fallbackDiv = document.createElement('div');
-            fallbackDiv.className = 'auto-broken-fallback d-inline-flex align-items-center justify-content-center fw-bold text-muted bg-light border rounded-3 p-2';
-            fallbackDiv.style.cssText = img.style.cssText;
-            fallbackDiv.style.display = 'inline-flex';
-            fallbackDiv.innerHTML = '<i class="bi bi-image text-secondary"></i>';
-            parent.insertBefore(fallbackDiv, img);
+        // Look for sibling or parent container fallback element
+        const container = img.closest('.brand-logo-container, .org-logo-preview, .avatar-upload-circle, .officer-avatar, .topbar-avatar, .position-relative, .card, .glass-card, td, div') || img.parentElement;
+        if (container) {
+          const fallback = container.querySelector('#orgLogoFallback, #avatarFallbackForm, #avatarFallbackProfile, .brand-logo, .avatar-fallback, .officer-avatar, .sidebar-logo-icon, [data-fallback="true"]');
+          if (fallback) {
+            fallback.style.display = 'flex';
+            fallback.classList.remove('d-none');
+            return;
           }
         }
-        window.downloadAttachmentToDevice = function (event, url, filename) {
-          if (event) {
-            if (event.preventDefault) event.preventDefault();
-            if (event.stopPropagation) event.stopPropagation();
-          }
-          fetch(url)
-            .then(function (res) {
-              if (!res.ok) throw new Error('Network error');
-              return res.blob();
-            })
-            .then(function (blob) {
-              var blobUrl = window.URL.createObjectURL(blob);
-              var a = document.createElement('a');
-              a.style.display = 'none';
-              a.href = blobUrl;
-              a.download = filename || 'download';
-              document.body.appendChild(a);
-              a.click();
-              setTimeout(function () {
-                window.URL.revokeObjectURL(blobUrl);
-                a.remove();
-              }, 1000);
-            })
-            .catch(function () {
-              window.location.href = url;
-            });
-          return false;
-          ;
+
+        // Fallback: If no dedicated element found, insert a clean icon placeholder
+        const parent = img.parentElement;
+        if (parent && !parent.querySelector('.auto-broken-fallback')) {
+          const fallbackDiv = document.createElement('div');
+          fallbackDiv.className = 'auto-broken-fallback d-inline-flex align-items-center justify-content-center fw-bold text-muted bg-light border rounded-3 p-2';
+          fallbackDiv.style.cssText = img.style.cssText;
+          fallbackDiv.style.display = 'inline-flex';
+          fallbackDiv.innerHTML = '<i class="bi bi-image text-secondary"></i>';
+          parent.insertBefore(fallbackDiv, img);
+        }
+      }
+      window.downloadAttachmentToDevice = function (event, url, filename) {
+        if (event) {
+          if (event.preventDefault) event.preventDefault();
+          if (event.stopPropagation) event.stopPropagation();
+        }
+        fetch(url)
+          .then(function (res) {
+            if (!res.ok) throw new Error('Network error');
+            return res.blob();
+          })
+          .then(function (blob) {
+            var blobUrl = window.URL.createObjectURL(blob);
+            var a = document.createElement('a');
+            a.style.display = 'none';
+            a.href = blobUrl;
+            a.download = filename || 'download';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(function () {
+              window.URL.revokeObjectURL(blobUrl);
+              a.remove();
+            }, 1000);
+          })
+          .catch(function () {
+            window.location.href = url;
+          });
+        return false;
+        ;
+  </script>
+
+  <!-- Modal Focus Trap, Body Scroll Lock & Focus Restoration -->
+  <script>
+        (function () {
+          // Body scroll lock when modal opens on mobile (<576px)
+          document.addEventListener('show.bs.modal', function (e) {
+            // Track trigger element for focus restoration
+            e.target._triggerElement = document.activeElement;
+
+            if (window.innerWidth < 576) {
+              document.body.style.overflow = 'hidden';
+            }
+          });
+
+          // Restore body overflow when modal closes (only if no other modals remain)
+          document.addEventListener('hidden.bs.modal', function (e) {
+            if (!document.querySelector('.modal.show')) {
+              document.body.style.overflow = '';
+            }
+
+            // Restore focus to the element that triggered the modal
+            if (e.target._triggerElement) {
+              e.target._triggerElement.focus();
+              e.target._triggerElement = null;
+            }
+          });
+
+          // Focus trap within open modal — cycle Tab between first/last focusable elements
+          document.addEventListener('keydown', function (e) {
+            if (e.key !== 'Tab') return;
+            var activeModal = document.querySelector('.modal.show');
+            if (!activeModal) return;
+
+            var focusable = activeModal.querySelectorAll(
+              'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+            );
+            if (focusable.length === 0) return;
+
+            var first = focusable[0];
+            var last = focusable[focusable.length - 1];
+
+            if (e.shiftKey && document.activeElement === first) {
+              e.preventDefault();
+              last.focus();
+            } else if (!e.shiftKey && document.activeElement === last) {
+              e.preventDefault();
+              first.focus();
+            }
+          });
+        })();
   </script>
 
 </body>

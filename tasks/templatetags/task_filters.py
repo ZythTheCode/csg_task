@@ -45,6 +45,15 @@ def initials(value):
     return ''.join(w[0].upper() for w in words if w)
 
 
+@register.filter
+def within_range(value, arg):
+    """Return True if abs(value - arg) <= 3. Used for pagination windowing."""
+    try:
+        return abs(int(value) - int(arg)) <= 3
+    except (ValueError, TypeError):
+        return False
+
+
 @register.simple_tag
 def can_edit_task(user, task):
     return user.can_edit_task(task)

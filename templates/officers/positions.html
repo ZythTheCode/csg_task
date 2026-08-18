@@ -20,59 +20,76 @@
       <thead>
         <tr>
           <th style="width:25%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
-            <div class="d-flex align-items-center justify-content-between"><span>Title</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-flex align-items-center justify-content-between"><span>Title</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:12%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="initials">
-            <div class="d-flex align-items-center justify-content-between"><span>Initials</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-flex align-items-center justify-content-between"><span>Initials</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:23%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="officer">
-            <div class="d-flex align-items-center justify-content-between"><span>Assigned Officer</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-flex align-items-center justify-content-between"><span>Assigned Officer</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:30%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="description">
-            <div class="d-flex align-items-center justify-content-between"><span>Description</span><span class="sort-icon-container"><i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i></span></div>
+            <div class="d-flex align-items-center justify-content-between"><span>Description</span><span
+                class="sort-icon-container"><i data-lucide="arrow-up-down"
+                  style="width:12px;height:12px;opacity:0.4"></i></span></div>
           </th>
           <th style="width:10%;text-align:right">Actions</th>
         </tr>
       </thead>
       <tbody>
         {% for pos in positions %}
-        <tr data-title="{{ pos.title|lower }}" data-initials="{{ pos.get_initials|lower }}" data-officer="{% if pos.officer and pos.officer.user %}{{ pos.officer.user.get_full_name|lower }}{% else %}unassigned{% endif %}" data-description="{{ pos.description|lower|default:'' }}">
+        <tr data-title="{{ pos.title|lower }}" data-initials="{{ pos.get_initials|lower }}"
+          data-officer="{% if pos.officer and pos.officer.user %}{{ pos.officer.user.get_full_name|lower }}{% else %}unassigned{% endif %}"
+          data-description="{{ pos.description|lower|default:'' }}">
           <td class="fw-semibold" style="font-size:13.5px;color:var(--slate-800)">{{ pos.title }}</td>
           <td>
-            <span class="badge bg-light text-primary border" style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:12px">
+            <span class="badge bg-light text-primary border"
+              style="font-size:11px;font-weight:700;padding:5px 10px;border-radius:12px">
               {{ pos.get_initials }}
             </span>
           </td>
           <td>
             {% if pos.officer and pos.officer.user %}
             <div class="d-flex align-items-center gap-2">
-              <div class="officer-avatar position-relative" style="width:28px;height:28px;font-size:11px;border-radius:10px;overflow:hidden;flex-shrink:0">
+              <div class="officer-avatar position-relative"
+                style="width:28px;height:28px;font-size:11px;border-radius:10px;overflow:hidden;flex-shrink:0">
                 {% if pos.officer.user.profile_picture %}
-                <img src="{{ pos.officer.user.profile_picture.url }}" alt="avatar" style="width:100%;height:100%;object-fit:cover;">
-                <span class="avatar-fallback" style="display:none">{{ pos.officer.user.first_name|first|upper }}{{ pos.officer.user.last_name|first|upper }}</span>
+                <img src="{{ pos.officer.user.profile_picture.url }}" alt="avatar"
+                  style="width:100%;height:100%;object-fit:cover;">
+                <span class="avatar-fallback" style="display:none">{{ pos.officer.user.first_name|first|upper }}{{  pos.officer.user.last_name|first|upper  }}</span>
                 {% else %}
                 {{ pos.officer.user.first_name|first|upper }}{{ pos.officer.user.last_name|first|upper }}
                 {% endif %}
               </div>
-              <a href="{% url 'officers:detail' pos.officer.pk %}" class="fw-semibold text-dark text-decoration-none hover-primary" style="font-size:13px">
+              <a href="{% url 'officers:detail' pos.officer.pk %}"
+                class="fw-semibold text-dark text-decoration-none hover-primary" style="font-size:13px">
                 {{ pos.officer.user.get_full_name }}
               </a>
             </div>
             {% else %}
-            <span class="badge bg-light text-muted border" style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px">Unassigned</span>
+            <span class="badge bg-light text-muted border"
+              style="font-size:11px;font-weight:600;padding:4px 8px;border-radius:8px">Unassigned</span>
             {% endif %}
           </td>
           <td style="font-size:12.5px;color:var(--slate-600)">{{ pos.description|default:"—" }}</td>
           <td style="text-align:right">
             {% if user.can_manage_officers %}
             <div class="d-inline-flex gap-1">
-              <a href="{% url 'officers:position_edit' pos.pk %}" class="btn-sm-icon" title="Edit Position">
-                <i class="bi bi-pencil-fill" style="font-size:13px;color:#475569"></i>
+              <a href="{% url 'officers:position_edit' pos.pk %}" class="btn-sm-icon btn-edit" title="Edit Position">
+                <i class="bi bi-pencil-fill" style="font-size:13px"></i>
               </a>
-              <form method="post" action="{% url 'officers:position_delete' pos.pk %}" class="d-inline" data-confirm="Are you sure you want to delete position &lt;strong&gt;{{ pos.title }}&lt;/strong&gt;?{% if pos.officer and pos.officer.user %}&lt;div class='mt-2 p-2' style='background:#fef3c7;border-radius:8px;font-size:12.5px;color:#92400e'&gt;&lt;i class='bi bi-person-fill me-1'&gt;&lt;/i&gt;&lt;strong&gt;{{ pos.officer.user.get_full_name }}&lt;/strong&gt; currently holds this position and will lose it.&lt;/div&gt;{% endif %}" data-confirm-title="Delete Position" data-confirm-btn="Delete Position">
+              <form method="post" action="{% url 'officers:position_delete' pos.pk %}" class="d-inline"
+                data-confirm="Are you sure you want to delete position &lt;strong&gt;{{ pos.title }}&lt;/strong&gt;?{% if pos.officer and pos.officer.user %}&lt;div class='mt-2 p-2' style='background:#fef3c7;border-radius:8px;font-size:12.5px;color:#92400e'&gt;&lt;i class='bi bi-person-fill me-1'&gt;&lt;/i&gt;&lt;strong&gt;{{ pos.officer.user.get_full_name }}&lt;/strong&gt; currently holds this position and will lose it.&lt;/div&gt;{% endif %}"
+                data-confirm-title="Delete Position" data-confirm-btn="Delete Position">
                 {% csrf_token %}
-                <button type="submit" class="btn-sm-icon ms-1 border-0" style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important" title="Delete Position">
-                  <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
+                <button type="submit" class="btn-sm-icon btn-delete ms-1 border-0" title="Delete Position">
+                  <i class="bi bi-trash3-fill" style="font-size:14px"></i>
                 </button>
               </form>
             </div>

@@ -4,7 +4,8 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
     <h5 class="mb-0 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Officers & User Accounts</h5>
-    <small class="text-muted">{% if user.can_manage_officers %}Manage system users, assigned positions, and role permissions.{% else %}View organization officers and user profiles.{% endif %}</small>
+    <small class="text-muted">{% if user.can_manage_officers %}Manage system users, assigned positions, and role
+      permissions.{% else %}View organization officers and user profiles.{% endif %}</small>
   </div>
   {% if user.can_manage_officers %}
   <a href="{% url 'officers:create' %}" class="btn-primary-custom">
@@ -18,31 +19,48 @@
   <div class="col-12 col-sm-6 col-md-4 col-lg-3">
     <div class="glass-card h-100 text-center p-4">
       {% if officer.user.profile_picture %}
-      <div class="mx-auto mb-3 shadow-sm border border-2 border-white position-relative" style="width:64px;height:64px;border-radius:20px;overflow:hidden">
-        <img src="{{ officer.user.profile_picture.url }}" alt="Profile" style="width:100%;height:100%;object-fit:cover;">
-        <div class="officer-avatar avatar-fallback w-100 h-100" style="display:none;font-size:22px;border-radius:20px;align-items:center;justify-content:center">{{ officer.user.first_name|first }}{{ officer.user.last_name|first }}</div>
+      <div class="mx-auto mb-3 shadow-sm border border-2 border-white position-relative"
+        style="width:64px;height:64px;border-radius:20px;overflow:hidden">
+        <img src="{{ officer.user.profile_picture.url }}" alt="Profile"
+          style="width:100%;height:100%;object-fit:cover;">
+        <div class="officer-avatar avatar-fallback w-100 h-100"
+          style="display:none;font-size:22px;border-radius:20px;align-items:center;justify-content:center">{{  officer.user.first_name|first  }}{{ officer.user.last_name|first }}</div>
       </div>
       {% else %}
-      <div class="officer-avatar mx-auto mb-3" style="width:64px;height:64px;font-size:22px;border-radius:20px">{{ officer.user.first_name|first }}{{ officer.user.last_name|first }}</div>
+      <div class="officer-avatar mx-auto mb-3" style="width:64px;height:64px;font-size:22px;border-radius:20px">{{  officer.user.first_name|first  }}{{ officer.user.last_name|first }}</div>
       {% endif %}
       <h6 class="mb-1 fw-bold" style="color:var(--slate-800);font-size:14.5px">{{ officer.user.get_full_name }}</h6>
       <small class="text-muted d-block mb-1" style="font-size:11.5px">@{{ officer.user.username }}</small>
       <div style="font-size:12px;color:var(--primary);font-weight:700">{{ officer.position|default:"—" }}</div>
-      <span class="badge bg-light text-muted border mt-2 mx-auto" style="font-size:10.5px;padding:4px 10px;border-radius:20px">
+      <span class="badge bg-light text-muted border mt-2 mx-auto"
+        style="font-size:10.5px;padding:4px 10px;border-radius:20px">
         {{ officer.user.get_role_display }}
       </span>
-      <div class="d-flex justify-content-center gap-3 mt-3 mb-3 p-2 rounded-3" style="font-size:12px;background:var(--pink-50)">
-        <div><div class="fw-bold" style="color:var(--slate-800)">{{ officer.total_tasks }}</div><div class="text-muted" style="font-size:11px">Total</div></div>
-        <div><div class="fw-bold" style="color:var(--success)">{{ officer.completed_tasks }}</div><div class="text-muted" style="font-size:11px">Done</div></div>
-        <div><div class="fw-bold" style="color:var(--primary)">{{ officer.active_tasks }}</div><div class="text-muted" style="font-size:11px">Active</div></div>
+      <div class="d-flex justify-content-center gap-3 mt-3 mb-3 p-2 rounded-3"
+        style="font-size:12px;background:var(--pink-50)">
+        <div>
+          <div class="fw-bold" style="color:var(--slate-800)">{{ officer.total_tasks }}</div>
+          <div class="text-muted" style="font-size:11px">Total</div>
+        </div>
+        <div>
+          <div class="fw-bold" style="color:var(--success)">{{ officer.completed_tasks }}</div>
+          <div class="text-muted" style="font-size:11px">Done</div>
+        </div>
+        <div>
+          <div class="fw-bold" style="color:var(--primary)">{{ officer.active_tasks }}</div>
+          <div class="text-muted" style="font-size:11px">Active</div>
+        </div>
       </div>
       <div class="d-flex justify-content-center gap-2">
-        <a href="{% url 'officers:detail' officer.pk %}" class="btn-sm-icon" title="View"><i class="bi bi-eye-fill" style="font-size:14px;color:#475569"></i></a>
+        <a href="{% url 'officers:detail' officer.pk %}" class="btn-sm-icon btn-view" title="View"><i
+            class="bi bi-eye-fill" style="font-size:14px"></i></a>
         {% if user.can_manage_officers %}
-        <a href="{% url 'officers:edit' officer.pk %}" class="btn-sm-icon" title="Edit User & Position"><i class="bi bi-pencil-fill" style="font-size:13px;color:#475569"></i></a>
+        <a href="{% url 'officers:edit' officer.pk %}" class="btn-sm-icon btn-edit" title="Edit User & Position"><i
+            class="bi bi-pencil-fill" style="font-size:13px"></i></a>
         {% if officer.user != user %}
-        <button type="button" class="btn-sm-icon border-0" style="background:#FFF1F2 !important;color:#EF4444 !important" data-bs-toggle="modal" data-bs-target="#deleteOfficerModal{{ officer.pk }}" title="Delete User Account">
-          <i class="bi bi-trash3-fill" style="font-size:14px;color:#EF4444"></i>
+        <button type="button" class="btn-sm-icon btn-delete border-0" data-bs-toggle="modal"
+          data-bs-target="#deleteOfficerModal{{ officer.pk }}" title="Delete User Account">
+          <i class="bi bi-trash3-fill" style="font-size:14px"></i>
         </button>
         {% endif %}
         {% endif %}
@@ -50,7 +68,11 @@
     </div>
   </div>
   {% empty %}
-  <div class="col-12"><div class="empty-state"><i data-lucide="users"></i><h6>No officers found</h6></div></div>
+  <div class="col-12">
+    <div class="empty-state"><i data-lucide="users"></i>
+      <h6>No officers found</h6>
+    </div>
+  </div>
   {% endfor %}
 </div>
 
@@ -58,7 +80,8 @@
 <div class="table-custom-container mt-4">
   <div class="card-header-custom py-3 px-4">
     <h6 class="fw-bold mb-0 text-dark d-flex align-items-center gap-2" style="font-size:14px">
-      <i data-lucide="shield" class="text-primary" style="width:18px;height:18px"></i> System Roles &amp; Position Access Descriptions
+      <i data-lucide="shield" class="text-primary" style="width:18px;height:18px"></i> System Roles &amp; Position
+      Access Descriptions
     </h6>
   </div>
   <div class="table-responsive">
@@ -79,62 +102,80 @@
         <tr>
           <td class="px-4 py-3">
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge bg-danger text-white" style="font-size:10px;border-radius:6px;flex-shrink:0">Super Admin</span>
+              <span class="badge bg-danger text-white" style="font-size:10px;border-radius:6px;flex-shrink:0">Super
+                Admin</span>
               <span class="fw-bold text-dark" style="font-size:12px;white-space:nowrap">System Administrator</span>
             </div>
           </td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
         </tr>
         <tr>
           <td class="px-4 py-3">
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge bg-warning text-dark" style="font-size:10px;border-radius:6px;flex-shrink:0">Org Admin</span>
+              <span class="badge bg-warning text-dark" style="font-size:10px;border-radius:6px;flex-shrink:0">Org
+                Admin</span>
               <span class="fw-bold text-dark" style="font-size:12px;white-space:nowrap">Organization Admin</span>
             </div>
           </td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
         </tr>
         <tr>
           <td class="px-4 py-3">
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge bg-primary text-white" style="font-size:10px;border-radius:6px;flex-shrink:0">Elected Officer</span>
+              <span class="badge bg-primary text-white" style="font-size:10px;border-radius:6px;flex-shrink:0">Elected
+                Officer</span>
               <span class="fw-bold text-dark" style="font-size:12px">VP, Sec, Treas, Auditor, PRO…</span>
             </div>
           </td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
         </tr>
         <tr>
           <td class="px-4 py-3">
             <div class="d-flex align-items-center gap-2 flex-wrap">
-              <span class="badge bg-info text-dark" style="font-size:10px;border-radius:6px;flex-shrink:0">Committee Member</span>
+              <span class="badge bg-info text-dark" style="font-size:10px;border-radius:6px;flex-shrink:0">Committee
+                Member</span>
               <span class="fw-bold text-dark" style="font-size:12px">Asst. Sec/Treas, Events, Media</span>
             </div>
           </td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
           <td class="text-center"><i data-lucide="x-circle" class="text-danger" style="width:18px;height:18px"></i></td>
-          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i></td>
+          <td class="text-center"><i data-lucide="check-circle" class="text-success" style="width:18px;height:18px"></i>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -161,29 +202,30 @@
         {% csrf_token %}
         <div class="modal-body p-4">
           <p class="text-dark mb-2" style="font-size:13px">
-            Are you sure you want to permanently delete the user account for 
-            <strong class="text-danger">{{ officer.user.get_full_name }}</strong> 
+            Are you sure you want to permanently delete the user account for
+            <strong class="text-danger">{{ officer.user.get_full_name }}</strong>
             (<code>{{ officer.user.username }}</code>)?
           </p>
-          <div class="alert alert-warning border-0 text-dark p-3 mb-3" style="font-size:12px;border-radius:12px;background:var(--pink-50)">
-            This action is <strong>irreversible</strong>. The user account and officer profile will be permanently removed.
+          <div class="alert alert-warning border-0 text-dark p-3 mb-3"
+            style="font-size:12px;border-radius:12px;background:var(--pink-50)">
+            This action is <strong>irreversible</strong>. The user account and officer profile will be permanently
+            removed.
           </div>
           <div class="mb-3">
             <label class="form-label fw-bold text-muted" style="font-size:11px">
               TO CONFIRM DELETION, TYPE <span class="text-danger fw-bold">DELETE</span> BELOW:
             </label>
-            <input type="text" 
-                   name="confirm_text" 
-                   class="form-control form-control-sm text-center fw-bold text-uppercase" 
-                   id="confirmDeleteInput{{ officer.pk }}" 
-                   onkeyup="validateDeleteConfirm('{{ officer.pk }}')" 
-                   placeholder="Type DELETE to confirm" 
-                   autocomplete="off">
+            <input type="text" name="confirm_text"
+              class="form-control form-control-sm text-center fw-bold text-uppercase"
+              id="confirmDeleteInput{{ officer.pk }}" onkeyup="validateDeleteConfirm('{{ officer.pk }}')"
+              placeholder="Type DELETE to confirm" autocomplete="off">
           </div>
         </div>
-        <div class="modal-footer bg-light border-0 py-2 px-4" style="border-bottom-left-radius:18px;border-bottom-right-radius:18px">
+        <div class="modal-footer bg-light border-0 py-2 px-4"
+          style="border-bottom-left-radius:18px;border-bottom-right-radius:18px">
           <button type="button" class="btn btn-secondary-custom btn-sm" data-bs-dismiss="modal">Cancel</button>
-          <button type="submit" id="confirmDeleteBtn{{ officer.pk }}" class="btn btn-danger btn-sm px-3" disabled style="border-radius:30px;font-weight:700">
+          <button type="submit" id="confirmDeleteBtn{{ officer.pk }}" class="btn btn-danger btn-sm px-3" disabled
+            style="border-radius:30px;font-weight:700">
             Permanently Delete Account
           </button>
         </div>
@@ -195,18 +237,18 @@
 {% endfor %}
 
 <script>
-function validateDeleteConfirm(pk) {
-  const input = document.getElementById('confirmDeleteInput' + pk);
-  const btn = document.getElementById('confirmDeleteBtn' + pk);
-  if (input && btn) {
-    if (input.value.trim().toUpperCase() === 'DELETE') {
-      btn.removeAttribute('disabled');
-    } else {
-      btn.setAttribute('disabled', 'disabled');
+  function validateDeleteConfirm(pk) {
+    const input = document.getElementById('confirmDeleteInput' + pk);
+    const btn = document.getElementById('confirmDeleteBtn' + pk);
+    if (input && btn) {
+      if (input.value.trim().toUpperCase() === 'DELETE') {
+        btn.removeAttribute('disabled');
+      } else {
+        btn.setAttribute('disabled', 'disabled');
+      }
     }
   }
-}
-if (window.lucide) lucide.createIcons();
+  if (window.lucide) lucide.createIcons();
 </script>
 {% endif %}
 {% endblock %}

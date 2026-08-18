@@ -8,45 +8,46 @@
     <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Task Kanban Board</h5>
     <p class="text-muted mb-0" style="font-size:13px">Drag and drop tasks between stage boards to update status</p>
   </div>
-  <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
+  <div class="d-flex gap-3 align-items-center flex-wrap justify-content-start justify-content-sm-end mt-3 mt-sm-0 w-100 w-sm-auto">
     <div class="btn-group p-1" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:board' %}?scope=my_tasks{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
         data-ajax-nav="scope-switch"
-        class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+        class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} d-inline-flex align-items-center justify-content-center"
         style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
           data-lucide="user" class="me-1" style="width:13px;height:13px"></i>My Tasks</a>
       <a href="{% url 'tasks:board' %}?scope=all{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
         data-ajax-nav="scope-switch"
-        class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+        class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} d-inline-flex align-items-center justify-content-center"
         style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
           data-lucide="users" class="me-1" style="width:13px;height:13px"></i>All Tasks</a>
     </div>
+
+    <!-- View Switcher -->
     <div class="btn-group p-1" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
-        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0"
-        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px"><i data-lucide="list" class="me-1"
-          style="width:13px;height:13px"></i>List</a>
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn d-inline-flex align-items-center justify-content-center"><i data-lucide="list"
+          class="me-1" style="width:13px;height:13px"></i>List</a>
       <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
-        data-ajax-nav="view-switch" class="btn btn-sm btn-primary-custom"
-        style="font-size:12px;padding:4px 14px;border-radius:20px"><i data-lucide="kanban" class="me-1"
-          style="width:13px;height:13px"></i>Board</a>
+        data-ajax-nav="view-switch" class="btn btn-sm btn-primary-custom view-switcher-btn d-inline-flex align-items-center justify-content-center"><i data-lucide="kanban"
+          class="me-1" style="width:13px;height:13px"></i>Board</a>
       <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
-        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0"
-        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px"><i data-lucide="calendar"
-          class="me-1" style="width:13px;height:13px"></i>Calendar</a>
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn d-inline-flex align-items-center justify-content-center"><i
+          data-lucide="calendar" class="me-1" style="width:13px;height:13px"></i>Calendar</a>
     </div>
-    <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}" class="btn-primary-custom"
-      style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap"><i data-lucide="plus"
+
+    <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}"
+      class="btn-primary-custom btn-action-compact d-inline-flex align-items-center justify-content-center" style="border-radius:20px"><i data-lucide="plus" class="me-1"
         style="width:15px;height:15px"></i> New Task</a>
   </div>
 </div>
 <div class="glass-card mb-3" style="padding:10px 16px;border-radius:16px">
-  <form method="get" class="d-flex align-items-center gap-2 flex-wrap" style="row-gap:8px">
+  <form method="get" class="row g-2 w-100 m-0 align-items-center">
     <input type="hidden" name="scope" value="{{ current_filters.scope }}">
-    <div class="position-relative" style="flex:1 1 180px;min-width:140px;max-width:280px">
-      <div class="input-group input-group-sm">
+    
+    <div class="col-12 col-md-5 col-lg-4 position-relative">
+      <div class="input-group input-group-sm w-100">
         <span class="input-group-text border-end-0"
           style="background:#fff;border-radius:10px 0 0 10px;border-color:var(--slate-200);padding:4px 8px"><i
             data-lucide="search" class="text-muted" style="width:14px;height:14px"></i></span>
@@ -55,35 +56,41 @@
           style="border-radius:0 10px 10px 0;font-size:12.5px;padding:6px 10px">
       </div>
     </div>
-    <select name="category" class="form-select form-select-sm"
-      style="font-size:12.5px;border-radius:10px;width:auto;min-width:120px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
-      <option value="">All Categories</option>
-      {% for val, label in category_choices %}
-      <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
-    <select name="priority" class="form-select form-select-sm"
-      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:140px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
-      <option value="">All Priorities</option>
-      {% for val, label in priority_choices %}
-      <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
-      {% endfor %}
-    </select>
+    
+    <div class="col-6 col-md-2">
+      <select name="category" class="form-select form-select-sm filter-select w-100" aria-label="Filter by category">
+        <option value="">All Categories</option>
+        {% for val, label in category_choices %}
+        <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div class="col-6 col-md-2">
+      <select name="priority" class="form-select form-select-sm filter-select w-100" aria-label="Filter by priority">
+        <option value="">All Priorities</option>
+        {% for val, label in priority_choices %}
+        <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
     {% if current_filters.scope != 'my_tasks' %}
-    <select name="officer" multiple class="form-select form-select-sm"
-      style="font-size:12.5px;border-radius:10px;width:auto;min-width:110px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)"
-      size="1">
-      <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
-      {% for off in officers_list %}
-      <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{  off.get_full_name|default:off.username  }}</option>
-      {% endfor %}
-    </select>
+    <div class="col-6 col-md-3">
+      <select name="officer" multiple class="form-select form-select-sm filter-select w-100" aria-label="Filter by officer" size="1">
+        <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
+        {% for off in officers_list %}
+        <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{  off.get_full_name|default:off.username  }}</option>
+        {% endfor %}
+      </select>
+    </div>
     {% endif %}
-    <div class="d-flex gap-1 ms-auto">
-      <button type="submit" class="btn-primary-custom"
-        style="font-size:12px;padding:6px 14px;border-radius:10px;white-space:nowrap"><i data-lucide="filter"
+    
+    <div class="col-12 col-md-auto ms-auto d-flex gap-2 mt-2 mt-md-0">
+      <button type="submit" class="btn-primary-custom flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-size:12px;padding:6px 14px;border-radius:10px;white-space:nowrap"><i data-lucide="filter" class="me-1"
           style="width:13px;height:13px"></i> Apply</button>
-      <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}" class="btn btn-sm btn-outline-secondary"
+      <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}" class="btn btn-sm btn-outline-secondary flex-grow-1 flex-md-grow-0 d-flex align-items-center justify-content-center"
         style="font-size:12px;padding:5px 12px;border-radius:10px">Reset</a>
     </div>
   </form>
@@ -124,18 +131,17 @@
               <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{  task.get_category_display  }}
             </span>
             <span class="badge-status badge-priority-{{ task.priority }}" style="font-size:10px;padding:2px 8px">{{  task.get_priority_display  }}</span>
-            <button type="button" class="btn-sm-icon view-task-btn ms-1" data-task-id="{{ task.pk }}"
+            <button type="button" class="btn-sm-icon btn-view view-task-btn ms-1" data-task-id="{{ task.pk }}"
               title="View Details" style="width:24px;height:24px">
-              <i class="bi bi-eye-fill" style="font-size:12px;color:#475569"></i>
+              <i class="bi bi-eye-fill" style="font-size:12px"></i>
             </button>
             {% can_edit_task user task as edit_perm %}
             {% if edit_perm %}
-            <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon ms-1" title="Edit Task"
-              style="width:24px;height:24px"><i class="bi bi-pencil-fill" style="font-size:11px;color:#475569"></i></a>
-            <button type="button" class="btn-sm-icon single-delete-btn ms-1"
-              style="background:#FFF1F2 !important;border-color:#FECDD3 !important;color:#EF4444 !important;width:24px;height:24px"
+            <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon btn-edit ms-1" title="Edit Task"
+              style="width:24px;height:24px"><i class="bi bi-pencil-fill" style="font-size:11px"></i></a>
+            <button type="button" class="btn-sm-icon btn-delete single-delete-btn ms-1" style="width:24px;height:24px"
               title="Delete Task" data-task-id="{{ task.pk }}" data-task-num="{{ task.task_number }}">
-              <i class="bi bi-trash3-fill" style="font-size:11px;color:#EF4444"></i>
+              <i class="bi bi-trash3-fill" style="font-size:11px"></i>
             </button>
             {% endif %}
           </div>

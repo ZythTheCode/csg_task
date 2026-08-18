@@ -1,3 +1,8 @@
+// Inline SVG icons for sort indicators (no lucide.createIcons() dependency)
+const SVG_CHEVRON_UP = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="m18 15-6-6-6 6"/></svg>';
+const SVG_CHEVRON_DOWN = '<svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><path d="m6 9 6 6 6-6"/></svg>';
+const SVG_NEUTRAL = '<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.4"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>';
+
 document.addEventListener('DOMContentLoaded', function() {
   const sortableTables = document.querySelectorAll('.table-sortable');
   
@@ -30,21 +35,17 @@ document.addEventListener('DOMContentLoaded', function() {
           else activeSortState = 'asc';
         }
         
-        // Reset all icons
+        // Update sort icons using inline SVGs
         headers.forEach(h => {
           const container = h.querySelector('.sort-icon-container');
           if (container) {
             if (h === activeSortColumn && activeSortState !== 'none') {
-              container.innerHTML = activeSortState === 'asc' 
-                ? '<i data-lucide="chevron-up" style="width:13px;height:13px;color:var(--primary)"></i>'
-                : '<i data-lucide="chevron-down" style="width:13px;height:13px;color:var(--primary)"></i>';
+              container.innerHTML = activeSortState === 'asc' ? SVG_CHEVRON_UP : SVG_CHEVRON_DOWN;
             } else {
-              container.innerHTML = '<i data-lucide="arrow-up-down" style="width:12px;height:12px;opacity:0.4"></i>';
+              container.innerHTML = SVG_NEUTRAL;
             }
           }
         });
-        
-        if (window.lucide) lucide.createIcons();
         
         // Sort rows
         const currentRows = Array.from(tbody.querySelectorAll('tr'));
@@ -75,7 +76,33 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Re-append sorted rows
         currentRows.forEach(row => tbody.appendChild(row));
+
+        // Update aria-sort attributes
+        headers.forEach(h => {
+          if (h === activeSortColumn && activeSortState !== 'none') {
+            h.setAttribute('aria-sort', activeSortState === 'asc' ? 'ascending' : 'descending');
+          } else {
+            h.setAttribute('aria-sort', 'none');
+          }
+        });
       });
     });
+  });
+
+  // --- Scroll affordance for mobile table wrappers ---
+  // Toggles .scrolled-end class when user scrolls to the right edge,
+  // hiding the fade shadow (handled via CSS ::after pseudo-element).
+  const scrollWrappers = document.querySelectorAll('.table-scroll-wrapper');
+  scrollWrappers.forEach(function(wrapper) {
+    function checkScrollEnd() {
+      if (wrapper.scrollLeft + wrapper.clientWidth >= wrapper.scrollWidth - 1) {
+        wrapper.classList.add('scrolled-end');
+      } else {
+        wrapper.classList.remove('scrolled-end');
+      }
+    }
+    // Check on initial load (in case content doesn't overflow)
+    checkScrollEnd();
+    wrapper.addEventListener('scroll', checkScrollEnd);
   });
 });
