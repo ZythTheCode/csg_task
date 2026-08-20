@@ -19,7 +19,9 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
     paginate_by = 25
 
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.can_view_reports:
+        if not request.user.is_authenticated:
+            return super().dispatch(request, *args, **kwargs)
+        if not getattr(request.user, 'can_view_reports', False):
             from django.shortcuts import redirect
             from django.contrib import messages
             messages.error(request, 'You do not have permission to view reports.')
