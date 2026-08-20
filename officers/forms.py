@@ -253,6 +253,17 @@ class OfficerForm(forms.ModelForm):
                 raise forms.ValidationError("This username is already taken. Please choose another username.")
         return username
 
+    def clean_email(self):
+        val = self.cleaned_data.get('email')
+        email = val.strip() if val else ''
+        if email:
+            qs = User.objects.filter(email__iexact=email)
+            if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
+                qs = qs.exclude(pk=self.instance.user.pk)
+            if qs.exists():
+                raise forms.ValidationError("This email is already registered to an existing account.")
+        return email
+
     def clean_student_id(self):
         val = self.cleaned_data.get('student_id')
         student_id = val.strip() if val else ''

@@ -38,20 +38,30 @@ class CustomPasswordResetForm(PasswordResetForm):
         html_email_template_name=None,
     ):
         from django.conf import settings
+        import threading
+        import logging
+
         from_email = from_email or getattr(settings, 'DEFAULT_FROM_EMAIL', None) or getattr(settings, 'EMAIL_HOST_USER', None) or 'csgtasks2026@gmail.com'
         html_email_template_name = html_email_template_name or email_template_name
-        try:
-            super().send_mail(
-                subject_template_name=subject_template_name,
-                email_template_name=email_template_name,
-                context=context,
-                from_email=from_email,
-                to_email=to_email,
-                html_email_template_name=html_email_template_name,
-            )
-        except Exception as e:
-            import logging
-            logging.getLogger(__name__).error(f"Failed to send password reset email to {to_email}: {e}")
+        
+        def _send_email_task():
+            try:
+                super(CustomPasswordResetForm, self).send_mail(
+                    subject_template_name=subject_template_name,
+                    email_template_name=email_template_name,
+                    context=context,
+                    from_email=from_email,
+                    to_email=to_email,
+                    html_email_template_name=html_email_template_name,
+                )
+                logging.getLogger(__name__).info(f"Password reset email dispatched successfully to {to_email}")
+            except Exception as e:
+                logging.getLogger(__name__).error(f"CRITICAL SMTP ERROR: Failed to send password reset email to {to_email}. Ensure EMAIL_HOST_PASSWORD (App Password) and EMAIL_HOST_USER are correct. Error: {str(e)}", exc_info=True)
+
+        # Dispatch email sending to a background thread to prevent UI freezing/timeouts
+        email_thread = threading.Thread(target=_send_email_task)
+        email_thread.daemon = True
+        email_thread.start()
 
 
 
@@ -62,3 +72,14 @@ class ProfileEditForm(forms.ModelForm):
         widgets = {
             'bio': forms.Textarea(attrs={'rows': 4}),
         }
+
+    def clean_email(self):
+        val = self.cleaned_data.get('email')
+        email = val.strip() if val else ''
+        if email:
+            qs = User.objects.filter(email__iexact=email)
+            if self.instance and self.instance.pk:
+                qs = qs.exclude(pk=self.instance.pk)
+            if qs.exists():
+                raise forms.ValidationError("This email is already registered to an existing account.")
+        return email
