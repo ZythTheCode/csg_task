@@ -3,11 +3,16 @@
 {% block title %}Task Board{% endblock %}
 {% block content %}
 <script>sessionStorage.setItem("csg_last_tasks_url", window.location.href);</script>
+<<<<<<< Updated upstream
 <div class="d-flex justify-content-between align-items-xl-center align-items-start flex-column flex-xl-row gap-2 mb-3">
+=======
+<div class="d-flex justify-content-between align-items-md-center align-items-start flex-column flex-md-row gap-2 mb-3">
+>>>>>>> Stashed changes
   <div>
     <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Task Kanban Board</h5>
     <p class="text-muted mb-0" style="font-size:13px">Drag and drop tasks between stage boards to update status</p>
   </div>
+<<<<<<< Updated upstream
 <<<<<<< Updated upstream
   <div class="d-flex gap-2 align-items-center flex-wrap justify-content-end">
     <div class="btn-group p-1" role="group"
@@ -21,6 +26,20 @@
         data-ajax-nav="scope-switch"
         class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
         style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
+=======
+  <div class="d-flex gap-2 gap-sm-3 align-items-center flex-wrap justify-content-start justify-content-md-end mt-3 mt-md-0 w-100 w-md-auto">
+    <div class="btn-group p-1 flex-grow-1 flex-md-grow-0" role="group"
+      style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+      <a href="{% url 'tasks:board' %}?scope=my_tasks{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
+        data-ajax-nav="scope-switch"
+        class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
+          data-lucide="user" class="me-1" style="width:13px;height:13px"></i>My Tasks</a>
+      <a href="{% url 'tasks:board' %}?scope=all{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
+        data-ajax-nav="scope-switch"
+        class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
+>>>>>>> Stashed changes
           data-lucide="users" class="me-1" style="width:13px;height:13px"></i>All Tasks</a>
     </div>
     <div class="btn-group p-1" role="group"
@@ -57,6 +76,7 @@
     </div>
 
     <!-- View Switcher -->
+<<<<<<< Updated upstream
     <div class="btn-group p-1 flex-grow-1 flex-xl-grow-0" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
@@ -69,12 +89,31 @@
           class="me-1" style="width:13px;height:13px"></i>Board</a>
       <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
         data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn flex-grow-1 flex-xl-grow-0 d-inline-flex align-items-center justify-content-center"
+=======
+    <div class="btn-group p-1 flex-grow-1 flex-md-grow-0" role="group"
+      style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
+      <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i data-lucide="list"
+          class="me-1" style="width:13px;height:13px"></i>List</a>
+      <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+        data-ajax-nav="view-switch" class="btn btn-sm btn-primary-custom view-switcher-btn flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i data-lucide="kanban"
+          class="me-1" style="width:13px;height:13px"></i>Board</a>
+      <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+>>>>>>> Stashed changes
         style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
           data-lucide="calendar" class="me-1" style="width:13px;height:13px"></i>Calendar</a>
     </div>
 
     <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}"
+<<<<<<< Updated upstream
       class="btn-primary-custom btn-action-compact d-inline-flex align-items-center justify-content-center flex-grow-1 flex-xl-grow-0 ms-xl-auto" style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap;text-decoration:none"><i data-lucide="plus" class="me-1"
+>>>>>>> Stashed changes
+=======
+      class="btn-primary-custom btn-action-compact d-inline-flex align-items-center justify-content-center flex-grow-1 flex-md-grow-0 ms-md-auto"
+      style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap;text-decoration:none"><i data-lucide="plus" class="me-1"
 >>>>>>> Stashed changes
         style="width:15px;height:15px"></i> New Task</a>
   </div>
