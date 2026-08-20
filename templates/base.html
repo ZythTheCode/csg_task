@@ -367,7 +367,7 @@
             <li><span class="dropdown-item-text text-muted fw-semibold" style="font-size:11px">{{  user.get_role_display  }}</span></li>
             <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:profile' %}"><i data-lucide="user"
                   class="me-2" style="width:16px;height:16px"></i>Profile</a></li>
-            <li><a class="dropdown-item rounded-2 py-2" href="{% url 'accounts:password_change' %}"><i
+            <li><a class="dropdown-item rounded-2 py-2" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal"><i
                   data-lucide="shield-check" class="me-2" style="width:16px;height:16px"></i>Change Password</a></li>
             <li>
               <hr class="dropdown-divider">
@@ -447,6 +447,8 @@
   {% include 'tasks/_modal_detail.html' %}
   {% endif %}
 
+  {% include 'accounts/_modal_password_change.html' %}
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{% static 'js/progress-bar.js' %}"></script>
   <script>
@@ -516,9 +518,52 @@
       }
     }, true);
 
-    // Render Lucide icons (available synchronously from local static file)
+    // Universal Password Field Hide/Unhide Toggle Initializer
+    window.initPasswordToggleButtons = function (container) {
+      container = container || document;
+      const passwordInputs = container.querySelectorAll('input[type="password"], input[data-password-field="true"]');
+      passwordInputs.forEach(function (input) {
+        let wrapper = input.parentElement;
+        if (!wrapper.classList.contains('password-field-container')) {
+          wrapper = document.createElement('div');
+          wrapper.className = 'password-field-container position-relative w-100';
+          input.parentNode.insertBefore(wrapper, input);
+          wrapper.appendChild(input);
+        }
+        if (!wrapper.querySelector('.password-toggle-btn')) {
+          const toggleBtn = document.createElement('button');
+          toggleBtn.type = 'button';
+          toggleBtn.className = 'password-toggle-btn';
+          toggleBtn.title = 'Show Password';
+          toggleBtn.setAttribute('tabindex', '-1');
+          toggleBtn.innerHTML = '<i class="bi bi-eye-slash"></i>';
+          wrapper.appendChild(toggleBtn);
+        }
+      });
+    };
+
+    // Global Delegated Event Listener for Password Toggle Buttons
+    document.addEventListener('click', function (e) {
+      const toggleBtn = e.target.closest('.password-toggle-btn');
+      if (!toggleBtn) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const container = toggleBtn.closest('.password-field-container');
+      if (!container) return;
+      const input = container.querySelector('input[type="password"], input[type="text"]');
+      if (!input) return;
+      const isPassword = input.type === 'password';
+      input.type = isPassword ? 'text' : 'password';
+      const icon = toggleBtn.querySelector('i');
+      if (icon) {
+        icon.className = isPassword ? 'bi bi-eye' : 'bi bi-eye-slash';
+      }
+      toggleBtn.title = isPassword ? 'Hide Password' : 'Show Password';
+      input.focus();
+    }, true); // use capture phase to fire before any stopPropagation
+
     document.addEventListener('DOMContentLoaded', function () {
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
 
       // Sidebar toggle functions
       window.toggleSidebarMin = function () {
@@ -535,9 +580,15 @@
         document.getElementById('sidebarOverlay').classList.remove('show');
       };
 
+      // Run password field initializer
+      window.initPasswordToggleButtons();
+    });
+
+
+
       // Intercept click on any Edit Task link to require password modal FIRST
       document.addEventListener('click', function (e) {
-        const editLink = e.target.closest('a[href*="/edit/"]');
+        const editLink = e.target.closest('a[href*="/tasks/"][href*="/edit/"]');
         if (editLink) {
           const href = editLink.getAttribute('href');
           if (href && !href.startsWith('javascript:') && !editLink.hasAttribute('data-auth-verified')) {
@@ -651,6 +702,7 @@
           var detailInstance = bootstrap.Modal.getInstance(openDetailModal);
           if (detailInstance) detailInstance.hide();
         }
+        if (window.initPasswordToggleButtons) window.initPasswordToggleButtons(modalEl);
         modal.show();
         if (options.requirePassword && pwdInput) {
           setTimeout(() => pwdInput.focus(), 300);

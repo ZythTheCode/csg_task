@@ -1163,4 +1163,11 @@
     });
   })();
 </script>
+<script>
+  // Guarantee all data-lucide icons in the list page are rendered
+  // (runs after all inline scripts, so even if initTaskList errors out, icons still show)
+  document.addEventListener('DOMContentLoaded', function () {
+    if (window.lucide) lucide.createIcons();
+  });
+</script>
 {% endblock %}

@@ -43,9 +43,38 @@ class CustomPasswordChangeView(LoginRequiredMixin, PasswordChangeView):
 
     def form_valid(self, form):
         from core.services.audit import log_activity
+
+        # Reject if new password is same as current password
+        new_password = form.cleaned_data.get('new_password1')
+        if new_password and self.request.user.check_password(new_password):
+            is_ajax = self.request.headers.get('x-requested-with') == 'XMLHttpRequest'
+            if is_ajax:
+                return JsonResponse({
+                    'status': 'error',
+                    'errors': {'new_password1': ['New password must be different from your current password.']}
+                }, status=400)
+            form.add_error('new_password1', 'New password must be different from your current password.')
+            return self.form_invalid(form)
+
+        form.save()
         log_activity(self.request, 'PASSWORD_CHANGE', "User changed password successfully.", resource_type='User', resource_id=self.request.user.pk)
         messages.success(self.request, 'Password changed successfully.')
+
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            return JsonResponse({'status': 'ok', 'message': 'Password changed successfully.'})
+
+        referer = self.request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
         return super().form_valid(form)
+
+    def form_invalid(self, form):
+        if self.request.headers.get('x-requested-with') == 'XMLHttpRequest':
+            error_dict = {}
+            for field, errors in form.errors.items():
+                error_dict[field] = [str(e) for e in errors]
+            return JsonResponse({'status': 'error', 'errors': error_dict}, status=400)
+        return super().form_invalid(form)
 
 
 class ProfileView(LoginRequiredMixin, TemplateView):

@@ -109,10 +109,10 @@ else:
 
 
 AUTH_PASSWORD_VALIDATORS = [
-    {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator'},
-    {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        'OPTIONS': {'min_length': 5}
+    },
 ]
 
 AUTHENTICATION_BACKENDS = [
@@ -255,13 +255,21 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 CSRF_COOKIE_HTTPONLY = True
 CSRF_COOKIE_SAMESITE = 'Lax'
 
+# Explicit safe default: never redirect to HTTPS locally
+SECURE_SSL_REDIRECT = False
+
 if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
-    SECURE_HSTS_SECONDS = 31536000
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-    SECURE_HSTS_PRELOAD = True
+    # Only enable HTTPS features when deployed (not on localhost/127.0.0.1)
+    _local_hosts = {'127.0.0.1', 'localhost', 'testserver'}
+    _is_local = bool(_local_hosts & set(ALLOWED_HOSTS)) or '*' not in ALLOWED_HOSTS and not ALLOWED_HOSTS
+    _is_deployed = RENDER_EXTERNAL_HOSTNAME or not _local_hosts.intersection(set(ALLOWED_HOSTS))
+    if _is_deployed and '*' not in ALLOWED_HOSTS:
+        SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=True, cast=bool)
+        SECURE_HSTS_SECONDS = 31536000
+        SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+        SECURE_HSTS_PRELOAD = True
 
 # Structured Logging Configuration
 LOGGING = {
@@ -301,13 +309,8 @@ LOGGING = {
 PERF_QUERY_COUNT_THRESHOLD = 15
 PERF_REQUEST_DURATION_THRESHOLD_MS = 2000
 
-# Django Debug Toolbar and performance logging (DEBUG only)
+# Database query logging for slow queries (>100ms) (DEBUG only)
 if DEBUG:
-    INSTALLED_APPS += ['debug_toolbar']
-    MIDDLEWARE.insert(0, 'debug_toolbar.middleware.DebugToolbarMiddleware')
-    INTERNAL_IPS = ['127.0.0.1']
-
-    # Database query logging for slow queries (>100ms)
     LOGGING['loggers']['django.db.backends'] = {
         'handlers': ['console'],
         'level': 'WARNING',

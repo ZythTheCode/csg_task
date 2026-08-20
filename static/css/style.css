@@ -2931,3 +2931,68 @@ button:focus-visible,
   color: #F8FAFC !important;
 }
 
+/* ══════════════════════════════════════
+   PASSWORD VISIBILITY TOGGLE BUTTON
+══════════════════════════════════════ */
+.password-field-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.password-field-container input {
+  padding-right: 2.75rem !important;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  padding: 0.25rem 0.4rem;
+  color: var(--slate-400, #94a3b8);
+  cursor: pointer;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border-radius: 6px;
+  transition: color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.password-toggle-btn:hover {
+  color: var(--primary, #FF4FA3);
+  background-color: rgba(255, 79, 163, 0.08);
+}
+
+.password-toggle-btn:focus {
+  outline: none;
+}
+
+[data-mode="dark"] .password-toggle-btn,
+[data-theme="dark"] .password-toggle-btn {
+  color: #94A3B8;
+}
+
+[data-mode="dark"] .password-toggle-btn:hover,
+[data-theme="dark"] .password-toggle-btn:hover {
+  color: var(--primary-light, #60a5fa);
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+
+/* ─── Suppress Bootstrap is-invalid feedback icon on password modal inputs ── */
+/* Prevents the red warning circle from overlapping the eye toggle button      */
+.csg-pwd-input.is-invalid,
+.csg-pwd-input.is-valid {
+  background-image: none !important;
+  padding-right: 2.75rem !important;
+}
+
+.csg-pwd-input.is-invalid {
+  border-color: #dc3545;
+}
