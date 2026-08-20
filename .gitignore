@@ -25,7 +25,10 @@ staticfiles/
 .vscode/
 *.swp
 *.swo
+<<<<<<< Updated upstream
+=======
 
 # Cache
 django_cache/
 >>>>>>> Stashed changes
+
