@@ -122,7 +122,7 @@ class OfficerCreateView(LoginRequiredMixin, CreateView):
             invalidate_officers_cache(org.pk)
         messages.success(
             self.request,
-            f"Officer '{user.get_full_name()}' created successfully! Assigned Username: '{user.username}' (Password: '{created_pass}')."
+            f"{user.get_full_name()} created successfully."
         )
         return response
 

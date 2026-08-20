@@ -70,11 +70,11 @@ class OfficerForm(forms.ModelForm):
     username = forms.CharField(
         max_length=150,
         required=False,
-        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Auto-generated if left blank'})
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Auto-generated if left blank', 'autocomplete': 'off'})
     )
     email = forms.EmailField(
         required=False,
-        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@csg.edu.ph'})
+        widget=forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'email@csg.edu.ph', 'autocomplete': 'off'})
     )
     role = forms.ChoiceField(
         choices=User.ROLE_CHOICES,
@@ -82,7 +82,7 @@ class OfficerForm(forms.ModelForm):
     )
     password = forms.CharField(
         required=False,
-        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}),
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password', 'autocomplete': 'new-password'}),
         help_text="Leave blank when editing to keep current password unchanged."
     )
     profile_picture = forms.ImageField(
