@@ -48,8 +48,10 @@ class MarkReadView(LoginRequiredMixin, View):
         notif.is_read = True
         notif.save(update_fields=['is_read'])
         cache.delete(f'notif_unread_{request.user.pk}')
-        if notif.related_task:
-            return redirect('tasks:detail', pk=notif.related_task.pk)
+        
+        referer = request.META.get('HTTP_REFERER')
+        if referer:
+            return redirect(referer)
         return redirect('notifications:list')
 
 

@@ -344,13 +344,48 @@
         <button class="topbar-icon-btn" onclick="toggleUserDarkMode()" id="darkModeToggleBtn" type="button"
           title="Toggle Dark/Light Mode" aria-label="Toggle dark mode">
         </button>
-        <a href="{% url 'notifications:list' %}" class="topbar-icon-btn" title="Notifications"
-          aria-label="View notifications">
-          <i data-lucide="bell"></i>
-          {% if unread_notifications_count > 0 %}
-          <span class="topbar-badge">{{ unread_notifications_count }}</span>
-          {% endif %}
-        </a>
+        <div class="dropdown">
+          <button class="topbar-icon-btn border-0 bg-transparent" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Notifications" aria-label="View notifications">
+            <i data-lucide="bell"></i>
+            {% if unread_notifications_count > 0 %}
+            <span class="topbar-badge">{{ unread_notifications_count }}</span>
+            {% endif %}
+          </button>
+          <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 p-0" style="border-radius:16px;min-width:320px;margin-top:10px;">
+            <li class="p-3 border-bottom d-flex justify-content-between align-items-center" style="border-top-left-radius: 16px; border-top-right-radius: 16px;">
+              <h6 class="mb-0 fw-bold" style="font-size:14px;color:var(--text-color, inherit)">Notifications</h6>
+              {% if unread_notifications_count > 0 %}
+              <span class="badge bg-primary rounded-pill">{{ unread_notifications_count }} New</span>
+              {% endif %}
+            </li>
+            <div style="max-height: 350px; overflow-y: auto;">
+              {% for notif in recent_notifications %}
+              <li>
+                <a class="dropdown-item d-flex gap-3 py-3 px-3 border-bottom" style="white-space: normal; {% if not notif.is_read %}background-color: rgba(var(--bs-primary-rgb, 59, 130, 246), 0.1);{% endif %}" href="{% url 'notifications:list' %}#notif-{{ notif.pk }}">
+                  <div class="flex-shrink-0">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: rgba(var(--bs-primary-rgb, 59, 130, 246), 0.15); color: var(--bs-primary, #3b82f6);">
+                      <i class="bi {{ notif.icon }}" style="font-size: 16px;"></i>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="fw-bold mb-1" style="font-size: 13px; line-height: 1.3; color: var(--text-color, inherit);">{{ notif.title }}</div>
+                    <div class="mb-1 text-truncate-multiline" style="font-size: 12px; color: var(--text-muted, #64748b); line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; white-space: normal;">{{ notif.message }}</div>
+                    <div class="text-muted" style="font-size: 11px;">{{ notif.created_at|timesince }} ago</div>
+                  </div>
+                </a>
+              </li>
+              {% empty %}
+              <li class="p-4 text-center text-muted">
+                <i data-lucide="bell-off" class="mb-2 opacity-50" style="width: 24px; height: 24px; display: inline-block;"></i>
+                <p class="mb-0" style="font-size: 13px;">No recent notifications</p>
+              </li>
+              {% endfor %}
+            </div>
+            <li class="p-2 border-top text-center" style="border-bottom-left-radius: 16px; border-bottom-right-radius: 16px;">
+              <a href="{% url 'notifications:list' %}" class="text-decoration-none fw-bold" style="font-size: 12px; color: var(--bs-primary, #3b82f6);">View All Notifications</a>
+            </li>
+          </ul>
+        </div>
         <div class="dropdown">
           <div class="topbar-avatar" data-bs-toggle="dropdown" data-bs-boundary="window" style="cursor:pointer">
             {% if user.profile_picture %}

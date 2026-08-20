@@ -7,7 +7,8 @@
     display: flex;
     align-items: center;
     gap: 16px;
-    padding: 16px 20px;
+    padding: 16px 20px 16px 16px;
+    border-left: 4px solid transparent;
     border-bottom: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
     border-radius: 14px;
     transition: all 0.2s ease;
@@ -24,7 +25,8 @@
   }
 
   .notif-item-container.unread {
-    background: rgba(255, 79, 163, 0.06);
+    background: rgba(var(--bs-primary-rgb, 255, 79, 163), 0.12);
+    border-left-color: var(--primary, #FF4FA3);
   }
 
   .notif-checkbox-box {
@@ -38,6 +40,22 @@
     width: 18px;
     height: 18px;
     cursor: pointer;
+  }
+  
+  [data-mode="dark"] .notif-checkbox-box input[type="checkbox"],
+  [data-theme="dark"] .notif-checkbox-box input[type="checkbox"],
+  [data-mode="dark"] #selectAllCheckbox,
+  [data-theme="dark"] #selectAllCheckbox {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+
+  [data-mode="dark"] .notif-checkbox-box input[type="checkbox"]:checked,
+  [data-theme="dark"] .notif-checkbox-box input[type="checkbox"]:checked,
+  [data-mode="dark"] #selectAllCheckbox:checked,
+  [data-theme="dark"] #selectAllCheckbox:checked {
+    background-color: var(--primary);
+    border-color: var(--primary);
   }
 
   .notif-icon-box {
@@ -95,6 +113,16 @@
     display: flex;
     align-items: center;
     gap: 12px;
+  }
+  
+  .notif-item-container:target {
+    animation: highlightFade 3s ease-out forwards;
+    scroll-margin-top: 100px; /* Offset for sticky header */
+  }
+
+  @keyframes highlightFade {
+    0% { background-color: rgba(59, 130, 246, 0.15); box-shadow: inset 0 0 0 2px var(--primary); }
+    100% { background-color: transparent; box-shadow: inset 0 0 0 2px transparent; }
   }
 </style>
 {% endblock %}
@@ -156,16 +184,17 @@
         </div>
       </div>
 
+      <div class="notifications-scroll-container custom-scrollbar" style="max-height: calc(100vh - 290px); overflow-y: auto; overflow-x: hidden; padding-right: 6px;">
       {% for notif in notifications %}
-      <div class="notif-item-container {% if not notif.is_read %}unread{% endif %}">
+      <div id="notif-{{ notif.pk }}" class="notif-item-container {% if not notif.is_read %}unread{% endif %}">
         <!-- 1. Selection Checkbox -->
         <div class="notif-checkbox-box">
           <input class="form-check-input notif-checkbox" type="checkbox" name="notification_ids" value="{{ notif.pk }}">
         </div>
 
         <!-- 2. Notification Type Icon -->
-        <div class="notif-icon-box bg-{{ notif.color }}-subtle">
-          <i class="bi {{ notif.icon }} text-{{ notif.color }}"></i>
+        <div class="notif-icon-box" style="background-color: rgba(var(--bs-{{ notif.color }}-rgb, 59, 130, 246), 0.15);">
+          <i class="bi {{ notif.icon }}" style="color: var(--bs-{{ notif.color }}, #3b82f6);"></i>
         </div>
 
         <!-- 3. Title & Content -->
@@ -188,21 +217,22 @@
         <!-- 4. Timestamp & Individual Actions -->
         <div class="notif-side-meta">
           <span class="notif-time-stamp">{{ notif.created_at|date:"M d, H:i" }}</span>
-          <div class="notif-action-links">
+          <div class="notif-action-links mt-1">
             {% if not notif.is_read %}
-            <button type="submit" form="markReadForm{{ notif.pk }}" class="btn btn-link p-0 text-decoration-none"
-              style="font-size:11.5px;color:var(--accent)">
-              Mark read
+            <button type="submit" form="markReadForm{{ notif.pk }}" class="btn btn-sm btn-outline-primary py-0 px-2 text-decoration-none fw-semibold"
+              style="font-size:10.5px; border-radius: 12px; line-height: 20px;">
+              <i class="bi bi-check2 me-1"></i>Mark Read
             </button>
             {% endif %}
-            <button type="submit" form="deleteForm{{ notif.pk }}" class="btn btn-link text-danger p-0 border-0"
-              title="Delete notification" style="font-size:13px">
+            <button type="submit" form="deleteForm{{ notif.pk }}" class="btn btn-link text-danger p-0 border-0 ms-1"
+              title="Delete notification" style="font-size:14px">
               <i class="bi bi-trash"></i>
             </button>
           </div>
         </div>
       </div>
       {% endfor %}
+      </div>
     </form>
 
     <!-- Auxiliary forms for individual actions -->

@@ -23,7 +23,7 @@ def notifications_processor(request):
             Notification.objects.filter(
                 recipient_id=user_id
             ).select_related('related_task').only(
-                'id', 'title', 'notification_type', 'is_read', 'created_at',
+                'id', 'title', 'message', 'notification_type', 'is_read', 'created_at',
                 'related_task__id', 'related_task__task_number'
             ).order_by('-created_at')[:5]
         )

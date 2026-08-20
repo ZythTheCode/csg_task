@@ -3,10 +3,19 @@
 {% block content %}
 <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center mb-4 gap-3">
   <div class="flex-grow-1" style="min-width: 0;">
-    <a href="{% url 'tasks:list' %}" id="backToTasksLink" class="text-muted text-decoration-none fw-semibold"
-      style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back to
-      Tasks</a>
-    <script>var _bl = document.getElementById('backToTasksLink'); var _sv = sessionStorage.getItem('csg_last_tasks_url'); if (_bl && _sv) { _bl.href = _sv; }</script>
+    <a href="javascript:void(0);" onclick="goBack()" id="backToTasksLink" class="text-muted text-decoration-none fw-semibold"
+      style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back</a>
+    <script>
+      function goBack() {
+        var _ref = document.referrer;
+        if (_ref && _ref.includes(window.location.host) && !_ref.includes(window.location.pathname)) {
+          window.location.href = _ref;
+        } else {
+          var _sv = sessionStorage.getItem('csg_last_tasks_url');
+          window.location.href = _sv || "{% url 'tasks:list' %}";
+        }
+      }
+    </script>
     <h5 class="mb-0 mt-1 fw-bold text-truncate-multiline" style="color:var(--slate-800);letter-spacing:-0.3px;word-break:break-word"><span
         style="color:var(--primary);font-family:monospace">{{ task.task_number }}</span> {% if task.is_overdue %}<span
         class="badge bg-danger align-middle ms-1 me-1 badge-pill-sm">Overdue</span>{% endif %}— {{ task.title }}</h5>
