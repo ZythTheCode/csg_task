@@ -1509,7 +1509,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                     f'— CSG Task Management System'
                 )
 
-                task_url = request.build_absolute_uri(f'/tasks/{task.pk}/')
+                task_url = request.build_absolute_uri(reverse('tasks:detail', args=[task.pk]))
                 
                 # Fetch assigned officers
                 assigned_officers_list = []
