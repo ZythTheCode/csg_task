@@ -520,7 +520,6 @@
         <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{ off.get_full_name|default:off.username }}</option>
         {% endfor %}
       </select>
-    </div>
     {% endif %}
     
     <div class="col-12 col-md-auto ms-md-auto d-flex align-items-center gap-2">
