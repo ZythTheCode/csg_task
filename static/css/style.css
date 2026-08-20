@@ -1774,7 +1774,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .chart-container { height: 200px !important; }
   .kanban-board-container { gap: 12px; overflow-x: auto; padding-bottom: 8px; }
   .kanban-column { flex: 0 0 85vw; min-width: 270px; }
-  .btn-primary-custom:not(.btn-sm), .btn-secondary-custom:not(.btn-sm), .btn-danger-custom:not(.btn-sm), .btn-outline-custom:not(.btn-sm) { min-height: 38px; display: inline-flex; align-items: center; justify-content: center; }
+
   .badge { max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 }
 
@@ -1797,7 +1797,7 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .login-card { padding: 24px 16px; border-radius: 18px; }
   .toast-container { left: 12px; right: 12px; top: 68px; min-width: auto; }
   .filter-chip { padding: 4px 10px; font-size: 11.5px; }
-  .btn-primary-custom:not(.btn-sm), .btn-secondary-custom:not(.btn-sm), .btn-danger-custom:not(.btn-sm), .btn-outline-custom:not(.btn-sm) { padding: 8px 12px; font-size: 12px; min-height: 38px; }
+
   .form-control, .form-select { min-height: 38px; font-size: 13px !important; }
   .glass-card { border-radius: 14px; padding: 16px; }
   .notif-item-container { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -2292,9 +2292,8 @@ html[data-mode="dark"] .empty-col-placeholder,
 .filter-select {
   font-size: var(--font-size-sm);
   border-radius: var(--radius-sm);
-  width: auto;
-  min-width: 120px;
-  max-width: 150px;
+  width: 100% !important;
+  max-width: 100% !important;
   padding: 6px 28px 6px 10px;
   border: 1.5px solid var(--slate-200);
   background: rgba(255, 255, 255, 0.9);
@@ -2382,10 +2381,7 @@ html[data-mode="dark"] .empty-col-placeholder,
     max-height: calc(90vh - 120px);
   }
 
-  /* Minimum tap targets (44px per WCAG 2.5.5) */
-  .btn, button, a.btn, .form-control, .form-select {
-    min-height: 44px;
-  }
+
 }
 
 /* ── Small Screens: 576px to 767px ── */
@@ -2432,11 +2428,7 @@ html[data-mode="dark"] .empty-col-placeholder,
     padding: 8px;
   }
 
-  /* Minimum tap targets for table buttons */
-  .table .btn, .table button, .table a.btn {
-    min-height: 44px;
-    min-width: 44px;
-  }
+
 }
 
 /* ══════════════════════════════════════
