@@ -1505,10 +1505,155 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                 if custom_message:
                     body += f'\nMessage from {sender_name}:\n  "{custom_message}"\n'
                 body += (
-                    f'\nPlease log in to the CSG Task Management System to view and '
-                    f'update this task.\n\n'
+                    f'\nPlease log in to the CSG Task Management System to view and update this task.\n\n'
                     f'— CSG Task Management System'
                 )
+
+                task_url = request.build_absolute_uri(f'/tasks/{task.pk}/')
+                
+                # Fetch assigned officers
+                assigned_officers_list = []
+                for o in task.assigned_officers.all():
+                    name = o.get_full_name() or o.username
+                    pos = getattr(o.officer_profile, 'position', '') if hasattr(o, 'officer_profile') else ''
+                    if pos:
+                        assigned_officers_list.append(f"{name} ({pos})")
+                    else:
+                        assigned_officers_list.append(name)
+                assigned_officers_str = '<br>'.join(assigned_officers_list)
+
+                html_body = f"""
+                <div style="font-family: 'Inter', 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 650px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                    
+                    <!-- Header Banner -->
+                    <div style="padding: 16px 24px; background-color: #f8faff; border-bottom: 1px solid #e2e8f0;">
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                            <tr>
+                                <td width="44">
+                                    <div style="width: 36px; height: 36px; background: linear-gradient(135deg, #3b82f6, #1d4ed8); border-radius: 8px; display: inline-block; text-align: center; line-height: 36px; color: white; font-weight: bold; font-size: 14px;">CSG</div>
+                                </td>
+                                <td>
+                                    <h1 style="margin: 0; font-size: 14px; color: #0f172a; font-weight: 700; letter-spacing: 0.5px;">CENTRAL STUDENT GOVERNMENT</h1>
+                                    <p style="margin: 2px 0 0 0; font-size: 12px; color: #64748b;">Task Management System</p>
+                                </td>
+                                <td align="right" width="40">
+                                    <img src="https://img.icons8.com/fluency-systems-regular/96/0f172a/bell.png" style="width: 28px; height: 28px; opacity: 0.2;" alt="Notification">
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Main Content -->
+                    <div style="background-color: #ffffff; padding: 24px 32px 32px 32px;">
+                        
+                        <h2 style="margin: 0 0 12px 0; font-size: 18px; color: #0f172a;">Hi {officer.get_full_name() or officer.username},</h2>
+                        <p style="margin: 0 0 24px 0; font-size: 14px; color: #475569;">{sender_name} sent you a nudge for the following task:</p>
+
+                        <!-- Task Card -->
+                        <div style="border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px 20px; margin-bottom: 24px;">
+                            <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                <tr>
+                                    <td width="56" valign="top">
+                                        <div style="width: 40px; height: 40px; background-color: #eff6ff; border-radius: 8px; display: inline-block; text-align: center; line-height: 40px;">
+                                            <img src="https://img.icons8.com/fluency-systems-regular/96/3b82f6/clipboard.png" style="width: 20px; height: 20px; vertical-align: middle;" alt="Task">
+                                        </div>
+                                    </td>
+                                    <td valign="top" style="padding-right: 12px; word-break: break-word; overflow-wrap: break-word;">
+                                        <h3 style="margin: 0 0 6px 0; font-size: 16px; color: #0f172a;">{task.title}</h3>
+                                        <div>
+                                            <span style="display: inline-block; background-color: #eff6ff; color: #2563eb; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600; margin-right: 6px;">Task No. {task.task_number}</span>
+                                            <span style="display: inline-block; background-color: #fff7ed; color: #ea580c; padding: 3px 8px; border-radius: 12px; font-size: 11px; font-weight: 600;">{task.get_priority_display()} Priority</span>
+                                        </div>
+                                    </td>
+                                    <td align="right" valign="top" width="110">
+                                        <span style="display: inline-block; background-color: #f1f5f9; color: #334155; padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: 600; white-space: nowrap;">
+                                            <span style="color: #3b82f6;">●</span> {task.get_status_display()}
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <div style="border-top: 1px solid #f1f5f9; margin: 16px 0 0 0; padding-top: 16px;">
+                                <table width="100%" cellpadding="0" cellspacing="0" border="0">
+                                    <tr>
+                                        <td width="33%" valign="top">
+                                            <table cellpadding="0" cellspacing="0" border="0">
+                                                <tr>
+                                                    <td width="24" valign="top"><img src="https://img.icons8.com/fluency-systems-regular/48/64748b/pie-chart.png" style="width:16px;"></td>
+                                                    <td valign="top">
+                                                        <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;">Progress</div>
+                                                        <div style="font-size: 13px; color: #0f172a; font-weight: 600;">{task.progress}%</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td width="33%" valign="top" style="border-left: 1px solid #f1f5f9; padding-left: 16px;">
+                                            <table cellpadding="0" cellspacing="0" border="0">
+                                                <tr>
+                                                    <td width="24" valign="top"><img src="https://img.icons8.com/fluency-systems-regular/48/64748b/calendar--v1.png" style="width:16px;"></td>
+                                                    <td valign="top">
+                                                        <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;">Due Date</div>
+                                                        <div style="font-size: 13px; color: #0f172a; font-weight: 600;">{due_str}</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                        <td width="33%" valign="top" style="border-left: 1px solid #f1f5f9; padding-left: 16px;">
+                                            <table cellpadding="0" cellspacing="0" border="0">
+                                                <tr>
+                                                    <td width="24" valign="top"><img src="https://img.icons8.com/fluency-systems-regular/48/64748b/clock--v1.png" style="width:16px;"></td>
+                                                    <td valign="top">
+                                                        <div style="font-size: 11px; color: #64748b; margin-bottom: 2px;">Created On</div>
+                                                        <div style="font-size: 13px; color: #0f172a; font-weight: 600;">{task.created_at.strftime('%b %d, %Y')}</div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- 2 Column Layout for Message & Assigned Officers -->
+                        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin-bottom: 24px;">
+                            <tr>
+                                <!-- Message Box -->
+                                <td width="48%" valign="top">
+                                    <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 16px; height: 100%;">
+                                        <div style="font-size: 12px; color: #0f172a; font-weight: 600; margin-bottom: 10px;">
+                                            <img src="https://img.icons8.com/fluency-systems-regular/48/0f172a/speech-bubble--v1.png" style="width: 14px; vertical-align: middle; margin-right: 4px; margin-top: -2px;"> Message from {sender_name}:
+                                        </div>
+                                        <div style="font-size: 13px; color: #475569; font-style: italic; line-height: 1.5;">
+                                            "{custom_message if custom_message else 'Please review and update this task as soon as possible.'}"
+                                        </div>
+                                    </div>
+                                </td>
+                                <td width="4%"></td>
+                                <!-- Assigned Officers -->
+                                <td width="48%" valign="top">
+                                    <div style="background-color: #f8fafc; border: 1px solid #f1f5f9; border-radius: 12px; padding: 16px; height: 100%;">
+                                        <div style="font-size: 12px; color: #0f172a; font-weight: 600; margin-bottom: 10px;">
+                                            <img src="https://cdn-icons-png.flaticon.com/512/1256/1256650.png" style="width: 14px; vertical-align: middle; margin-right: 4px; margin-top: -2px; opacity: 0.8;"> Assigned Officers
+                                        </div>
+                                        <div style="font-size: 13px; color: #475569; line-height: 1.5;">
+                                            {assigned_officers_str}
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <!-- Footer Callout -->
+                        <div style="background-color: #f8fafc; border-radius: 12px; padding: 16px; text-align: center;">
+                            <div style="font-size: 12px; color: #475569; margin-bottom: 16px;">
+                                <img src="https://img.icons8.com/fluency-systems-regular/48/475569/info.png" style="width: 14px; vertical-align: middle; margin-right: 4px; margin-top: -2px;"> Please log in to the CSG Task Management System to view and update this task.
+                            </div>
+                            <a href="{task_url}" style="background-color: #2563eb; color: #ffffff; padding: 10px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 13px; display: inline-block;">Open Task Now</a>
+                        </div>
+
+                    </div>
+                </div>
+                """
                 
                 # Email Dispatchers (Brevo HTTPS API -> Resend HTTPS API -> Django SMTP)
                 brevo_key = config('BREVO_API_KEY', default='').strip()
@@ -1535,6 +1680,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                                 "to": [{"email": officer.email}],
                                 "subject": subject,
                                 "textContent": body,
+                                "htmlContent": html_body,
                             },
                             timeout=10
                         )
@@ -1560,6 +1706,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                                 "to": [officer.email],
                                 "subject": subject,
                                 "text": body,
+                                "html": html_body,
                             },
                             timeout=10
                         )
@@ -1578,6 +1725,7 @@ class NudgeOfficersView(LoginRequiredMixin, View):
                             send_mail(
                                 subject=subject,
                                 message=body,
+                                html_message=html_body,
                                 from_email=from_email,
                                 recipient_list=[officer.email],
                                 fail_silently=False,
