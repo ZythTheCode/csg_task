@@ -696,7 +696,7 @@
             if (data.is_overdue) {
               document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
             } else {
-              document.getElementById('modalTaskDueDate').className = 'text-dark';
+              document.getElementById('modalTaskDueDate').className = 'modal-card-value';
             }
             document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
             document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
@@ -706,8 +706,8 @@
               assignedList.innerHTML = data.assigned_officers.map(off => {
                 const posStr = (off.position_title || off.position) ? ` (${off.position_title || off.position})` : '';
                 return `
-              <div class="d-flex align-items-center p-2" style="background:var(--pink-50);border-radius:8px">
-                <span style="font-size:12.5px;font-weight:700;color:var(--slate-800)">${off.name}${posStr}</span>
+              <div class="d-flex align-items-center modal-item-box">
+                <span class="modal-card-value" style="font-size:12.5px;font-weight:700">${off.name}${posStr}</span>
               </div>
             `;
               }).join('');
@@ -718,14 +718,14 @@
             const attList = document.getElementById('modalTaskAttachmentsList');
             if (data.attachments && data.attachments.length > 0) {
               attList.innerHTML = data.attachments.map(att => `
-            <div class="d-flex align-items-center justify-content-between p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
+            <div class="d-flex align-items-center justify-content-between modal-item-box mb-2">
               <div class="pe-2 overflow-hidden">
-                <span class="text-truncate d-block fw-bold text-dark" style="font-size:12px" title="${att.filename}">${att.filename}</span>
-                <small class="text-muted" style="font-size:10.5px">Uploaded by <strong>${att.uploaded_by || 'Officer'}</strong> &middot; ${att.created_at}</small>
+                <span class="text-truncate d-block fw-bold modal-card-value" style="font-size:12px" title="${att.filename}">${att.filename}</span>
+                <small class="text-muted" style="font-size:10.5px">Uploaded by <strong class="modal-card-value">${att.uploaded_by || 'Officer'}</strong> &middot; ${att.created_at}</small>
               </div>
               <div class="d-flex gap-1 flex-shrink-0">
                 <a href="${att.view_url || att.url}" target="_blank" class="btn btn-sm btn-primary-custom p-1 px-2" style="font-size:11px" title="View Document"><i data-lucide="eye" style="width:12px;height:12px"></i> View</a>
-                <a href="${att.download_url || att.url}" onclick="return downloadAttachmentToDevice(event, '${att.download_url || att.url}', '${(att.filename || 'download').replace(/'/g, "\\'")}')" download="${att.filename}" class="btn btn-sm btn-light border p-1 px-2" style="font-size:11px" title="Download File"><i data-lucide="download" style="width:12px;height:12px"></i></a>
+                <a href="${att.download_url || att.url}" onclick="return downloadAttachmentToDevice(event, '${att.download_url || att.url}', '${(att.filename || 'download').replace(/'/g, "\\'")}')" download="${att.filename}" class="btn btn-sm btn-secondary-custom p-1 px-2" style="font-size:11px" title="Download File"><i data-lucide="download" style="width:12px;height:12px"></i></a>
               </div>
             </div>
           `).join('');
@@ -736,15 +736,15 @@
             const commentsList = document.getElementById('modalTaskCommentsList');
             if (data.comments && data.comments.length > 0) {
               commentsList.innerHTML = data.comments.map(c => `
-            <div class="p-2 mb-2" style="background:var(--pink-50);border-radius:10px">
+            <div class="modal-item-box mb-2">
               <div class="d-flex justify-content-between align-items-center mb-1">
                 <div>
-                  <strong style="font-size:11.5px;color:var(--slate-800)">${c.author}</strong>
-                  <span class="badge bg-light text-muted border ms-1" style="font-size:9.5px">${c.author_role || 'Officer'}</span>
+                  <strong class="modal-card-value" style="font-size:11.5px">${c.author}</strong>
+                  <span class="badge bg-secondary-subtle text-muted border ms-1" style="font-size:9.5px">${c.author_role || 'Officer'}</span>
                 </div>
-                <small style="font-size:10px;color:var(--slate-500)">${c.created_at}</small>
+                <small class="text-muted" style="font-size:10px">${c.created_at}</small>
               </div>
-              <p class="mb-0" style="font-size:12px;color:var(--slate-700)">${c.content}</p>
+              <p class="mb-0 modal-card-value" style="font-size:12px;font-weight:normal">${c.content}</p>
             </div>
           `).join('');
             } else {

@@ -2834,3 +2834,100 @@ button:focus-visible,
   background-color: rgba(30, 41, 59, 0.88);
   border-radius: var(--radius-md);
 }
+
+/* ══════════════════════════════════════
+   TASK DETAIL MODAL THEMING & CONTRAST
+══════════════════════════════════════ */
+.modal-card-box {
+  background: var(--pink-50, #FFF5FA);
+  border: 1px solid var(--slate-200, #E2E8F0);
+  border-radius: var(--radius-md, 14px);
+  padding: 16px;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.modal-item-box {
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid var(--slate-200, #E2E8F0);
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition: background var(--transition), border-color var(--transition);
+}
+
+.modal-card-title {
+  font-size: var(--font-size-xs, 11px);
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--slate-500, #64748B);
+}
+
+.modal-card-value {
+  color: var(--slate-800, #1E293B);
+  font-weight: 700;
+}
+
+/* Dark Mode Overrides for Task Modal */
+[data-mode="dark"] .modal-content,
+[data-theme="dark"] .modal-content {
+  background: #1E293B !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+  color: #F8FAFC !important;
+}
+
+[data-mode="dark"] .modal-header .btn-close,
+[data-theme="dark"] .modal-header .btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+[data-mode="dark"] .modal-card-box,
+[data-theme="dark"] .modal-card-box {
+  background: rgba(15, 23, 42, 0.65) !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+  color: #F8FAFC !important;
+}
+
+[data-mode="dark"] .modal-item-box,
+[data-theme="dark"] .modal-item-box {
+  background: rgba(30, 41, 59, 0.75) !important;
+  border-color: rgba(71, 85, 105, 0.6) !important;
+  color: #F8FAFC !important;
+}
+
+[data-mode="dark"] .modal-card-title,
+[data-theme="dark"] .modal-card-title {
+  color: #94A3B8 !important;
+}
+
+[data-mode="dark"] .modal-card-value,
+[data-theme="dark"] .modal-card-value {
+  color: #F8FAFC !important;
+}
+
+[data-mode="dark"] #taskDetailModal .text-dark,
+[data-mode="dark"] #modalNudgeDialog .text-dark,
+[data-theme="dark"] #taskDetailModal .text-dark,
+[data-theme="dark"] #modalNudgeDialog .text-dark {
+  color: #F8FAFC !important;
+}
+
+[data-mode="dark"] #taskDetailModal .text-muted,
+[data-mode="dark"] #modalNudgeDialog .text-muted,
+[data-theme="dark"] #taskDetailModal .text-muted,
+[data-theme="dark"] #modalNudgeDialog .text-muted {
+  color: #94A3B8 !important;
+}
+
+[data-mode="dark"] #modalNudgeOfficerList,
+[data-theme="dark"] #modalNudgeOfficerList {
+  background: rgba(15, 23, 42, 0.65) !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+[data-mode="dark"] .nudge-officer-item,
+[data-theme="dark"] .nudge-officer-item {
+  background: rgba(30, 41, 59, 0.75) !important;
+  border: 1px solid rgba(71, 85, 105, 0.5) !important;
+  color: #F8FAFC !important;
+}
+
