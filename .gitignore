@@ -25,3 +25,6 @@ staticfiles/
 .vscode/
 *.swp
 *.swo
+
+# Cache
+django_cache/

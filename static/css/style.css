@@ -1774,7 +1774,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .chart-container { height: 200px !important; }
   .kanban-board-container { gap: 12px; overflow-x: auto; padding-bottom: 8px; }
   .kanban-column { flex: 0 0 85vw; min-width: 270px; }
+<<<<<<< HEAD
 
+=======
+>>>>>>> tab/tasks
   .badge { max-width: 100%; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; }
 }
 
@@ -1797,7 +1800,10 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .login-card { padding: 24px 16px; border-radius: 18px; }
   .toast-container { left: 12px; right: 12px; top: 68px; min-width: auto; }
   .filter-chip { padding: 4px 10px; font-size: 11.5px; }
+<<<<<<< HEAD
 
+=======
+>>>>>>> tab/tasks
   .form-control, .form-select { min-height: 38px; font-size: 13px !important; }
   .glass-card { border-radius: 14px; padding: 16px; }
   .notif-item-container { flex-direction: column; align-items: flex-start; gap: 10px; }
@@ -2173,7 +2179,209 @@ html[data-mode="dark"] .empty-col-placeholder,
 }
 
 
+/* ══════════════════════════════════════
+   ACTION BUTTONS (View, Edit, Delete, Complete) & CATEGORY CHIPS
+══════════════════════════════════════ */
+/* View Button - Light Mode */
+.btn-action-view,
+.btn-sm-icon.view-task-btn,
+.btn-sm-icon[title="View"],
+.btn-sm-icon[title*="View"] {
+  background: #E0F2FE !important;
+  border: 1px solid #BAE6FD !important;
+  color: #0284C7 !important;
+}
+.btn-action-view i,
+.btn-sm-icon.view-task-btn i,
+.btn-sm-icon[title="View"] i,
+.btn-sm-icon[title*="View"] i {
+  color: #0284C7 !important;
+}
+.btn-action-view:hover,
+.btn-sm-icon.view-task-btn:hover,
+.btn-sm-icon[title="View"]:hover,
+.btn-sm-icon[title*="View"]:hover {
+  background: #0284C7 !important;
+  border-color: #0284C7 !important;
+  color: #FFFFFF !important;
+}
+.btn-action-view:hover i,
+.btn-sm-icon.view-task-btn:hover i,
+.btn-sm-icon[title="View"]:hover i,
+.btn-sm-icon[title*="View"]:hover i {
+  color: #FFFFFF !important;
+}
 
+<<<<<<< HEAD
+=======
+/* Edit Button - Light Mode */
+.btn-action-edit,
+.btn-sm-icon.edit-task-btn,
+.btn-sm-icon[title="Edit"],
+.btn-sm-icon[title*="Edit"] {
+  background: #EEF2FF !important;
+  border: 1px solid #C7D2FE !important;
+  color: #4F46E5 !important;
+}
+.btn-action-edit i,
+.btn-sm-icon.edit-task-btn i,
+.btn-sm-icon[title="Edit"] i,
+.btn-sm-icon[title*="Edit"] i {
+  color: #4F46E5 !important;
+}
+.btn-action-edit:hover,
+.btn-sm-icon.edit-task-btn:hover,
+.btn-sm-icon[title="Edit"]:hover,
+.btn-sm-icon[title*="Edit"]:hover {
+  background: #4F46E5 !important;
+  border-color: #4F46E5 !important;
+  color: #FFFFFF !important;
+}
+.btn-action-edit:hover i,
+.btn-sm-icon.edit-task-btn:hover i,
+.btn-sm-icon[title="Edit"]:hover i,
+.btn-sm-icon[title*="Edit"]:hover i {
+  color: #FFFFFF !important;
+}
+
+/* Dark Mode Overrides for Category Chips & Action Buttons */
+[data-mode="dark"] .badge-category-document, [data-theme="dark"] .badge-category-document {
+  background: rgba(2, 132, 199, 0.22) !important;
+  color: #38BDF8 !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+}
+[data-mode="dark"] .badge-category-multimedia, [data-theme="dark"] .badge-category-multimedia {
+  background: rgba(126, 34, 206, 0.25) !important;
+  color: #C084FC !important;
+  border: 1px solid rgba(192, 132, 252, 0.35) !important;
+}
+[data-mode="dark"] .badge-category-finance, [data-theme="dark"] .badge-category-finance {
+  background: rgba(4, 120, 87, 0.25) !important;
+  color: #34D399 !important;
+  border: 1px solid rgba(52, 211, 153, 0.35) !important;
+}
+[data-mode="dark"] .badge-category-for_clarification, [data-theme="dark"] .badge-category-for_clarification {
+  background: rgba(180, 83, 9, 0.25) !important;
+  color: #FBBF24 !important;
+  border: 1px solid rgba(251, 191, 36, 0.35) !important;
+}
+[data-mode="dark"] .badge-category-event, [data-theme="dark"] .badge-category-event {
+  background: rgba(190, 24, 93, 0.25) !important;
+  color: #F472B6 !important;
+  border: 1px solid rgba(244, 114, 182, 0.35) !important;
+}
+[data-mode="dark"] .badge-category-other, [data-theme="dark"] .badge-category-other {
+  background: rgba(51, 65, 85, 0.4) !important;
+  color: #CBD5E1 !important;
+  border: 1px solid rgba(203, 213, 225, 0.3) !important;
+}
+
+[data-mode="dark"] .btn-action-view, [data-mode="dark"] .btn-sm-icon.view-task-btn, [data-mode="dark"] .btn-sm-icon[title="View"], [data-mode="dark"] .btn-sm-icon[title*="View"],
+[data-theme="dark"] .btn-action-view, [data-theme="dark"] .btn-sm-icon.view-task-btn, [data-theme="dark"] .btn-sm-icon[title="View"], [data-theme="dark"] .btn-sm-icon[title*="View"] {
+  background: rgba(2, 132, 199, 0.22) !important;
+  border: 1px solid rgba(56, 189, 248, 0.35) !important;
+  color: #38BDF8 !important;
+}
+[data-mode="dark"] .btn-action-view i, [data-mode="dark"] .btn-sm-icon.view-task-btn i, [data-mode="dark"] .btn-sm-icon[title="View"] i, [data-mode="dark"] .btn-sm-icon[title*="View"] i,
+[data-theme="dark"] .btn-action-view i, [data-theme="dark"] .btn-sm-icon.view-task-btn i, [data-theme="dark"] .btn-sm-icon[title="View"] i, [data-theme="dark"] .btn-sm-icon[title*="View"] i {
+  color: #38BDF8 !important;
+}
+[data-mode="dark"] .btn-action-view:hover, [data-mode="dark"] .btn-sm-icon.view-task-btn:hover,
+[data-theme="dark"] .btn-action-view:hover, [data-theme="dark"] .btn-sm-icon.view-task-btn:hover {
+  background: #0284C7 !important;
+  border-color: #38BDF8 !important;
+  color: #FFFFFF !important;
+}
+
+[data-mode="dark"] .btn-action-edit, [data-mode="dark"] .btn-sm-icon.edit-task-btn, [data-mode="dark"] .btn-sm-icon[title="Edit"], [data-mode="dark"] .btn-sm-icon[title*="Edit"],
+[data-theme="dark"] .btn-action-edit, [data-theme="dark"] .btn-sm-icon.edit-task-btn, [data-theme="dark"] .btn-sm-icon[title="Edit"], [data-theme="dark"] .btn-sm-icon[title*="Edit"] {
+  background: rgba(79, 70, 229, 0.25) !important;
+  border: 1px solid rgba(129, 140, 248, 0.35) !important;
+  color: #818CF8 !important;
+}
+[data-mode="dark"] .btn-action-edit i, [data-mode="dark"] .btn-sm-icon.edit-task-btn i, [data-mode="dark"] .btn-sm-icon[title="Edit"] i, [data-mode="dark"] .btn-sm-icon[title*="Edit"] i,
+[data-theme="dark"] .btn-action-edit i, [data-theme="dark"] .btn-sm-icon.edit-task-btn i, [data-theme="dark"] .btn-sm-icon[title="Edit"] i, [data-theme="dark"] .btn-sm-icon[title*="Edit"] i {
+  color: #818CF8 !important;
+}
+[data-mode="dark"] .btn-action-edit:hover, [data-mode="dark"] .btn-sm-icon.edit-task-btn:hover,
+[data-theme="dark"] .btn-action-edit:hover, [data-theme="dark"] .btn-sm-icon.edit-task-btn:hover {
+  background: #4F46E5 !important;
+  border-color: #818CF8 !important;
+  color: #FFFFFF !important;
+}
+
+/* Complete Button - Light & Dark Mode */
+.btn-action-complete {
+  background: #DCFCE7 !important;
+  border: 1px solid #BBF7D0 !important;
+  color: #16A34A !important;
+}
+.btn-action-complete i {
+  color: #16A34A !important;
+}
+.btn-action-complete:hover {
+  background: #16A34A !important;
+  border-color: #16A34A !important;
+  color: #FFFFFF !important;
+}
+.btn-action-complete:hover i {
+  color: #FFFFFF !important;
+}
+
+[data-mode="dark"] .btn-action-complete, [data-mode="dark"] button[title*="Mark Task"], [data-mode="dark"] button[style*="DCFCE7"],
+[data-theme="dark"] .btn-action-complete, [data-theme="dark"] button[title*="Mark Task"], [data-theme="dark"] button[style*="DCFCE7"] {
+  background: rgba(34, 197, 94, 0.25) !important;
+  border: 1px solid rgba(74, 222, 128, 0.4) !important;
+  color: #4ADE80 !important;
+}
+[data-mode="dark"] .btn-action-complete i, [data-mode="dark"] button[title*="Mark Task"] i, [data-mode="dark"] button[style*="DCFCE7"] i,
+[data-theme="dark"] .btn-action-complete i, [data-theme="dark"] button[title*="Mark Task"] i, [data-theme="dark"] button[style*="DCFCE7"] i {
+  color: #4ADE80 !important;
+}
+
+/* Delete Button - Light & Dark Mode */
+.btn-action-delete {
+  background: #FFF1F2 !important;
+  border: 1px solid #FECDD3 !important;
+  color: #EF4444 !important;
+}
+.btn-action-delete i {
+  color: #EF4444 !important;
+}
+.btn-action-delete:hover {
+  background: #EF4444 !important;
+  border-color: #EF4444 !important;
+  color: #FFFFFF !important;
+}
+.btn-action-delete:hover i {
+  color: #FFFFFF !important;
+}
+
+[data-mode="dark"] .btn-action-delete, [data-mode="dark"] button[title="Delete"], [data-mode="dark"] button[style*="FFF1F2"],
+[data-theme="dark"] .btn-action-delete, [data-theme="dark"] button[title="Delete"], [data-theme="dark"] button[style*="FFF1F2"] {
+  background: rgba(244, 63, 94, 0.25) !important;
+  border: 1px solid rgba(251, 113, 133, 0.4) !important;
+  color: #FB7185 !important;
+}
+[data-mode="dark"] .btn-action-delete i, [data-mode="dark"] button[title="Delete"] i, [data-mode="dark"] button[style*="FFF1F2"] i,
+[data-theme="dark"] .btn-action-delete i, [data-theme="dark"] button[title="Delete"] i, [data-theme="dark"] button[style*="FFF1F2"] i {
+  color: #FB7185 !important;
+}
+
+/* Reset / Outline Secondary Button - High Contrast in Dark Mode */
+[data-mode="dark"] .btn-outline-secondary,
+[data-theme="dark"] .btn-outline-secondary {
+  background: rgba(255, 255, 255, 0.08) !important;
+  border: 1px solid rgba(255, 255, 255, 0.25) !important;
+  color: #E2E8F0 !important;
+}
+[data-mode="dark"] .btn-outline-secondary:hover,
+[data-theme="dark"] .btn-outline-secondary:hover {
+  background: rgba(255, 255, 255, 0.18) !important;
+  border-color: rgba(255, 255, 255, 0.4) !important;
+  color: #FFFFFF !important;
+}
+>>>>>>> tab/tasks
 
 /* ══════════════════════════════════════
    SPACING UTILITY CLASSES (8-Point Scale)
@@ -2324,12 +2532,66 @@ html[data-mode="dark"] .empty-col-placeholder,
   border-radius: var(--radius-sm);
 }
 
-/* Action button compact (Apply, Reset, New Task) */
-.btn-action-compact {
-  font-size: var(--font-size-xs);
-  padding: 6px var(--space-4);
-  border-radius: var(--radius-sm);
+/* Mobile-First Proportional Sizing for Task Header & Filter Controls (New Task, Toggles, Apply, Reset, Inputs) */
+.btn-action-compact,
+.btn-group .btn,
+.view-switcher-btn,
+.scope-switcher-btn {
+  font-size: 11.5px !important;
+  font-weight: 700 !important;
+  min-height: 34px !important;
+  height: 34px !important;
+  padding: 4px 12px !important;
+  border-radius: 20px !important;
   white-space: nowrap;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+.filter-select,
+.form-control-sm,
+.form-select-sm,
+.input-group-sm .input-group-text,
+.input-group-sm .form-control {
+  min-height: 34px !important;
+  height: 34px !important;
+  font-size: 11.5px !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+}
+
+/* Tablet & Desktop (576px+) Standard Proportions */
+@media (min-width: 576px) {
+  .btn-action-compact,
+  .btn-group .btn,
+  .view-switcher-btn,
+  .scope-switcher-btn {
+    font-size: 12.5px !important;
+    min-height: 36px !important;
+    height: 36px !important;
+    padding: 6px 16px !important;
+  }
+
+  .filter-select,
+  .form-control-sm,
+  .form-select-sm,
+  .input-group-sm .input-group-text,
+  .input-group-sm .form-control {
+    min-height: 36px !important;
+    height: 36px !important;
+    font-size: 12.5px !important;
+  }
+}
+
+/* Chevron animation for collapsible mobile filter card */
+.filter-collapse-chevron {
+  transition: transform 0.25s ease;
+}
+[aria-expanded="true"] .filter-collapse-chevron {
+  transform: rotate(180deg);
 }
 
 /* Icon sizing utilities */

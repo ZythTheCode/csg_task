@@ -3,44 +3,47 @@
 {% block title %}Tasks{% endblock %}
 {% block content %}
 <script>sessionStorage.setItem("csg_last_tasks_url", window.location.href);</script>
-<div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-2 mb-3">
+<div class="d-flex justify-content-between align-items-md-center align-items-start flex-column flex-md-row gap-2 mb-3">
   <div>
     <h5 class="mb-1 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Task Management</h5>
     <p class="text-muted mb-0" style="font-size:13px">Manage and monitor all organizational tasks</p>
   </div>
-  <div class="d-flex gap-3 align-items-center flex-wrap justify-content-start justify-content-sm-end mt-3 mt-sm-0 w-100 w-sm-auto">
+  <div class="d-flex gap-2 gap-sm-3 align-items-center flex-wrap justify-content-start justify-content-md-end mt-3 mt-md-0 w-100 w-md-auto">
     {% if current_filters.status != 'completed' %}
     <!-- Scope Switcher -->
-    <div class="btn-group p-1" role="group"
+    <div class="btn-group p-1 flex-grow-1 flex-md-grow-0" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?scope=my_tasks{% if current_filters.status %}&status={{ current_filters.status }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.sort %}&sort={{ current_filters.sort }}{% endif %}"
         data-ajax-nav="scope-switch"
-        class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} d-inline-flex align-items-center justify-content-center"
-        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
+        class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
           data-lucide="user" class="me-1" style="width:13px;height:13px"></i>My Tasks</a>
       <a href="{% url 'tasks:list' %}?scope=all{% if current_filters.status %}&status={{ current_filters.status }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.sort %}&sort={{ current_filters.sort }}{% endif %}"
         data-ajax-nav="scope-switch"
-        class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} d-inline-flex align-items-center justify-content-center"
-        style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
+        class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
           data-lucide="users" class="me-1" style="width:13px;height:13px"></i>All Tasks</a>
     </div>
     <!-- View Switcher -->
-    <div class="btn-group p-1" role="group"
+    <div class="btn-group p-1 flex-grow-1 flex-md-grow-0" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
-        data-ajax-nav="view-switch" class="btn btn-sm btn-primary-custom view-switcher-btn d-inline-flex align-items-center justify-content-center"><i data-lucide="list"
+        data-ajax-nav="view-switch" class="btn btn-sm btn-primary-custom view-switcher-btn flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i data-lucide="list"
           class="me-1" style="width:13px;height:13px"></i>List</a>
       <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
-        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn d-inline-flex align-items-center justify-content-center"><i data-lucide="kanban"
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i data-lucide="kanban"
           class="me-1" style="width:13px;height:13px"></i>Board</a>
       <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
-        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn d-inline-flex align-items-center justify-content-center"><i
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 view-switcher-btn flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
           data-lucide="calendar" class="me-1" style="width:13px;height:13px"></i>Calendar</a>
     </div>
     {% endif %}
     <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}"
-      class="btn-primary-custom btn-action-compact d-inline-flex align-items-center justify-content-center"><i data-lucide="plus" class="me-1" style="width:15px;height:15px"></i> New
-      Task</a>
+      class="btn-primary-custom btn-action-compact d-inline-flex align-items-center justify-content-center flex-grow-1 flex-md-grow-0 ms-md-auto"
+      style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap;text-decoration:none"><i data-lucide="plus" class="me-1" style="width:15px;height:15px"></i> New Task</a>
   </div>
 </div>
 
@@ -75,10 +78,32 @@
 
 <!-- Compact Filter Bar -->
 <div class="glass-card mb-3" style="padding:10px 16px;border-radius:16px">
-  <form method="get" class="row g-2 w-100 m-0 align-items-center" id="filterForm">
+  <!-- Mobile Collapsible Filter Toggle Header -->
+  <div class="d-flex d-md-none align-items-center justify-content-between cursor-pointer py-1"
+       data-bs-toggle="collapse" data-bs-target="#filterCollapse" 
+       aria-expanded="{% if current_filters.q or current_filters.category or current_filters.status or current_filters.priority or current_filters.officer %}true{% else %}false{% endif %}" 
+       aria-controls="filterCollapse" style="user-select:none">
+    <div class="d-flex align-items-center gap-2">
+      <div class="d-flex align-items-center justify-content-center bg-primary-subtle text-primary rounded-circle" style="width:26px;height:26px">
+        <i data-lucide="sliders-horizontal" style="width:13px;height:13px"></i>
+      </div>
+      <span class="fw-bold" style="font-size:12.5px;color:var(--slate-800)">Filter & Search</span>
+      {% if current_filters.q or current_filters.category or current_filters.status or current_filters.priority or current_filters.officer %}
+      <span class="badge bg-primary rounded-pill" style="font-size:9.5px;padding:3px 7px">Active</span>
+      {% endif %}
+    </div>
+    <div class="d-flex align-items-center gap-1 text-muted" style="font-size:11.5px">
+      <span>{% if current_filters.q or current_filters.category or current_filters.status or current_filters.priority or current_filters.officer %}Filtered{% else %}Tap to filter{% endif %}</span>
+      <i data-lucide="chevron-down" class="filter-collapse-chevron ms-0.5" style="width:15px;height:15px;transition:transform 0.25s ease"></i>
+    </div>
+  </div>
+
+  <!-- Filter Form Collapse Wrapper -->
+  <div class="collapse d-md-block {% if current_filters.q or current_filters.category or current_filters.status or current_filters.priority or current_filters.officer %}show{% endif %}" id="filterCollapse">
+    <form method="get" class="row g-2 align-items-center mt-2 mt-md-0" id="filterForm">
     <input type="hidden" name="scope" value="{{ current_filters.scope }}">
     
-    <div class="col-12 col-md-4 col-lg-3 position-relative">
+    <div class="col-12 col-md-3 position-relative">
       <div class="input-group input-group-sm w-100">
         <span class="input-group-text border-end-0"
           style="background:#fff;border-radius:10px 0 0 10px;border-color:var(--slate-200);padding:4px 8px"><i
@@ -90,8 +115,8 @@
       <div id="searchSuggestions" class="search-suggestions-dropdown shadow-lg"></div>
     </div>
     
-    <div class="col-6 col-md-2">
-      <select name="category" class="form-select form-select-sm filter-select w-100" aria-label="Filter by category">
+    <div class="col-6 {% if current_filters.scope == 'my_tasks' %}col-sm-4{% else %}col-sm-3{% endif %} col-md">
+      <select name="category" class="form-select form-select-sm filter-select w-100" aria-label="Filter by category" style="font-size:12.5px;border-radius:10px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
         <option value="">All Categories</option>
         {% for val, label in category_choices %}
         <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
@@ -99,8 +124,8 @@
       </select>
     </div>
     
-    <div class="col-6 col-md-2">
-      <select name="status" class="form-select form-select-sm filter-select w-100" aria-label="Filter by status">
+    <div class="col-6 {% if current_filters.scope == 'my_tasks' %}col-sm-4{% else %}col-sm-3{% endif %} col-md">
+      <select name="status" class="form-select form-select-sm filter-select w-100" aria-label="Filter by status" style="font-size:12.5px;border-radius:10px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
         <option value="">All Statuses</option>
         {% for val, label in status_choices %}
         {% if val != 'completed' and val != 'overdue' %}
@@ -110,8 +135,8 @@
       </select>
     </div>
     
-    <div class="col-6 col-md-2">
-      <select name="priority" class="form-select form-select-sm filter-select w-100" aria-label="Filter by priority">
+    <div class="{% if current_filters.scope == 'my_tasks' %}col-12 col-sm-4{% else %}col-6 col-sm-3{% endif %} col-md">
+      <select name="priority" class="form-select form-select-sm filter-select w-100" aria-label="Filter by priority" style="font-size:12.5px;border-radius:10px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
         <option value="">All Priorities</option>
         {% for val, label in priority_choices %}
         <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
@@ -120,24 +145,26 @@
     </div>
     
     {% if current_filters.scope != 'my_tasks' %}
-    <div class="col-6 col-md-2">
-      <select name="officer" multiple class="form-select form-select-sm filter-select w-100" aria-label="Filter by officer" size="1">
+    <div class="col-6 col-sm-3 col-md">
+      <select name="officer" multiple class="form-select form-select-sm filter-select w-100" aria-label="Filter by officer" size="1" style="font-size:12.5px;border-radius:10px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
         <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
         {% for off in officers_list %}
-        <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{  off.get_full_name|default:off.username  }}</option>
+        <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{ off.get_full_name|default:off.username }}</option>
         {% endfor %}
       </select>
     </div>
     {% endif %}
     
-    <div class="col-12 col-md-auto ms-auto d-flex gap-2 mt-2 mt-md-0">
-      <button type="submit" class="btn-primary-custom flex-grow-1 flex-md-grow-0 d-inline-flex align-items-center justify-content-center"
-        style="font-size:12px;padding:6px 14px;border-radius:10px;white-space:nowrap"><i data-lucide="filter" class="me-1"
-          style="width:13px;height:13px"></i> Apply</button>
-      <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}" class="btn btn-sm btn-outline-secondary flex-grow-1 flex-md-grow-0 d-flex align-items-center justify-content-center"
-        style="font-size:12px;padding:5px 12px;border-radius:10px">Reset</a>
+    <div class="col-12 col-md-auto ms-md-auto d-flex align-items-center gap-2">
+      <button type="submit" class="btn-primary-custom btn-action-compact flex-fill flex-md-grow-0 d-inline-flex align-items-center justify-content-center">
+        <i data-lucide="filter" class="me-1.5" style="width:13px;height:13px"></i> Apply
+      </button>
+      <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}" class="btn btn-outline-secondary btn-action-compact flex-fill flex-md-grow-0 d-inline-flex align-items-center justify-content-center">
+        Reset
+      </a>
     </div>
   </form>
+  </div>
 </div>
 
 <!-- Bulk Actions Header & Forms -->
@@ -273,11 +300,12 @@
             <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
           </th>
           {% endif %}
-          <th style="width:14%">Task No.</th>
-          <th style="width:25%">Title</th>
-          <th style="width:33%">Description</th>
-          <th style="width:20%">Assigned</th>
-          <th style="width:8%;text-align:left">Actions</th>
+          <th style="width:12%">Task No.</th>
+          <th style="width:23%">Title</th>
+          <th style="width:14%">Category</th>
+          <th style="width:28%">Description</th>
+          <th style="width:15%">Assigned</th>
+          <th style="width:8%;text-align:right" class="pe-4">Actions</th>
         </tr>
         {% else %}
         <tr>
@@ -293,7 +321,7 @@
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:20%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+          <th style="width:21%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Title</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
@@ -308,28 +336,28 @@
             </div>
           </th>
           <th style="width:14%">Assigned To</th>
-          <th style="width:10%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
+          <th style="width:9%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Priority</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:11%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
+          <th style="width:10%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="status">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Status</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:11%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due_date">
+          <th style="width:10%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="due_date">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Due Date</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:11%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
+          <th style="width:9%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="progress">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Progress</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
@@ -342,7 +370,8 @@
       </thead>
       <tbody>
         {% for task in tasks %}
-          <tr data-task-id="{{ task.pk }}" data-task-number="{{ task.task_number }}" data-title="{{ task.title|lower }}" data-category="{{ task.category }}"
+        <tr data-task-id="{{ task.pk }}" data-task-number="{{ task.task_number }}" data-title="{{ task.title|lower }}"
+          data-category="{{ task.get_category_display|lower }}"
           data-priority="{% if task.priority == 'urgent' %}1{% elif task.priority == 'high' %}2{% elif task.priority == 'medium' %}3{% else %}4{% endif %}"
           data-status="{% if task.status == 'not_started' %}1{% elif task.status == 'processing' %}2{% elif task.status == 'to_advisers' %}3{% elif task.status == 'accounting' %}4{% elif task.status == 'oca' %}5{% elif task.status == 'osas' %}6{% elif task.status == 'ppss' %}7{% elif task.status == 'supply' %}8{% elif task.status == 'completed' %}9{% else %}10{% endif %}"
           data-due-date="{% if task.due_date %}{{ task.due_date|date:'Y-m-d' }}{% else %}9999-12-31{% endif %}"
@@ -361,7 +390,12 @@
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
               style="font-weight:700;font-size:13.5px;color:var(--primary-light);text-decoration:none"
               title="{{ task.title }}">{{ task.title }}</a>
-            <div style="font-size:11px;color:var(--slate-400);margin-top:2px">{{  task.created_by.get_full_name|default:task.created_by.username  }}</div>
+            <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
+          </td>
+          <td style="white-space:nowrap">
+            <span class="badge-status badge-category-{{ task.category }}" style="font-size:10.5px;padding:3px 9px;display:inline-flex;align-items:center">
+              <i data-lucide="{{ task.category_icon }}" style="width:11px;height:11px" class="me-1.5"></i>{{ task.get_category_display }}
+            </span>
           </td>
           <td style="font-size:12.5px;color:var(--slate-600);max-width:350px">
             {{ task.description|default:"—"|truncatewords:25 }}
@@ -403,11 +437,11 @@
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
               style="font-weight:700;font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--primary-light);text-decoration:none;display:block"
               title="{{ task.title }}">{{ task.title }}</a>
-            <div style="font-size:11px;color:var(--slate-400);margin-top:2px">{{  task.created_by.get_full_name|default:task.created_by.username  }}</div>
+            <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td style="white-space:nowrap">
-            <span class="badge-status badge-category-{{ task.category }}" style="font-size:9.5px;padding:3px 8px">
-              <i data-lucide="{{ task.category_icon }}" style="width:10px;height:10px" class="me-1"></i>{{  task.get_category_display  }}
+            <span class="badge-status badge-category-{{ task.category }}" style="font-size:10.5px;padding:3px 9px;display:inline-flex;align-items:center">
+              <i data-lucide="{{ task.category_icon }}" style="width:11px;height:11px" class="me-1.5"></i>{{ task.get_category_display }}
             </span>
           </td>
           <td>
@@ -481,23 +515,25 @@
                 data-confirm-icon-color="#16a34a" data-require-password="true">
                 {% csrf_token %}
                 <input type="hidden" name="next" value="{{ request.get_full_path }}">
-                <button type="submit" class="btn-sm-icon btn-complete" title="Mark Task as Completed">
+                <button type="submit" class="btn-sm-icon btn-action-complete me-0.5"
+                  title="Mark Task as Completed">
                   <i class="bi bi-check-circle-fill" style="font-size:14px"></i>
                 </button>
               </form>
               {% endif %}
-              <button type="button" class="btn-sm-icon btn-view view-task-btn" data-task-id="{{ task.pk }}"
-                title="View Task"><i class="bi bi-eye-fill" style="font-size:14px"></i></button>
+              <button type="button" class="btn-sm-icon btn-action-view view-task-btn" data-task-id="{{ task.pk }}" title="View Task"><i
+                  class="bi bi-eye-fill" style="font-size:14px"></i></button>
               {% can_edit_task user task as edit_perm %}
               {% if edit_perm %}
-              <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon btn-edit" title="Edit"
-                data-task-num="{{ task.task_number }}"><i class="bi bi-pencil-fill" style="font-size:13px"></i></a>
+              <a href="{% url 'tasks:edit' task.pk %}" class="btn-sm-icon btn-action-edit" title="Edit"
+                data-task-num="{{ task.task_number }}"><i class="bi bi-pencil-fill"
+                  style="font-size:13px"></i></a>
               <form method="post" action="{% url 'tasks:delete' task.pk %}" class="d-inline"
                 data-confirm="Are you sure you want to delete task <strong>{{ task.task_number }}</strong>? This cannot be undone."
                 data-confirm-title="Delete Task" data-confirm-btn="Delete Task" data-confirm-class="btn-danger"
                 data-confirm-icon="bi-trash-fill" data-confirm-icon-bg="#fee2e2" data-confirm-icon-color="#dc2626"
                 data-require-password="true">{% csrf_token %}<input type="hidden" name="next"
-                  value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon btn-delete"
+                  value="{{ request.get_full_path }}"><button type="submit" class="btn-sm-icon btn-action-delete"
                   title="Delete"><i class="bi bi-trash3-fill" style="font-size:14px"></i></button></form>
               {% endif %}
             </div>
@@ -507,7 +543,7 @@
         {% empty %}
         <tr>
           <td
-            colspan="{% if current_filters.status == 'completed' %}4{% elif user.can_manage_tasks %}10{% else %}9{% endif %}">
+            colspan="{% if current_filters.status == 'completed' %}6{% elif user.can_manage_tasks %}10{% else %}9{% endif %}">
             <div class="empty-state"><i data-lucide="inbox"></i>
               <h6>No tasks found</h6>
               <p style="font-size:13px">Try adjusting your filters or create a new task.</p>
