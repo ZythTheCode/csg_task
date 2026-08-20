@@ -341,12 +341,57 @@
   [data-mode="dark"] .fc-daygrid-more-link {
     color: var(--primary);
   }
+
+  /* ── 3. MOBILE RESPONSIVENESS ── */
+  @media (max-width: 767.98px) {
+    .fc-header-toolbar {
+      flex-direction: column !important;
+      gap: 12px !important;
+    }
+    
+    .fc-toolbar-chunk {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    /* Push Prev/Next to left edge, Today to right edge */
+    .fc-toolbar-chunk:first-child {
+      justify-content: space-between;
+    }
+
+    .calendar-glass-card {
+      padding: 12px !important;
+    }
+
+    /* Scroll only the calendar grid, keep toolbar fixed */
+    .fc-view-harness {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+      padding-bottom: 12px;
+    }
+    
+    .fc-scrollgrid {
+      min-width: 650px !important;
+    }
+    
+    .fc-toolbar-title {
+      font-size: 1.1rem !important;
+    }
+    
+    .fc-button-primary {
+      padding: 4px 10px !important;
+      font-size: 0.75rem !important;
+    }
+  }
 </style>
 {% endblock %}
 
 {% block content %}
 <script>sessionStorage.setItem("csg_last_tasks_url", window.location.href);</script>
-<div class="d-flex justify-content-between align-items-sm-center align-items-start flex-column flex-sm-row gap-3 mb-4">
+<div class="d-flex justify-content-between align-items-xl-center align-items-start flex-column flex-xl-row gap-3 mb-4">
   <div>
     <div class="d-flex align-items-center gap-2 mb-1">
       <h5 class="mb-0 fw-bold" style="color:var(--slate-800);letter-spacing:-0.3px">Task Calendar</h5>
@@ -361,12 +406,17 @@
       calendar format</p>
   </div>
 
+<<<<<<< Updated upstream
   <div class="d-flex gap-2 align-items-center flex-wrap">
+=======
+  <div class="d-flex gap-2 gap-sm-3 align-items-center flex-wrap justify-content-start justify-content-xl-end mt-3 mt-xl-0 w-100 w-xl-auto">
+>>>>>>> Stashed changes
     <!-- Scope Switcher -->
-    <div class="btn-group p-1" role="group"
+    <div class="btn-group p-1 flex-grow-1 flex-xl-grow-0" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:calendar' %}?scope=my_tasks{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
         data-ajax-nav="scope-switch"
+<<<<<<< Updated upstream
         class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
         style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
           data-lucide="user" class="me-1" style="width:13px;height:13px"></i>My Tasks</a>
@@ -374,13 +424,23 @@
         data-ajax-nav="scope-switch"
         class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
         style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px;text-decoration:none"><i
+=======
+        class="btn btn-sm {% if current_filters.scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} flex-grow-1 flex-xl-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
+          data-lucide="user" class="me-1" style="width:13px;height:13px"></i>My Tasks</a>
+      <a href="{% url 'tasks:calendar' %}?scope=all{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}"
+        data-ajax-nav="scope-switch"
+        class="btn btn-sm {% if current_filters.scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %} flex-grow-1 flex-xl-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i
+>>>>>>> Stashed changes
           data-lucide="users" class="me-1" style="width:13px;height:13px"></i>All Tasks</a>
     </div>
 
     <!-- View Switcher -->
-    <div class="btn-group p-1" role="group"
+    <div class="btn-group p-1 flex-grow-1 flex-xl-grow-0" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+<<<<<<< Updated upstream
         data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0"
         style="font-weight:700;font-size:12px;border-radius:20px;padding:4px 14px"><i data-lucide="list" class="me-1"
           style="width:13px;height:13px"></i>List</a>
@@ -396,6 +456,23 @@
 
     <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}" class="btn-primary-custom"
       style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap"><i data-lucide="plus"
+=======
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 flex-grow-1 flex-xl-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i data-lucide="list" class="me-1"
+          style="width:13px;height:13px"></i>List</a>
+      <a href="{% url 'tasks:board' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+        data-ajax-nav="view-switch" class="btn btn-sm text-secondary border-0 flex-grow-1 flex-xl-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i data-lucide="kanban" class="me-1"
+          style="width:13px;height:13px"></i>Board</a>
+      <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}{% if current_filters.q %}&q={{ current_filters.q }}{% endif %}{% if current_filters.category %}&category={{ current_filters.category }}{% endif %}{% if current_filters.priority %}&priority={{ current_filters.priority }}{% endif %}{% for oid in current_filters.officer %}&officer={{ oid }}{% endfor %}"
+        data-ajax-nav="view-switch" class="btn btn-sm btn-primary-custom flex-grow-1 flex-xl-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-weight:700;font-size:12px;border-radius:20px;padding:6px 14px;text-decoration:none;white-space:nowrap"><i data-lucide="calendar" class="me-1"
+          style="width:13px;height:13px"></i>Calendar</a>
+    </div>
+
+    <a href="{% url 'tasks:create' %}?next={{ request.get_full_path|urlencode }}" class="btn-primary-custom d-inline-flex align-items-center justify-content-center flex-grow-1 flex-xl-grow-0 ms-xl-auto"
+      style="font-size:12px;padding:6px 16px;border-radius:20px;white-space:nowrap;text-decoration:none"><i data-lucide="plus" class="me-1"
+>>>>>>> Stashed changes
         style="width:15px;height:15px"></i> New Task</a>
   </div>
 </div>
@@ -404,8 +481,14 @@
 <div class="glass-card mb-3" style="padding:10px 16px;border-radius:16px">
   <form method="get" class="d-flex align-items-center gap-2 flex-wrap" id="calendarFilterForm" style="row-gap:8px">
     <input type="hidden" name="scope" id="scopeInput" value="{{ current_filters.scope }}">
+<<<<<<< Updated upstream
     <div class="position-relative" style="flex:1 1 180px;min-width:140px;max-width:280px">
       <div class="input-group input-group-sm">
+=======
+    
+    <div class="col-12 col-xl-3 position-relative">
+      <div class="input-group input-group-sm w-100">
+>>>>>>> Stashed changes
         <span class="input-group-text border-end-0"
           style="background:#fff;border-radius:10px 0 0 10px;border-color:var(--slate-200);padding:4px 8px"><i
             data-lucide="search" class="text-muted" style="width:14px;height:14px"></i></span>
@@ -414,6 +497,7 @@
           autocomplete="off" style="border-radius:0 10px 10px 0;font-size:12.5px;padding:6px 10px">
       </div>
     </div>
+<<<<<<< Updated upstream
     <select name="category" class="form-select form-select-sm"
       style="font-size:12.5px;border-radius:10px;width:auto;min-width:120px;max-width:150px;padding:6px 28px 6px 10px;border-color:var(--slate-200)">
       <option value="">All Categories</option>
@@ -453,6 +537,55 @@
           style="width:13px;height:13px"></i> Apply</button>
       <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}" class="btn btn-sm btn-outline-secondary"
         style="font-size:12px;padding:5px 12px;border-radius:10px">Reset</a>
+=======
+    
+    <div class="col-6 {% if current_filters.scope == 'my_tasks' %}col-sm-4{% else %}col-sm-3{% endif %} col-xl">
+      <select name="category" class="form-select form-select-sm filter-select w-100" aria-label="Filter by category">
+        <option value="">All Categories</option>
+        {% for val, label in category_choices %}
+        <option value="{{ val }}" {% if current_filters.category == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div class="col-6 {% if current_filters.scope == 'my_tasks' %}col-sm-4{% else %}col-sm-3{% endif %} col-xl">
+      <select name="status" class="form-select form-select-sm filter-select w-100" aria-label="Filter by status">
+        <option value="">All Statuses</option>
+        {% for val, label in status_choices %}
+        {% if val != 'completed' and val != 'overdue' %}
+        <option value="{{ val }}" {% if current_filters.status == val %}selected{% endif %}>{{ label }}</option>
+        {% endif %}
+        {% endfor %}
+      </select>
+    </div>
+    
+    <div class="{% if current_filters.scope == 'my_tasks' %}col-12 col-sm-4{% else %}col-6 col-sm-3{% endif %} col-xl">
+      <select name="priority" class="form-select form-select-sm filter-select w-100" aria-label="Filter by priority">
+        <option value="">All Priorities</option>
+        {% for val, label in priority_choices %}
+        <option value="{{ val }}" {% if current_filters.priority == val %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    
+    {% if current_filters.scope != 'my_tasks' %}
+    <div class="col-6 col-sm-3 col-xl">
+      <select name="officer" multiple class="form-select form-select-sm filter-select w-100" aria-label="Filter by officer" size="1">
+        <option value="" disabled {% if not current_filters.officer %}selected{% endif %}>Officer</option>
+        {% for off in officers_list %}
+        <option value="{{ off.pk }}" {% if off.pk|stringformat:"s" in current_filters.officer %}selected{% endif %}>{{  off.get_full_name|default:off.username  }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    {% endif %}
+    
+    <div class="col-12 col-xl-auto ms-xl-auto d-flex gap-2 mt-2 mt-xl-0">
+      <button type="submit" class="btn-primary-custom flex-grow-1 flex-xl-grow-0 d-inline-flex align-items-center justify-content-center"
+        style="font-size:12px;padding:6px 14px;border-radius:10px;white-space:nowrap"><i data-lucide="filter" class="me-1"
+          style="width:13px;height:13px"></i> Apply</button>
+      <a href="{% url 'tasks:calendar' %}?scope={{ current_filters.scope }}" class="btn btn-sm btn-outline-secondary flex-grow-1 flex-xl-grow-0 d-flex align-items-center justify-content-center"
+        style="font-size:12px;padding:6px 14px;border-radius:10px">Reset</a>
+>>>>>>> Stashed changes
     </div>
   </form>
 </div>

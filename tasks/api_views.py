@@ -98,7 +98,20 @@ class DashboardChartsAPIView(APIView):
         monthly_qs = get_monthly_completed(base_qs, start_date)
 
         # Build a lookup of month -> count from the aggregate result
-        monthly_counts = {item['month'].date() if hasattr(item['month'], 'date') else item['month']: item['count'] for item in monthly_qs}
+        monthly_counts = {}
+        for item in monthly_qs:
+            m_val = item.get('month')
+            if m_val:
+                if hasattr(m_val, 'date'):
+                    m_val = m_val.date()
+                elif isinstance(m_val, str):
+                    try:
+                        m_val = datetime.datetime.strptime(m_val[:10], '%Y-%m-%d').date()
+                    except Exception:
+                        pass
+                if isinstance(m_val, datetime.date):
+                    m_val = datetime.date(m_val.year, m_val.month, 1)
+                    monthly_counts[m_val] = item['count']
 
         # Generate all month labels from start_date to today
         monthly_labels = []
@@ -161,7 +174,18 @@ class DashboardChartsAPIView(APIView):
         weekly_qs = get_weekly_trend(base_qs, week_start, today)
 
         # Build a lookup of day -> count from the aggregate result
-        weekly_counts = {item['day']: item['count'] for item in weekly_qs}
+        weekly_counts = {}
+        for item in weekly_qs:
+            day_val = item.get('day')
+            if day_val:
+                if hasattr(day_val, 'date'):
+                    day_val = day_val.date()
+                elif isinstance(day_val, str):
+                    try:
+                        day_val = datetime.datetime.strptime(day_val[:10], '%Y-%m-%d').date()
+                    except Exception:
+                        pass
+                weekly_counts[day_val] = item['count']
 
         # Generate all day labels for the last 7 days
         weekly_labels = []
@@ -171,14 +195,18 @@ class DashboardChartsAPIView(APIView):
             weekly_labels.append(day.strftime('%a %d'))
             weekly_data.append(weekly_counts.get(day, 0))
 
-        response = Response({
+        chart_payload = {
             'status_distribution': {'labels': status_labels, 'data': status_data},
             'priority_distribution': {'labels': priority_labels, 'data': priority_data},
             'monthly_completed': {'labels': monthly_labels, 'data': monthly_data_list},
             'tasks_per_officer': {'labels': officer_labels, 'data': officer_data},
             'weekly_trend': {'labels': weekly_labels, 'data': weekly_data},
-        })
-        response['Cache-Control'] = 'max-age=15'
+        }
+
+        cache.set(cache_key, chart_payload, timeout=30)
+
+        response = Response(chart_payload)
+        response['Cache-Control'] = 'private, max-age=30'
         return response
 
 
