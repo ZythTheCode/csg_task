@@ -759,6 +759,7 @@ class TaskCalendarEventsView(LoginRequiredMixin, View):
                     'description': task.description or 'No description provided.',
                     'category': task.category,
                     'category_display': task.get_category_display(),
+                    'category_icon': task.category_icon,
                     'status': task.status,
                     'status_display': task.get_status_display(),
                     'priority': task.priority,
