@@ -28,3 +28,4 @@ staticfiles/
 
 # Cache
 django_cache/
+>>>>>>> Stashed changes
