@@ -8,17 +8,19 @@
 
 {% block content %}
 <div class="container-fluid p-0">
-  <div class="d-flex justify-content-between align-items-center mb-3">
+  <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
     <div>
       <a href="{% url 'officers:list' %}" class="text-decoration-none text-muted" style="font-size:12px">
         <i class="bi bi-arrow-left me-1"></i>Back to Officers List
       </a>
       <h5 class="fw-bold text-dark mt-1 mb-0"><i class="bi bi-shield-lock text-primary me-2"></i>{{ page_title }}</h5>
     </div>
-    <span class="badge bg-primary-subtle text-primary px-3 py-2 border border-primary-subtle"
-      style="font-size:12px;border-radius:20px">
-      <i class="bi bi-shield-check me-1"></i>Super Admin Exclusive Control
-    </span>
+    <div class="d-inline-flex">
+      <span class="badge bg-primary-subtle text-primary px-3 py-2 border border-primary-subtle text-wrap text-start"
+        style="font-size:12px;border-radius:20px;line-height:1.4">
+        <i class="bi bi-shield-check me-1"></i>Super Admin Exclusive Control
+      </span>
+    </div>
   </div>
 
   <div class="row justify-content-center">
@@ -55,8 +57,8 @@
               </h6>
 
               <!-- Interactive Avatar Component -->
-              <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3" style="background:var(--pink-50)">
-                <div class="avatar-upload-wrapper" onclick="document.getElementById('id_profile_picture').click()"
+              <div class="d-flex flex-column flex-sm-row align-items-center gap-3 mb-4 p-3 rounded-3 text-center text-sm-start" style="background:var(--pink-50)">
+                <div class="avatar-upload-wrapper mb-2 mb-sm-0" onclick="document.getElementById('id_profile_picture').click()"
                   title="Click to upload profile photo">
                   <div class="avatar-upload-circle">
                     {% if form.instance.pk and form.instance.user.profile_picture %}
@@ -79,29 +81,29 @@
                     <i class="bi bi-pencil-fill" style="font-size:13px"></i>
                   </div>
                 </div>
-                <div>
+                <div class="w-100">
                   <h6 class="fw-bold mb-1 text-dark" style="font-size:14px">
-                    {% if form.instance.pk %}{{ form.instance.user.get_full_name }}{% else %}Officer Profile Photo{%
-                    endif %}
+                    {% if form.instance.pk %}{{ form.instance.user.get_full_name }}{% else %}Officer Profile Photo{% endif %}
                   </h6>
-                  <small class="text-muted d-block mb-2" style="font-size:11px">Click the avatar or pencil icon to
-                    upload a photo (JPG, PNG, WebP).</small>
-                  <button type="button" class="btn btn-sm btn-outline-primary px-3"
-                    style="border-radius:20px;font-size:12px;font-weight:600"
-                    onclick="document.getElementById('id_profile_picture').click()">
-                    <i class="bi bi-camera me-1"></i> Choose Photo
-                  </button>
-                  {% if form.instance.pk and form.instance.user.profile_picture %}
-                  <button type="button" class="btn btn-sm btn-outline-danger px-3 ms-2"
-                    style="border-radius:20px;font-size:12px;font-weight:600" data-bs-toggle="modal"
-                    data-bs-target="#removeOfficerPhotoModal">
-                    <i class="bi bi-trash me-1"></i> Remove Photo
-                  </button>
-                  {% endif %}
+                  <small class="text-muted d-block mb-3" style="font-size:11px">Click the avatar or pencil icon to upload a photo (JPG, PNG, WebP).</small>
+                  <div class="d-flex flex-wrap justify-content-center justify-content-sm-start gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-primary px-3"
+                      style="border-radius:20px;font-size:12px;font-weight:600"
+                      onclick="document.getElementById('id_profile_picture').click()">
+                      <i class="bi bi-camera me-1"></i> Choose Photo
+                    </button>
+                    {% if form.instance.pk and form.instance.user.profile_picture %}
+                    <button type="button" class="btn btn-sm btn-outline-danger px-3"
+                      style="border-radius:20px;font-size:12px;font-weight:600" data-bs-toggle="modal"
+                      data-bs-target="#removeOfficerPhotoModal">
+                      <i class="bi bi-trash me-1"></i> Remove Photo
+                    </button>
+                    {% endif %}
+                  </div>
                   <input type="file" name="profile_picture" id="id_profile_picture" accept="image/*"
                     style="display:none"
                     onchange="handleProfilePhotoSelect(this, 'avatarPreviewForm', 'avatarFallbackForm')">
-                  {% if form.profile_picture.errors %}<div class="text-danger mt-1" style="font-size:11px">{{ form.profile_picture.errors.0 }}</div>{% endif %}
+                  {% if form.profile_picture.errors %}<div class="text-danger mt-1 text-center text-sm-start" style="font-size:11px">{{ form.profile_picture.errors.0 }}</div>{% endif %}
                 </div>
               </div>
 
@@ -180,8 +182,8 @@
               </div>
             </div>
 
-            <div class="d-flex justify-content-between align-items-center pt-3 border-top">
-              <div>
+            <div class="d-flex flex-column flex-md-row justify-content-between pt-3 border-top gap-3">
+              <div class="d-grid d-md-block">
                 {% if form.instance.pk and form.instance.user != user %}
                 <button type="button" class="btn btn-outline-danger btn-sm px-3" data-bs-toggle="modal"
                   data-bs-target="#deleteFormOfficerModal" style="border-radius:10px;font-size:12px;font-weight:600">
@@ -189,11 +191,10 @@
                 </button>
                 {% endif %}
               </div>
-              <div class="d-flex gap-2">
+              <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                 <a href="{% url 'officers:list' %}" class="btn btn-light px-4"
                   style="border-radius:10px;font-size:13px;font-weight:600">Cancel</a>
-                <button type="submit" id="saveOfficerBtn" class="btn btn-primary px-4" {% if form.instance.pk
-                  %}disabled{% endif %} style="border-radius:10px;font-size:13px;font-weight:600">
+                <button type="submit" id="saveOfficerBtn" class="btn btn-primary px-4" {% if form.instance.pk %}disabled{% endif %} style="border-radius:10px;font-size:13px;font-weight:600">
                   <i class="bi bi-check-lg me-1"></i>{{ form_action }}
                 </button>
               </div>
@@ -213,17 +214,17 @@
               class="bi bi-x-circle-fill text-danger"></i> = Not Allowed</small>
         </div>
         <div class="table-responsive">
-          <table class="table-custom w-100" style="font-size:12.5px;min-width:920px;table-layout:fixed">
+          <table class="table-custom w-100" style="font-size:12.5px;min-width:1000px;">
             <thead>
               <tr>
-                <th class="px-4 py-3" style="width:250px">Role</th>
-                <th class="px-2 py-3 text-center" style="width:110px">Manage Officers &amp; Positions</th>
-                <th class="px-2 py-3 text-center" style="width:110px">Create / Edit / Delete Tasks</th>
-                <th class="px-2 py-3 text-center" style="width:85px">View Tasks</th>
-                <th class="px-2 py-3 text-center" style="width:95px">Move Task Stages</th>
-                <th class="px-2 py-3 text-center" style="width:95px">Update Progress</th>
-                <th class="px-2 py-3 text-center" style="width:85px">View Reports</th>
-                <th class="px-2 py-3 text-center" style="width:95px">System Monitoring</th>
+                <th class="px-4 py-3" style="width:200px">Role</th>
+                <th class="px-2 py-3 text-center text-wrap" style="width:130px">Manage Officers &amp; Positions</th>
+                <th class="px-2 py-3 text-center text-wrap" style="width:130px">Create / Edit / Delete Tasks</th>
+                <th class="px-2 py-3 text-center text-wrap" style="width:100px">View Tasks</th>
+                <th class="px-2 py-3 text-center text-wrap" style="width:110px">Move Task Stages</th>
+                <th class="px-2 py-3 text-center text-wrap" style="width:110px">Update Progress</th>
+                <th class="px-2 py-3 text-center text-wrap" style="width:100px">View Reports</th>
+                <th class="px-2 py-3 text-center text-wrap" style="width:120px">System Monitoring</th>
               </tr>
             </thead>
             <tbody>
