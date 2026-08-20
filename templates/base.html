@@ -343,8 +343,6 @@
         {% endif %}
         <button class="topbar-icon-btn" onclick="toggleUserDarkMode()" id="darkModeToggleBtn" type="button"
           title="Toggle Dark/Light Mode" aria-label="Toggle dark mode">
-          <i data-lucide="sun" id="darkModeIconSun" style="display:none"></i>
-          <i data-lucide="moon" id="darkModeIconMoon"></i>
         </button>
         <a href="{% url 'notifications:list' %}" class="topbar-icon-btn" title="Notifications"
           aria-label="View notifications">
@@ -763,42 +761,44 @@
         }
       });
 
-      window.toggleUserDarkMode = function () {
-        const html = document.documentElement;
-        const currentMode = html.getAttribute('data-mode') || 'light';
-        const newMode = currentMode === 'dark' ? 'light' : 'dark';
-
-        html.setAttribute('data-mode', newMode);
-        localStorage.setItem('csg_dark_mode', newMode);
-        updateDarkModeIcon(newMode);
-        if (typeof loadCharts === 'function') loadCharts();
-
-        fetch("{% url 'accounts:toggle_dark_mode' %}", {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
-            'X-CSRFToken': '{{ csrf_token }}'
-          },
-          body: new URLSearchParams({ 'mode': newMode })
-        }).catch(err => console.log('Dark mode sync error:', err));
-      };
-
-      window.updateDarkModeIcon = function (mode) {
-        const sun = document.getElementById('darkModeIconSun');
-        const moon = document.getElementById('darkModeIconMoon');
-        if (sun && moon) {
-          if (mode === 'dark') {
-            sun.style.display = 'inline-block';
-            moon.style.display = 'none';
-          } else {
-            sun.style.display = 'none';
-            moon.style.display = 'inline-block';
-          }
+    // Define Dark Mode Logic Globally
+    window.updateDarkModeIcon = function (mode) {
+      const btn = document.getElementById('darkModeToggleBtn');
+      if (btn) {
+        // Replace innerHTML with the correct icon based on mode
+        btn.innerHTML = `<i data-lucide="${mode === 'dark' ? 'sun' : 'moon'}"></i>`;
+        // Re-initialize this specific icon if lucide is available
+        if (window.lucide) {
+          lucide.createIcons({ root: btn });
         }
-      };
+      }
+    };
 
+    window.toggleUserDarkMode = function () {
+      const html = document.documentElement;
+      const currentMode = html.getAttribute('data-mode') || 'light';
+      const newMode = currentMode === 'dark' ? 'light' : 'dark';
+
+      html.setAttribute('data-mode', newMode);
+      localStorage.setItem('csg_dark_mode', newMode);
+      window.updateDarkModeIcon(newMode);
+      
+      if (typeof loadCharts === 'function') loadCharts();
+
+      fetch("{% url 'accounts:toggle_dark_mode' %}", {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: new URLSearchParams({ 'mode': newMode })
+      }).catch(err => console.log('Dark mode sync error:', err));
+    };
+
+    // Set initial icon on load
+    document.addEventListener('DOMContentLoaded', function () {
       const initialMode = document.documentElement.getAttribute('data-mode') || 'light';
-      updateDarkModeIcon(initialMode);
+      window.updateDarkModeIcon(initialMode);
     });
 
     /* ── Global Profile Photo & Logo Cropper Logic ── */
@@ -1044,8 +1044,10 @@
           parent.insertBefore(fallbackDiv, img);
         }
       }
-      window.downloadAttachmentToDevice = function (event, url, filename) {
-        if (event) {
+    }, true);
+
+    window.downloadAttachmentToDevice = function (event, url, filename) {
+      if (event) {
           if (event.preventDefault) event.preventDefault();
           if (event.stopPropagation) event.stopPropagation();
         }
@@ -1071,7 +1073,7 @@
             window.location.href = url;
           });
         return false;
-        ;
+    };
   </script>
 
   <!-- Modal Focus Trap, Body Scroll Lock & Focus Restoration -->
