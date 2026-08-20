@@ -656,12 +656,12 @@
                       if (window.CSGProgress) window.CSGProgress.start();
                       window.location.href = href;
                     } else {
-                      alert(data.error || 'Incorrect Organization Admin password. Access denied.');
+                      window.showToastNotification(data.error || 'Incorrect Organization Admin password. Access denied.', 'error');
                     }
                   })
                   .catch(err => {
                     console.error(err);
-                    alert('Error verifying password. Please try again.');
+                    window.showToastNotification('Error verifying password. Please try again.', 'error');
                   });
               }
             });
@@ -719,7 +719,7 @@
         pendingActionCallback = function () {
           const pwd = pwdInput ? pwdInput.value.trim() : '';
           if (options.requirePassword && !pwd) {
-            alert('Organization Admin password confirmation is required to perform this action.');
+            window.showToastNotification('Organization Admin password confirmation is required to perform this action.', 'error');
             return false;
           }
           if (typeof options.onConfirm === 'function') {
