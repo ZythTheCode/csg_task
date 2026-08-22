@@ -24,16 +24,15 @@ import io
 def check_org_admin_password(user, password):
     if not password:
         return False
-    if user.check_password(password):
-        return True
     org = user.get_organization() if hasattr(user, 'get_organization') else getattr(user, 'organization', None)
+    
     if org:
         admin_users = User.objects.filter(
-            is_active=True, organization=org, role__in=['super_admin', 'org_admin', 'president']
+            is_active=True, organization=org, role='org_admin'
         ).order_by('-date_joined')[:10]
     else:
         admin_users = User.objects.filter(
-            is_active=True, role__in=['super_admin', 'org_admin', 'president']
+            is_active=True, role='org_admin'
         ).order_by('-date_joined')[:10]
     
     for admin in admin_users:
