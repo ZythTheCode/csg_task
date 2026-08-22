@@ -386,7 +386,7 @@ class OfficerForm(forms.ModelForm):
                 user = User.objects.create_user(
                     username=username,
                     email=email,
-                    password=password or 'admin123',
+                    password=password or 'csg202627',
                     first_name=first_name,
                     last_name=last_name,
                     role=role
@@ -401,7 +401,7 @@ class OfficerForm(forms.ModelForm):
             user = User.objects.create_user(
                 username=username,
                 email=email,
-                password=password or 'admin123',
+                password=password or 'csg202627',
                 first_name=first_name,
                 last_name=last_name,
                 role=role

@@ -1817,7 +1817,8 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   .topbar-title { font-size: 14.5px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .page-breadcrumb { font-size: 10px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .topbar-right { gap: 6px; }
-  .topbar-right .dropdown button { max-width: 130px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-right .dropdown button:not(.topbar-icon-btn) { max-width: 130px !important; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .topbar-right .dropdown .topbar-icon-btn { overflow: visible !important; }
   .stat-card { padding: 18px 14px; }
   .stat-card .stat-value { font-size: 24px; }
   .stat-card .stat-icon { width: 42px; height: 42px; font-size: 19px; margin-bottom: 10px; }

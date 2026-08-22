@@ -115,7 +115,7 @@ class OfficerCreateView(LoginRequiredMixin, CreateView):
     def form_valid(self, form):
         response = super().form_valid(form)
         user = self.object.user
-        created_pass = form.cleaned_data.get('password') or 'admin123'
+        created_pass = form.cleaned_data.get('password') or 'csg202627'
         # Invalidate officers cache for this organization
         org = self.request.user.get_organization(self.request)
         if org:
