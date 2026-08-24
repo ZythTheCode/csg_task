@@ -318,7 +318,7 @@
             type="button" data-bs-toggle="dropdown" aria-expanded="false"
             title="Switch Organization Dashboard Workspace">
             <i data-lucide="building-2" style="width:15px;height:15px;color:var(--primary)"></i>
-            <span>{{ current_organization.abbreviation|default:current_organization.name|default:"Select Org" }}</span>
+            <span>{% if current_organization %}{{ current_organization.abbreviation|default:current_organization.name }}{% else %}Select Org{% endif %}</span>
           </button>
           <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0"
             style="border-radius:16px;min-width:230px;padding:8px">
