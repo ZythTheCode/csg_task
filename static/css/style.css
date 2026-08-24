@@ -1471,10 +1471,18 @@ a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible
   background: #FFF1F2 !important; border-color: #FECDD3 !important;
 }
 .btn-sm-icon.btn-delete i { color: #EF4444 !important; }
+.btn-sm-icon.btn-delete:hover {
+  background: #EF4444 !important; border-color: #EF4444 !important; color: #FFFFFF !important;
+}
+.btn-sm-icon.btn-delete:hover i { color: #FFFFFF !important; }
 .btn-sm-icon.btn-complete {
   background: #DCFCE7 !important; border-color: #BBF7D0 !important;
 }
 .btn-sm-icon.btn-complete i { color: #16A34A !important; }
+.btn-sm-icon.btn-complete:hover {
+  background: #16A34A !important; border-color: #16A34A !important; color: #FFFFFF !important;
+}
+.btn-sm-icon.btn-complete:hover i { color: #FFFFFF !important; }
 .btn-sm-icon:hover {
   background: linear-gradient(135deg, var(--primary), var(--primary-light));
   color: #fff !important; border-color: transparent;
