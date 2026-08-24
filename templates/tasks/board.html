@@ -374,7 +374,7 @@
             commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
           }
 
-          document.getElementById('modalFullPageBtn').href = data.detail_url;
+          document.getElementById('modalFullPageBtn').href = data.detail_url + "?next=" + encodeURIComponent(window.location.pathname + window.location.search);
           const editBtn = document.getElementById('modalEditBtn');
           if (data.edit_url) {
             editBtn.href = data.edit_url; editBtn.setAttribute('data-task-num', data.task_number);

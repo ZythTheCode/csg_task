@@ -1291,155 +1291,25 @@ class ViewAttachmentView(LoginRequiredMixin, View):
 
 
 
-def _get_filtered_tasks_for_export(request):
-    if request.user.organization:
-        qs = Task.objects.filter(is_archived=False, organization=request.user.organization)
-    else:
-        qs = Task.objects.filter(is_archived=False)
+from core.query_utils import get_export_queryset
+from core.export_utils import generate_tasks_pdf, generate_tasks_excel
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.utils.decorators import method_decorator
 
-    scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
-    if scope == 'my_tasks':
-        qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
-
-    q = request.GET.get('q', '')
-    if q:
-        qs = qs.filter(Q(title__icontains=q) | Q(task_number__icontains=q) | Q(description__icontains=q))
-
-    status = request.GET.get('status', '')
-    if status:
-        if status == 'active':
-            qs = qs.exclude(status='completed')
-        elif status == 'overdue':
-            qs = qs.filter(due_date__lt=timezone.now().date()).exclude(status='completed')
-        elif status == 'in_progress':
-            qs = qs.exclude(status__in=['not_started', 'completed'])
-        else:
-            qs = qs.filter(status=status)
-
-    priority = request.GET.get('priority', '')
-    if priority:
-        qs = qs.filter(priority=priority)
-
-    officers = request.GET.getlist('officer')
-    if officers:
-        qs = qs.filter(assigned_officers__id__in=officers).distinct()
-
-    return qs.select_related('created_by').prefetch_related('assigned_officers')
-
-
+@method_decorator(xframe_options_sameorigin, name='dispatch')
 class ExportTasksPDFView(LoginRequiredMixin, View):
     def get(self, request):
-        from reportlab.lib.pagesizes import A4, landscape
-        from reportlab.lib import colors
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch
-
-        tasks = _get_filtered_tasks_for_export(request)
-
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=0.5*inch, bottomMargin=0.5*inch)
-        styles = getSampleStyleSheet()
-        story = []
-
-        title_style = ParagraphStyle('Title', parent=styles['Title'], fontSize=18, spaceAfter=6, textColor=colors.HexColor('#1e3a5f'))
-        story.append(Paragraph('CSG Task Management Report', title_style))
-        story.append(Paragraph(f'Generated: {timezone.now().strftime("%B %d, %Y %I:%M %p")}', styles['Normal']))
-        story.append(Spacer(1, 0.2*inch))
-
-        data = [['Task No.', 'Title', 'Status', 'Priority', 'Due Date', 'Progress']]
-        # Use iterator with chunked fetching for large querysets to limit peak memory
-        task_count = tasks.count()
-        task_iter = tasks.iterator(chunk_size=200) if task_count > 500 else tasks
-        for t in task_iter:
-            data.append([
-                t.task_number,
-                t.title[:45],
-                t.get_status_display(),
-                t.get_priority_display(),
-                str(t.due_date) if t.due_date else 'N/A',
-                f'{t.progress}%'
-            ])
-
-        table = Table(data, repeatRows=1)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e3a5f')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 10),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#f0f4f8')]),
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#cccccc')),
-            ('FONTSIZE', (0, 1), (-1, -1), 8),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ]))
-        story.append(table)
-        doc.build(story)
-        buffer.seek(0)
-        response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="csg_tasks_report.pdf"'
+        tasks = get_export_queryset(request)
+        response = generate_tasks_pdf(tasks, filename="csg_tasks_report.pdf")
+        if request.GET.get('download') == '1':
+            response['Content-Disposition'] = 'attachment; filename="csg_tasks_report.pdf"'
         return response
 
 
 class ExportTasksExcelView(LoginRequiredMixin, View):
     def get(self, request):
-        import openpyxl
-        from openpyxl.styles import Font, PatternFill, Alignment
-        from openpyxl.utils import get_column_letter
-
-        tasks = _get_filtered_tasks_for_export(request)
-
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = 'Tasks Report'
-
-        header_font = Font(bold=True, color='FFFFFF', size=11)
-        header_fill = PatternFill(start_color='1e3a5f', end_color='1e3a5f', fill_type='solid')
-        header_align = Alignment(horizontal='center', vertical='center')
-        alt_fill = PatternFill(start_color='EBF3FB', end_color='EBF3FB', fill_type='solid')
-
-        headers = ['Task Number', 'Title', 'Description', 'Status', 'Priority', 'Assigned Officers', 'Due Date', 'Completion Date', 'Progress (%)', 'Created By', 'Created At']
-        ws.append(headers)
-        for col, header in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col)
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.alignment = header_align
-
-        # Use iterator with chunked fetching for large querysets to limit peak memory
-        task_count = tasks.count()
-        task_iter = tasks.iterator(chunk_size=200) if task_count > 500 else tasks
-        for i, t in enumerate(task_iter, 2):
-            officers = ', '.join([o.get_full_name() or o.username for o in t.assigned_officers.all()])
-            ws.append([
-                t.task_number,
-                t.title,
-                t.description[:100],
-                t.get_status_display(),
-                t.get_priority_display(),
-                officers,
-                str(t.due_date) if t.due_date else '',
-                str(t.completion_date) if t.completion_date else '',
-                t.progress,
-                t.created_by.get_full_name() or t.created_by.username,
-                t.created_at.strftime('%Y-%m-%d %H:%M'),
-            ])
-            if i % 2 == 0:
-                for col in range(1, len(headers) + 1):
-                    ws.cell(row=i, column=col).fill = alt_fill
-
-        col_widths = [15, 35, 40, 15, 12, 30, 12, 15, 12, 20, 18]
-        for col, width in enumerate(col_widths, 1):
-            ws.column_dimensions[get_column_letter(col)].width = width
-
-        ws.freeze_panes = 'A2'
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
-        response = HttpResponse(buffer, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="csg_tasks_report.xlsx"'
-        return response
+        tasks = get_export_queryset(request)
+        return generate_tasks_excel(tasks, filename="csg_tasks_report.xlsx")
 
 
 class NudgeOfficersView(LoginRequiredMixin, View):

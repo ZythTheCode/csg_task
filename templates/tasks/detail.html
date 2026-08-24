@@ -7,6 +7,12 @@
       style="font-size:12.5px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px"></i>Back</a>
     <script>
       function goBack() {
+        var urlParams = new URLSearchParams(window.location.search);
+        var nextUrl = urlParams.get('next');
+        if (nextUrl) {
+          window.location.href = nextUrl;
+          return;
+        }
         var _ref = document.referrer;
         if (_ref && _ref.includes(window.location.host) && !_ref.includes(window.location.pathname)) {
           window.location.href = _ref;

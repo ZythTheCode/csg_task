@@ -714,7 +714,7 @@
         catBadge.textContent = props.category_display || 'Document';
         catBadge.className = 'badge-status badge-category-' + (props.category || 'document');
         document.getElementById('calModalOrgBadge').textContent = props.org_name || 'Organization';
-        document.getElementById('calModalDetailLink').setAttribute('href', props.detail_url);
+        document.getElementById('calModalDetailLink').setAttribute('href', props.detail_url + "?next=" + encodeURIComponent(window.location.pathname + window.location.search));
 
         // Status Badge
         var statusBadge = document.getElementById('calModalStatusBadge');

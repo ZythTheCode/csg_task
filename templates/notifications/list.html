@@ -207,7 +207,7 @@
           </div>
           <div class="notif-body-text">{{ notif.message }}</div>
           {% if notif.related_task %}
-          <a href="{% url 'tasks:detail' notif.related_task.pk %}"
+          <a href="{% url 'tasks:detail' notif.related_task.pk %}?next={{ request.get_full_path|urlencode }}"
             style="font-size:12px;color:var(--accent);text-decoration:none" class="fw-semibold">
             <i class="bi bi-link-45deg"></i> View Task: {{ notif.related_task.task_number }}
           </a>

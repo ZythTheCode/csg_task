@@ -133,3 +133,74 @@ def get_report_counts(tasks_qs, today):
             status__in=['not_started', 'completed'],
         )),
     )
+
+
+def get_export_queryset(request):
+    """
+    Consolidated filtering logic for all exports (PDF/Excel) from both Tasks and Reports modules.
+    """
+    from tasks.models import Task
+    
+    qs = Task.objects.filter(is_archived=False)
+    
+    if hasattr(request.user, 'get_organization'):
+        org = request.user.get_organization(request)
+        if org:
+            qs = qs.filter(organization=org)
+    elif request.user.organization:
+        qs = qs.filter(organization=request.user.organization)
+
+    task_ids = request.GET.get('task_ids', '')
+    if task_ids:
+        qs = qs.filter(id__in=task_ids.split(','))
+        return qs.select_related('created_by').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')
+
+    scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
+    if scope == 'my_tasks':
+        qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
+
+    q = request.GET.get('q', '')
+    if q:
+        qs = qs.filter(Q(title__icontains=q) | Q(task_number__icontains=q) | Q(description__icontains=q))
+
+    status = request.GET.get('status', '')
+    if status:
+        if status == 'active':
+            qs = qs.exclude(status='completed')
+        elif status == 'overdue':
+            qs = qs.filter(due_date__lt=timezone.now().date()).exclude(status='completed')
+        elif status == 'in_progress':
+            qs = qs.exclude(status__in=['not_started', 'completed'])
+        else:
+            qs = qs.filter(status=status)
+
+    priority = request.GET.get('priority', '')
+    if priority:
+        qs = qs.filter(priority=priority)
+
+    # Handle multiple officers (from tasks list) or single officer (from reports)
+    officers = request.GET.getlist('officer')
+    if not officers and request.GET.get('officer'):
+        officers = [request.GET.get('officer')]
+    # filter out empty string from officers list
+    officers = [o for o in officers if o]
+    if officers:
+        qs = qs.filter(assigned_officers__id__in=officers).distinct()
+
+    year = request.GET.get('year', '')
+    if year:
+        try:
+            y = int(year)
+            qs = qs.filter(Q(due_date__year=y) | Q(created_at__year=y))
+        except ValueError:
+            pass
+
+    month = request.GET.get('month', '')
+    if month:
+        try:
+            m = int(month)
+            qs = qs.filter(Q(due_date__month=m) | Q(created_at__month=m))
+        except ValueError:
+            pass
+
+    return qs.select_related('created_by').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')

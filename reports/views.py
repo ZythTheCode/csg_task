@@ -144,192 +144,22 @@ class ReportsDashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateVi
         return qs
 
 
+from core.query_utils import get_export_queryset, get_report_counts
+from core.export_utils import generate_tasks_pdf, generate_tasks_excel
+from django.views.decorators.clickjacking import xframe_options_sameorigin
+from django.utils.decorators import method_decorator
+
+@method_decorator(xframe_options_sameorigin, name='dispatch')
 class ExportReportPDFView(LoginRequiredMixin, View):
     def get(self, request):
-        from reportlab.lib.pagesizes import A4, landscape
-        from reportlab.lib import colors
-        from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, HRFlowable
-        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-        from reportlab.lib.units import inch
-
-        officer_id = request.GET.get('officer', '')
-        year = request.GET.get('year', str(timezone.now().year))
-        month = request.GET.get('month', '')
-        status = request.GET.get('status', '')
-        priority = request.GET.get('priority', '')
-        task_ids = request.GET.get('task_ids', '')
-
-        scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
-
-        qs = Task.objects.filter(is_archived=False).select_related('created_by')
-        if request.user.organization:
-            qs = qs.filter(organization=request.user.organization)
-            
-        if task_ids:
-            # If task_ids are provided, we only export those specific tasks
-            qs = qs.filter(id__in=task_ids.split(','))
-        else:
-            if scope == 'my_tasks':
-                from django.db.models import Q
-                qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
-            # Otherwise apply the normal filters
-            if officer_id:
-                qs = qs.filter(assigned_officers__id=officer_id)
-            if year:
-                qs = qs.filter(created_at__year=year)
-            if month:
-                qs = qs.filter(created_at__month=month)
-            if status:
-                if status == 'in_progress':
-                    qs = qs.exclude(status__in=['not_started', 'completed'])
-                else:
-                    qs = qs.filter(status=status)
-            if priority:
-                qs = qs.filter(priority=priority)
-
-        buffer = io.BytesIO()
-        doc = SimpleDocTemplate(buffer, pagesize=landscape(A4), leftMargin=0.5*inch, rightMargin=0.5*inch, topMargin=0.5*inch, bottomMargin=0.5*inch)
-        styles = getSampleStyleSheet()
-        story = []
-
-        title_style = ParagraphStyle('Title', parent=styles['Title'], fontSize=20, spaceAfter=4, textColor=colors.HexColor('#1e3a5f'))
-        sub_style = ParagraphStyle('Sub', parent=styles['Normal'], fontSize=10, textColor=colors.HexColor('#666666'))
-
-        task_count = qs.count()
-        story.append(Paragraph('CSG Task Management Report', title_style))
-        story.append(Paragraph(f'Generated: {timezone.now().strftime("%B %d, %Y %I:%M %p")}  |  Total Tasks: {task_count}', sub_style))
-        story.append(HRFlowable(width='100%', thickness=1, color=colors.HexColor('#1e3a5f'), spaceAfter=10))
-
-        data = [['Task No.', 'Title', 'Status', 'Priority', 'Assigned To', 'Due Date', 'Progress']]
-        # Use iterator with chunked fetching for large querysets to limit peak memory.
-        # For large exports (>500), drop prefetch_related since iterator() ignores it;
-        # the N+1 on assigned_officers is acceptable for batch file exports.
-        if task_count > 500:
-            task_iter = qs.iterator(chunk_size=200)
-        else:
-            task_iter = qs.prefetch_related('assigned_officers')
-        for t in task_iter:
-            officers = ', '.join([f"{o.get_full_name() or o.username} ({o.position_initials})" for o in t.sorted_assigned_officers])
-            data.append([
-                t.task_number,
-                Paragraph(t.title[:45], styles['Normal']),
-                t.get_status_display(),
-                t.get_priority_display(),
-                Paragraph(officers[:35], styles['Normal']),
-                str(t.due_date) if t.due_date else 'N/A',
-                f'{t.progress}%'
-            ])
-
-        col_widths = [1.2*inch, 2.8*inch, 1.2*inch, 1.0*inch, 2.2*inch, 1.2*inch, 0.9*inch]
-        table = Table(data, repeatRows=1, colWidths=col_widths)
-        table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1e3a5f')),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
-            ('FONTSIZE', (0, 0), (-1, 0), 9),
-            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [colors.white, colors.HexColor('#EBF3FB')]),
-            ('GRID', (0, 0), (-1, -1), 0.4, colors.HexColor('#cccccc')),
-            ('FONTSIZE', (0, 1), (-1, -1), 7.5),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-        ]))
-        story.append(table)
-        doc.build(story)
-        buffer.seek(0)
-        response = HttpResponse(buffer, content_type='application/pdf')
-        response['Content-Disposition'] = 'attachment; filename="csg_report.pdf"'
+        tasks = get_export_queryset(request)
+        response = generate_tasks_pdf(tasks, filename="csg_report.pdf")
+        if request.GET.get('download') == '1':
+            response['Content-Disposition'] = 'attachment; filename="csg_report.pdf"'
         return response
 
 
 class ExportReportExcelView(LoginRequiredMixin, View):
     def get(self, request):
-        import openpyxl
-        from openpyxl.styles import Font, PatternFill, Alignment
-        from openpyxl.utils import get_column_letter
-
-        officer_id = request.GET.get('officer', '')
-        year = request.GET.get('year', str(timezone.now().year))
-        month = request.GET.get('month', '')
-        status = request.GET.get('status', '')
-        priority = request.GET.get('priority', '')
-        task_ids = request.GET.get('task_ids', '')
-
-        scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
-
-        qs = Task.objects.filter(is_archived=False).select_related('created_by')
-        if request.user.organization:
-            qs = qs.filter(organization=request.user.organization)
-            
-        if task_ids:
-            # If task_ids are provided, we only export those specific tasks
-            qs = qs.filter(id__in=task_ids.split(','))
-        else:
-            if scope == 'my_tasks':
-                from django.db.models import Q
-                qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
-            # Otherwise apply the normal filters
-            if officer_id:
-                qs = qs.filter(assigned_officers__id=officer_id)
-            if year:
-                qs = qs.filter(created_at__year=year)
-            if month:
-                qs = qs.filter(created_at__month=month)
-            if status:
-                if status == 'in_progress':
-                    qs = qs.exclude(status__in=['not_started', 'completed'])
-                else:
-                    qs = qs.filter(status=status)
-            if priority:
-                qs = qs.filter(priority=priority)
-
-        wb = openpyxl.Workbook()
-        ws = wb.active
-        ws.title = 'CSG Report'
-
-        header_font = Font(bold=True, color='FFFFFF', size=11)
-        header_fill = PatternFill(start_color='1e3a5f', end_color='1e3a5f', fill_type='solid')
-        alt_fill = PatternFill(start_color='EBF3FB', end_color='EBF3FB', fill_type='solid')
-
-        headers = ['Task Number', 'Title', 'Status', 'Priority', 'Assigned Officers', 'Due Date', 'Completion Date', 'Progress (%)', 'Created By']
-        ws.append(headers)
-        for col, h in enumerate(headers, 1):
-            cell = ws.cell(row=1, column=col)
-            cell.font = header_font
-            cell.fill = header_fill
-            cell.alignment = Alignment(horizontal='center', vertical='center')
-
-        # Use iterator with chunked fetching for large querysets to limit peak memory.
-        # For large exports (>500), drop prefetch_related since iterator() ignores it;
-        # the N+1 on assigned_officers is acceptable for batch file exports.
-        task_count = qs.count()
-        if task_count > 500:
-            task_iter = qs.iterator(chunk_size=200)
-        else:
-            task_iter = qs.prefetch_related('assigned_officers')
-        for i, t in enumerate(task_iter, 2):
-            officers = ', '.join([f"{o.get_full_name() or o.username} ({o.position_initials})" for o in t.sorted_assigned_officers])
-            ws.append([
-                t.task_number, t.title, t.get_status_display(), t.get_priority_display(),
-                officers,
-                str(t.due_date) if t.due_date else '',
-                str(t.completion_date) if t.completion_date else '',
-                t.progress,
-                t.created_by.get_full_name() or t.created_by.username,
-            ])
-            if i % 2 == 0:
-                for col in range(1, len(headers) + 1):
-                    ws.cell(row=i, column=col).fill = alt_fill
-
-        widths = [15, 35, 15, 12, 35, 12, 15, 12, 20]
-        for col, w in enumerate(widths, 1):
-            ws.column_dimensions[get_column_letter(col)].width = w
-        ws.freeze_panes = 'A2'
-
-        buffer = io.BytesIO()
-        wb.save(buffer)
-        buffer.seek(0)
-        response = HttpResponse(buffer, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-        response['Content-Disposition'] = 'attachment; filename="csg_report.xlsx"'
-        return response
+        tasks = get_export_queryset(request)
+        return generate_tasks_excel(tasks, filename="csg_report.xlsx")
