@@ -157,7 +157,7 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
             'CLOUD_NAME': c_name,
             'API_KEY': a_key,
             'API_SECRET': a_secret,
-            'PREFIX': '',
+            'PREFIX': config('CLOUDINARY_PREFIX', default='dev/'),
         }
         cloudinary.config(
             cloud_name=c_name,

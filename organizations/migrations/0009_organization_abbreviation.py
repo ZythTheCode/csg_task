@@ -3,10 +3,15 @@ from django.db import migrations, models
 
 def add_abbrev_if_not_exists(apps, schema_editor):
     from django.db import connection
+    table_name = 'organizations_organization'
+    column_name = 'abbreviation'
+    
     with connection.cursor() as cursor:
-        cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='organizations_organization' AND column_name='abbreviation';")
-        if not cursor.fetchone():
-            cursor.execute("ALTER TABLE organizations_organization ADD COLUMN abbreviation varchar(20) DEFAULT '' NOT NULL;")
+        table_description = connection.introspection.get_table_description(cursor, table_name)
+        columns = [col.name for col in table_description]
+        
+        if column_name not in columns:
+            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} varchar(20) DEFAULT '' NOT NULL;")
 
 
 class Migration(migrations.Migration):

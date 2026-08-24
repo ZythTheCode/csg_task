@@ -3,10 +3,15 @@ from django.db import migrations, models
 
 def add_logo_if_not_exists(apps, schema_editor):
     from django.db import connection
+    table_name = 'organizations_organization'
+    column_name = 'logo'
+    
     with connection.cursor() as cursor:
-        cursor.execute("SELECT column_name FROM information_schema.columns WHERE table_name='organizations_organization' AND column_name='logo';")
-        if not cursor.fetchone():
-            cursor.execute("ALTER TABLE organizations_organization ADD COLUMN logo varchar(100) NULL;")
+        table_description = connection.introspection.get_table_description(cursor, table_name)
+        columns = [col.name for col in table_description]
+        
+        if column_name not in columns:
+            cursor.execute(f"ALTER TABLE {table_name} ADD COLUMN {column_name} varchar(100) NULL;")
 
 
 class Migration(migrations.Migration):
