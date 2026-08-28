@@ -9,14 +9,14 @@
   </div>
   <div class="d-flex flex-wrap gap-2 align-items-center w-100 w-md-auto">
     <div class="scope-switcher me-md-2 me-0"
-      style="background:#fff;border-radius:30px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:inline-flex">
-      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}"
+      style="background:var(--card-bg, rgba(255,255,255,0.8));border:1px solid var(--slate-200);border-radius:30px;padding:4px;box-shadow:0 2px 8px rgba(0,0,0,0.05);display:inline-flex">
+      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
         onclick="setScope('my_tasks')"
-        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="user"
+        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;background:transparent;"><i data-lucide="user"
           class="me-1" style="width:14px;height:14px"></i>My Tasks</button>
-      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}btn-light text-muted{% endif %}"
+      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
         onclick="setScope('all')"
-        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;border:none"><i data-lucide="users"
+        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;background:transparent;"><i data-lucide="users"
           class="me-1" style="width:14px;height:14px"></i>All Tasks</button>
     </div>
     <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0 ms-auto">
@@ -442,11 +442,17 @@
 <div class="modal fade" id="exportViewerModal" tabindex="-1" aria-hidden="true">
   <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 95vw;">
     <div class="modal-content border-0 shadow-lg" style="border-radius: 20px; overflow: hidden; height: 85vh;">
-      <div class="modal-header border-0 bg-light px-4 py-3">
-        <h5 class="modal-title fw-bold" style="color:var(--slate-800)"><i data-lucide="file-text" class="me-2 text-primary" style="width:18px;height:18px"></i>Document Preview</h5>
-        <div>
-          <a href="#" id="exportDownloadBtn" class="btn btn-primary-custom btn-sm px-4 fw-bold me-2 no-transition" download><i data-lucide="download" class="me-2" style="width:14px;height:14px"></i>Download File</a>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      <div class="modal-header border-0 px-3 px-md-4 py-3 align-items-center" style="border-bottom: 1px solid rgba(0,0,0,0.05) !important;">
+        <h5 class="modal-title fw-bold m-0 d-flex align-items-center" style="color:var(--slate-800); font-size: 16px;">
+          <i data-lucide="file-text" class="me-2 text-primary" style="width:18px;height:18px"></i>Document Preview
+        </h5>
+        <div class="d-flex align-items-center gap-2 ms-auto">
+          <a href="#" id="exportDownloadBtn" class="btn btn-primary-custom btn-sm px-3 fw-bold no-transition d-inline-flex align-items-center" download>
+            <i data-lucide="download" class="me-1 me-sm-2" style="width:14px;height:14px"></i>
+            <span class="d-none d-sm-inline">Download File</span>
+            <span class="d-inline d-sm-none">Download</span>
+          </a>
+          <button type="button" class="btn-close m-0" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
       </div>
       <div class="modal-body p-0 bg-dark" style="height: 100%; display: flex; flex-direction: column;">
@@ -490,26 +496,18 @@
     // Reset state
     iframe.style.display = 'none';
     iframe.src = '';
-    excelFallback.classList.add('d-none');
+    if (excelFallback) excelFallback.classList.add('d-none');
     loading.classList.remove('d-none');
     downloadBtn.href = downloadUrl;
     
     modal.show();
     
-    if (type === 'pdf') {
-        iframe.onload = function() {
-            loading.classList.add('d-none');
-            iframe.style.display = 'block';
-        };
-        iframe.src = url; 
-    } else {
-        setTimeout(() => {
-            loading.classList.add('d-none');
-            excelFallback.classList.remove('d-none');
-            // Auto trigger download for excel
-            window.location.href = downloadUrl;
-        }, 1200);
-    }
+    // Both PDF and Excel (HTML Preview) use the iframe
+    iframe.onload = function() {
+        loading.classList.add('d-none');
+        iframe.style.display = 'block';
+    };
+    iframe.src = url; 
   }
 
   if (window.lucide) lucide.createIcons();

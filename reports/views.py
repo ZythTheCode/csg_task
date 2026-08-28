@@ -153,13 +153,26 @@ from django.utils.decorators import method_decorator
 class ExportReportPDFView(LoginRequiredMixin, View):
     def get(self, request):
         tasks = get_export_queryset(request)
-        response = generate_tasks_pdf(tasks, filename="csg_report.pdf")
+        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"csg_report_{timestamp}.pdf"
+        response = generate_tasks_pdf(tasks, filename=filename)
         if request.GET.get('download') == '1':
-            response['Content-Disposition'] = 'attachment; filename="csg_report.pdf"'
+            response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return response
 
 
+@method_decorator(xframe_options_sameorigin, name='dispatch')
 class ExportReportExcelView(LoginRequiredMixin, View):
     def get(self, request):
         tasks = get_export_queryset(request)
-        return generate_tasks_excel(tasks, filename="csg_report.xlsx")
+        timestamp = timezone.now().strftime('%Y%m%d_%H%M%S')
+        filename = f"csg_report_{timestamp}.xlsx"
+        if request.GET.get('download') == '1':
+            return generate_tasks_excel(tasks, filename=filename)
+        
+        from django.shortcuts import render
+        return render(request, 'reports/excel_preview.html', {
+            'tasks': tasks,
+            'today': timezone.now(),
+            'filename': filename
+        })
