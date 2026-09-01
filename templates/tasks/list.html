@@ -1171,8 +1171,33 @@
   document.addEventListener('DOMContentLoaded', function () {
     if (window.lucide) lucide.createIcons();
     var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
-    popoverTriggerList.map(function (popoverTriggerEl) {
-      return new bootstrap.Popover(popoverTriggerEl);
+    popoverTriggerList.forEach(function (el) {
+      var pop = new bootstrap.Popover(el);
+      var touchTimer;
+      var isLongPress = false;
+      el.addEventListener('touchstart', function() {
+        isLongPress = false;
+        touchTimer = setTimeout(function() { 
+          isLongPress = true;
+          pop.show(); 
+        }, 400);
+      }, {passive: true});
+      el.addEventListener('touchend', function() {
+        clearTimeout(touchTimer);
+        if (isLongPress) {
+          setTimeout(function(){ pop.hide(); }, 2500);
+        }
+      }, {passive: true});
+      el.addEventListener('touchmove', function() {
+        clearTimeout(touchTimer);
+      }, {passive: true});
+      el.addEventListener('click', function(e) {
+        pop.hide();
+        if (isLongPress) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      });
     });
   });
 </script>
