@@ -303,7 +303,7 @@
           </th>
           {% endif %}
           <th style="width:10%">Task No.</th>
-          <th style="width:18%">Title</th>
+          <th style="width:15%">Title</th>
           <th style="width:12%">Category</th>
           <th style="width:23%">Description</th>
           <th style="width:12%">Assigned</th>
@@ -323,7 +323,7 @@
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:18%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+          <th style="width:15%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Title</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
@@ -390,7 +390,7 @@
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
-              style="font-weight:700;font-size:13.5px;color:var(--primary-light);text-decoration:none"
+              style="font-weight:700;font-size:13.5px;max-width:200px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
               title="{{ task.title }}">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
@@ -437,7 +437,7 @@
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
-              style="font-weight:700;font-size:13px;max-width:220px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
+              style="font-weight:700;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
               title="{{ task.title }}">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
@@ -563,21 +563,21 @@
       <ul class="pagination pagination-sm mb-0" style="gap:4px">
         {% if page_obj.has_previous %}
         <li class="page-item"><a class="page-link"
-            href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}" style="border-radius:8px">‹</a>
+            href="?{% query_transform request page=page_obj.previous_page_number %}" style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">‹</a>
         </li>
         {% endif %}
         {% for num in page_obj.paginator.page_range %}
         {% if num == page_obj.number %}
-        <li class="page-item active"><span class="page-link"
-            style="border-radius:8px;background:var(--primary);border-color:var(--primary)">{{ num }}</span></li>
+        <li class="page-item active"><span class="page-link shadow-sm"
+            style="border-radius:8px;background:var(--primary);border-color:var(--primary);color:#ffffff !important;font-weight:700">{{ num }}</span></li>
         {% elif num|within_range:page_obj.number %}
-        <li class="page-item"><a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode }}"
-            style="border-radius:8px">{{ num }}</a></li>
+        <li class="page-item"><a class="page-link" href="?{% query_transform request page=num %}"
+            style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">{{ num }}</a></li>
         {% endif %}
         {% endfor %}
         {% if page_obj.has_next %}
         <li class="page-item"><a class="page-link"
-            href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}" style="border-radius:8px">›</a>
+            href="?{% query_transform request page=page_obj.next_page_number %}" style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">›</a>
         </li>
         {% endif %}
       </ul>

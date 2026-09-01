@@ -1,4 +1,5 @@
 {% extends 'base.html' %}
+{% load task_filters %}
 {% block title %}Activity Log{% endblock %}
 {% block content %}
 <!-- FRAGMENT_START -->
@@ -63,22 +64,22 @@
                 <ul class="pagination pagination-sm mb-0" style="gap:4px">
                     {% if page_obj.has_previous %}
                     <li class="page-item"><a class="page-link"
-                            href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}"
-                            style="border-radius:8px">&lsaquo;</a></li>
+                            href="?{% query_transform request page=page_obj.previous_page_number %}"
+                            style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">&lsaquo;</a></li>
                     {% endif %}
                     {% for num in page_obj.paginator.page_range %}
                     {% if num == page_obj.number %}
-                    <li class="page-item active"><span class="page-link"
-                            style="border-radius:8px;background:var(--primary);border-color:var(--primary)">{{  num  }}</span></li>
+                    <li class="page-item active"><span class="page-link shadow-sm"
+                            style="border-radius:8px;background:var(--primary);border-color:var(--primary);color:#ffffff !important;font-weight:700">{{  num  }}</span></li>
                     {% elif num|add:"-3" <= page_obj.number and page_obj.number <=num|add:"3" %} <li class="page-item">
-                        <a class="page-link" href="?page={{ num }}&{{ request.GET.urlencode }}"
-                            style="border-radius:8px">{{ num }}</a></li>
+                        <a class="page-link" href="?{% query_transform request page=num %}"
+                            style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">{{ num }}</a></li>
                         {% endif %}
                         {% endfor %}
                         {% if page_obj.has_next %}
                         <li class="page-item"><a class="page-link"
-                                href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}"
-                                style="border-radius:8px">&rsaquo;</a></li>
+                                href="?{% query_transform request page=page_obj.next_page_number %}"
+                                style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">&rsaquo;</a></li>
                         {% endif %}
                 </ul>
             </nav>
