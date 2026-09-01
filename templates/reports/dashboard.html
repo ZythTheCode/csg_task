@@ -199,7 +199,7 @@
           <td>
             <a href="{% url 'tasks:detail' task.pk %}?next={{ request.get_full_path|urlencode }}"
               style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":2000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":1000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td>
@@ -272,30 +272,29 @@
     </table>
   </div>
   {% if active_page_obj.has_other_pages %}
-  <div class="d-flex justify-content-center align-items-center py-3 px-4 border-top">
-    <nav aria-label="Active tasks pagination">
-      <ul class="pagination pagination-sm mb-0">
+  <div class="d-flex justify-content-between align-items-center p-3 border-top">
+    <small class="text-muted">Page {{ active_page_obj.number }} of {{ active_page_obj.paginator.num_pages }}</small>
+    <nav>
+      <ul class="pagination pagination-sm mb-0" style="gap:4px">
         {% if active_page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link"
-            href="?{% for key, value in request.GET.items %}{% if key != 'active_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}active_page={{ active_page_obj.previous_page_number }}">Previous</a>
+        <li class="page-item"><a class="page-link"
+            href="?{% query_transform request active_page=active_page_obj.previous_page_number %}" style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">‹</a>
         </li>
         {% endif %}
         {% for num in active_page_obj.paginator.page_range %}
-        {% if active_page_obj.number == num %}
-        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-        {% elif num > active_page_obj.number|add:"-3" and num < active_page_obj.number|add:"3" %} <li class="page-item">
-          <a class="page-link"
-            href="?{% for key, value in request.GET.items %}{% if key != 'active_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}active_page={{ num }}">{{  num  }}</a>
-          </li>
-          {% endif %}
-          {% endfor %}
-          {% if active_page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link"
-              href="?{% for key, value in request.GET.items %}{% if key != 'active_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}active_page={{ active_page_obj.next_page_number }}">Next</a>
-          </li>
-          {% endif %}
+        {% if num == active_page_obj.number %}
+        <li class="page-item active"><span class="page-link shadow-sm"
+            style="border-radius:8px;background:var(--primary);border-color:var(--primary);color:#ffffff !important;font-weight:700">{{ num }}</span></li>
+        {% elif num|within_range:active_page_obj.number %}
+        <li class="page-item"><a class="page-link" href="?{% query_transform request active_page=num %}"
+            style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">{{ num }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if active_page_obj.has_next %}
+        <li class="page-item"><a class="page-link"
+            href="?{% query_transform request active_page=active_page_obj.next_page_number %}" style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">›</a>
+        </li>
+        {% endif %}
       </ul>
     </nav>
   </div>
@@ -344,7 +343,7 @@
           <td>
             <a href="{% url 'tasks:detail' task.pk %}?next={{ request.get_full_path|urlencode }}"
               style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":2000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":1000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td>
@@ -384,7 +383,7 @@
             {% endif %}
           </td>
           <td style="font-size:12.5px;white-space:nowrap;color:#065F46;font-weight:600">
-            {{ task.completion_date|date:"M d, Y"|default:task.updated_at|date:"M d, Y" }}
+            {{ task.completion_date|default:task.updated_at|date:"M d, Y" }}
           </td>
           <td>
             <div class="d-flex align-items-center gap-1">
@@ -408,31 +407,29 @@
     </table>
   </div>
   {% if completed_page_obj.has_other_pages %}
-  <div class="d-flex justify-content-center align-items-center py-3 px-4 border-top">
-    <nav aria-label="Completed tasks pagination">
-      <ul class="pagination pagination-sm mb-0">
+  <div class="d-flex justify-content-between align-items-center p-3 border-top">
+    <small class="text-muted">Page {{ completed_page_obj.number }} of {{ completed_page_obj.paginator.num_pages }}</small>
+    <nav>
+      <ul class="pagination pagination-sm mb-0" style="gap:4px">
         {% if completed_page_obj.has_previous %}
-        <li class="page-item">
-          <a class="page-link"
-            href="?{% for key, value in request.GET.items %}{% if key != 'completed_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}completed_page={{ completed_page_obj.previous_page_number }}">Previous</a>
+        <li class="page-item"><a class="page-link"
+            href="?{% query_transform request completed_page=completed_page_obj.previous_page_number %}" style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">‹</a>
         </li>
         {% endif %}
         {% for num in completed_page_obj.paginator.page_range %}
-        {% if completed_page_obj.number == num %}
-        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
-        {% elif num > completed_page_obj.number|add:"-3" and num < completed_page_obj.number|add:"3" %} <li
-          class="page-item">
-          <a class="page-link"
-            href="?{% for key, value in request.GET.items %}{% if key != 'completed_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}completed_page={{ num }}">{{  num  }}</a>
-          </li>
-          {% endif %}
-          {% endfor %}
-          {% if completed_page_obj.has_next %}
-          <li class="page-item">
-            <a class="page-link"
-              href="?{% for key, value in request.GET.items %}{% if key != 'completed_page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}completed_page={{ completed_page_obj.next_page_number }}">Next</a>
-          </li>
-          {% endif %}
+        {% if num == completed_page_obj.number %}
+        <li class="page-item active"><span class="page-link shadow-sm"
+            style="border-radius:8px;background:var(--primary);border-color:var(--primary);color:#ffffff !important;font-weight:700">{{ num }}</span></li>
+        {% elif num|within_range:completed_page_obj.number %}
+        <li class="page-item"><a class="page-link" href="?{% query_transform request completed_page=num %}"
+            style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">{{ num }}</a></li>
+        {% endif %}
+        {% endfor %}
+        {% if completed_page_obj.has_next %}
+        <li class="page-item"><a class="page-link"
+            href="?{% query_transform request completed_page=completed_page_obj.next_page_number %}" style="border-radius:8px;border-color:var(--slate-200);background:#fff;color:var(--slate-700)">›</a>
+        </li>
+        {% endif %}
       </ul>
     </nav>
   </div>

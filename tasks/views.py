@@ -502,11 +502,12 @@ class TaskBulkCompleteView(LoginRequiredMixin, View):
         else:
             qs = Task.objects.filter(pk__in=task_ids, is_archived=False)
 
-        updated_count, error = bulk_complete_tasks(qs, request.user)
+        updated_tasks, error = bulk_complete_tasks(qs, request.user)
 
         if error:
             messages.error(request, error)
-        elif updated_count > 0:
+        elif updated_tasks and len(updated_tasks) > 0:
+            updated_count = len(updated_tasks)
             # Invalidate task-related caches for this organization
             if org:
                 invalidate_task_caches(org.pk)

@@ -12,7 +12,7 @@ BULK_OPERATION_MAX_TASKS = 50
 def bulk_complete_tasks(queryset, user):
     """
     Mark multiple tasks as completed using bulk operations.
-    Returns (count, error) tuple where error is None on success.
+    Returns (updated_tasks_list, error) tuple where error is None on success.
 
     Uses at most 3 write queries:
     - 1 bulk_update for task fields (status, progress, completion_date)
@@ -26,7 +26,7 @@ def bulk_complete_tasks(queryset, user):
     # Validate task count cap
     task_count = queryset.count()
     if task_count > BULK_OPERATION_MAX_TASKS:
-        return 0, f"Maximum {BULK_OPERATION_MAX_TASKS} tasks per bulk operation. Got {task_count}."
+        return [], f"Maximum {BULK_OPERATION_MAX_TASKS} tasks per bulk operation. Got {task_count}."
 
     now_date = timezone.now().date()
     status_dict = dict(Task.STATUS_CHOICES)
@@ -38,7 +38,7 @@ def bulk_complete_tasks(queryset, user):
     )
 
     if not tasks:
-        return 0, None
+        return [], None
 
     tasks_to_update = []
     history_records = []
@@ -80,9 +80,9 @@ def bulk_complete_tasks(queryset, user):
             if notification_records:
                 Notification.objects.bulk_create(notification_records)
     except Exception as e:
-        return 0, f"Operation did not complete: {str(e)}"
+        return [], f"Operation did not complete: {str(e)}"
 
-    return len(tasks_to_update), None
+    return tasks_to_update, None
 
 
 def bulk_reassign_officers(task, new_officers, assigned_by):

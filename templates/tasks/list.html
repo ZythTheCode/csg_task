@@ -173,7 +173,7 @@
 <div class="d-flex align-items-center justify-content-between mb-3 px-1">
   <div class="d-flex align-items-center gap-2 flex-wrap">
     <h6 class="mb-0 fw-bold" style="color:var(--slate-800);font-size:15px">Task Items</h6>
-    <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600">{{  tasks|length  }} task{% if tasks|length != 1 %}s{% endif %}</span>
+    <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600;cursor:help" title="Showing {{ tasks|length }} task{% if tasks|length != 1 %}s{% endif %} out of {% if paginator %}{{ paginator.count }}{% else %}{{ tasks|length }}{% endif %}">{{ tasks|length }} / {% if paginator %}{{ paginator.count }}{% else %}{{ tasks|length }}{% endif %}</span>
     <div class="btn-group p-1 ms-1" role="group"
       style="border-radius:30px;background:rgba(255,255,255,0.85);border:1px solid var(--slate-200)">
       <a href="{% url 'tasks:list' %}?status=active{% if current_filters.scope %}&scope={{ current_filters.scope }}{% endif %}"
@@ -391,7 +391,7 @@
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
               style="font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":2000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":1000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td style="white-space:nowrap">
@@ -440,7 +440,7 @@
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
               style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":2000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":1000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td style="white-space:nowrap">
