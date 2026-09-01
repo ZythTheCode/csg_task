@@ -199,7 +199,7 @@
           <td>
             <a href="{% url 'tasks:detail' task.pk %}?next={{ request.get_full_path|urlencode }}"
               style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":1000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":400,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td>
@@ -343,7 +343,7 @@
           <td>
             <a href="{% url 'tasks:detail' task.pk %}?next={{ request.get_full_path|urlencode }}"
               style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":1000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":400,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td>
