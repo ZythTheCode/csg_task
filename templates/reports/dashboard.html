@@ -515,28 +515,36 @@
       var pop = new bootstrap.Popover(el);
       var touchTimer;
       var isLongPress = false;
+      
       el.addEventListener('touchstart', function() {
         isLongPress = false;
+        pop.disable(); // Prevent browser's simulated mouseenter
         touchTimer = setTimeout(function() { 
           isLongPress = true;
+          pop.enable();
           pop.show(); 
         }, 400);
       }, {passive: true});
+      
       el.addEventListener('touchend', function() {
         clearTimeout(touchTimer);
         if (isLongPress) {
           setTimeout(function(){ pop.hide(); }, 2500);
         }
+        setTimeout(function(){ pop.enable(); }, 600); // Re-enable after tap completes
       }, {passive: true});
+      
       el.addEventListener('touchmove', function() {
         clearTimeout(touchTimer);
       }, {passive: true});
+      
       el.addEventListener('click', function(e) {
-        pop.hide();
         if (isLongPress) {
           e.preventDefault();
           e.stopPropagation();
+          return;
         }
+        pop.hide();
       });
     });
   });
