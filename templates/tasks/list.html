@@ -303,11 +303,11 @@
           </th>
           {% endif %}
           <th style="width:10%">Task No.</th>
-          <th style="width:15%">Title</th>
+          <th style="width:25%">Title</th>
           <th style="width:12%">Category</th>
-          <th style="width:23%">Description</th>
-          <th style="width:12%">Assigned</th>
-          <th style="width:8%;text-align:right" class="pe-4">Actions</th>
+          <th style="width:33%">Description</th>
+          <th style="width:14%">Assigned</th>
+          <th style="width:6%;text-align:right" class="pe-4">Actions</th>
         </tr>
         {% else %}
         <tr>
@@ -316,21 +316,21 @@
             <input type="checkbox" id="selectAllTasks" class="form-check-input" style="cursor:pointer;margin:0">
           </th>
           {% endif %}
-          <th style="width:9%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
+          <th style="width:10%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="task-number">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Task No.</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:15%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
+          <th style="width:24%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="title">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Title</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:10%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="category">
+          <th style="width:11%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="category">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Category</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
@@ -338,7 +338,7 @@
             </div>
           </th>
           <th style="width:12%">Assigned To</th>
-          <th style="width:8%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
+          <th style="width:9%;cursor:pointer;user-select:none" class="sortable-header" data-sort-key="priority">
             <div class="d-inline-flex align-items-center gap-1">
               <span>Priority</span>
               <span class="sort-icon-container"><i data-lucide="arrow-up-down"
@@ -366,7 +366,7 @@
                   style="width:12px;height:12px;opacity:0.4"></i></span>
             </div>
           </th>
-          <th style="width:9%;text-align:left">Actions</th>
+          <th style="width:7%;text-align:left">Actions</th>
         </tr>
         {% endif %}
       </thead>
@@ -390,8 +390,8 @@
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
-              style="font-weight:700;font-size:13.5px;max-width:200px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              title="{{ task.title }}">{{ task.title }}</a>
+              style="font-weight:700;font-size:13.5px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":2000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td style="white-space:nowrap">
@@ -399,8 +399,10 @@
               <i data-lucide="{{ task.category_icon }}" style="width:11px;height:11px" class="me-1.5"></i>{{ task.get_category_display }}
             </span>
           </td>
-          <td style="font-size:12.5px;color:var(--slate-600);max-width:350px">
-            {{ task.description|default:"—"|truncatewords:25 }}
+          <td style="font-size:12.5px;color:var(--slate-600)">
+            <div style="overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;line-height:1.4" title="{{ task.description }}">
+              {{ task.description|default:"—" }}
+            </div>
           </td>
           <td>
             {% if task.has_assigned_officers %}
@@ -437,8 +439,8 @@
           </td>
           <td>
             <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
-              style="font-weight:700;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
-              title="{{ task.title }}">{{ task.title }}</a>
+              style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
+              data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true" data-bs-delay='{"show":2000,"hide":100}' data-bs-title="{{ task.title|escape }}" data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
             <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
           </td>
           <td style="white-space:nowrap">
@@ -1168,6 +1170,10 @@
   // (runs after all inline scripts, so even if initTaskList errors out, icons still show)
   document.addEventListener('DOMContentLoaded', function () {
     if (window.lucide) lucide.createIcons();
+    var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+    popoverTriggerList.map(function (popoverTriggerEl) {
+      return new bootstrap.Popover(popoverTriggerEl);
+    });
   });
 </script>
 {% endblock %}

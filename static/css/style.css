@@ -224,6 +224,37 @@
   color: #F8FAFC !important;
 }
 
+/* ── Dark Mode: Popovers ── */
+[data-mode="dark"] .popover {
+  background-color: var(--card-bg, rgba(15, 23, 42, 0.98)) !important;
+  border-color: rgba(51, 65, 85, 0.8) !important;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+}
+[data-mode="dark"] .popover-header {
+  background-color: rgba(30, 41, 59, 0.95) !important;
+  border-bottom-color: rgba(51, 65, 85, 0.8) !important;
+  color: #F8FAFC !important;
+}
+[data-mode="dark"] .popover-body {
+  color: #CBD5E1 !important;
+}
+[data-mode="dark"] .bs-popover-top > .popover-arrow::after,
+[data-mode="dark"] .bs-popover-auto[data-popper-placement^=top] > .popover-arrow::after {
+  border-top-color: var(--card-bg, rgba(15, 23, 42, 0.98)) !important;
+}
+[data-mode="dark"] .bs-popover-top > .popover-arrow::before,
+[data-mode="dark"] .bs-popover-auto[data-popper-placement^=top] > .popover-arrow::before {
+  border-top-color: rgba(51, 65, 85, 0.8) !important;
+}
+[data-mode="dark"] .bs-popover-bottom > .popover-arrow::after,
+[data-mode="dark"] .bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::after {
+  border-bottom-color: var(--card-bg, rgba(15, 23, 42, 0.98)) !important;
+}
+[data-mode="dark"] .bs-popover-bottom > .popover-arrow::before,
+[data-mode="dark"] .bs-popover-auto[data-popper-placement^=bottom] > .popover-arrow::before {
+  border-bottom-color: rgba(51, 65, 85, 0.8) !important;
+}
+
 [data-mode="dark"] .badge.bg-light {
   background-color: rgba(51, 65, 85, 0.6) !important;
   color: var(--primary-light) !important;
