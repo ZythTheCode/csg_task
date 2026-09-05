@@ -63,7 +63,7 @@ class Officer(models.Model):
         if hasattr(self, 'annotated_active'):
             return self.annotated_active
         from tasks.models import TaskAssignment
-        return TaskAssignment.objects.filter(officer=self.user, task__status__in=['not_started', 'processing', 'to_advisers', 'accounting', 'oca', 'osas', 'ppss', 'supply']).count()
+        return TaskAssignment.objects.filter(officer=self.user, task__status__in=['not_started', 'processing', 'to_advisers', 'accounting', 'oca', 'osas', 'ppss', 'supply', 'odi', 'afms']).count()
 
     def total_tasks(self):
         if hasattr(self, 'annotated_total'):

@@ -141,9 +141,11 @@ class TaskListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
             When(status='osas', then=Value(6)),
             When(status='ppss', then=Value(7)),
             When(status='supply', then=Value(8)),
-            When(status='completed', then=Value(9)),
-            When(status='overdue', then=Value(10)),
-            default=Value(11),
+            When(status='odi', then=Value(9)),
+            When(status='afms', then=Value(10)),
+            When(status='completed', then=Value(11)),
+            When(status='overdue', then=Value(12)),
+            default=Value(13),
             output_field=IntegerField()
         )
 

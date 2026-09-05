@@ -4,7 +4,7 @@ CSG (Central Student Government) Task Management and Monitoring System is a mult
 
 ## Key Capabilities
 
-- **Task Management**: Create, assign, track, and archive tasks with statuses, priorities, categories, due dates, comments, and file attachments. Tasks follow a multi-stage workflow (Not Started → Processing → To Advisers → Accounting → OCA → OSAS → PPSS → Supply → Completed).
+- **Task Management**: Create, assign, track, and archive tasks with statuses, priorities, categories, due dates, comments, and file attachments. Tasks follow a multi-stage workflow (Not Started → Processing → To Advisers → Accounting → OCA → OSAS → PPSS → Supply → ODI → AFMS → Completed).
 - **Officer Management**: Track student government officers, their positions, and task workload.
 - **Multi-Org Tenancy**: Multiple organizations share one deployment. Each org has its own tasks, officers, positions, and branding/theme. Super Admins can switch between organizations.
 - **Notifications**: In-app notifications for task assignments, updates, comments, due dates, and system events.

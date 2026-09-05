@@ -523,6 +523,8 @@
 [data-mode="dark"] .badge-osas, [data-theme="dark"] .badge-osas          { background: rgba(99,102,241,0.25) !important; color: #C7D2FE !important; }
 [data-mode="dark"] .badge-ppss, [data-theme="dark"] .badge-ppss          { background: rgba(20,184,166,0.25) !important; color: #5EEAD4 !important; }
 [data-mode="dark"] .badge-supply, [data-theme="dark"] .badge-supply        { background: rgba(249,115,22,0.25) !important; color: #FDBA74 !important; }
+[data-mode="dark"] .badge-odi, [data-theme="dark"] .badge-odi           { background: rgba(236,72,153,0.25) !important; color: #F9A8D4 !important; }
+[data-mode="dark"] .badge-afms, [data-theme="dark"] .badge-afms          { background: rgba(6,182,212,0.25) !important; color: #67E8F9 !important; }
 [data-mode="dark"] .badge-completed, [data-theme="dark"] .badge-completed     { background: rgba(34,197,94,0.25)  !important; color: #86EFAC !important; }
 [data-mode="dark"] .badge-overdue, [data-theme="dark"] .badge-overdue       { background: rgba(239,68,68,0.25)  !important; color: #FCA5A5 !important; }
 [data-mode="dark"] .badge-pending, [data-theme="dark"] .badge-pending       { background: rgba(245,158,11,0.25) !important; color: #FCD34D !important; }
@@ -1366,6 +1368,8 @@ body {
 .badge-osas        { background: #E0E7FF; color: #3730A3; }
 .badge-ppss        { background: #CCFBF1; color: #115E59; }
 .badge-supply      { background: #FFEDD5; color: #9A3412; }
+.badge-odi         { background: #FCE7F3; color: #9D174D; }
+.badge-afms        { background: #CFFAFE; color: #155E75; }
 .badge-completed   { background: #DCFCE7; color: #15803D; }
 .badge-overdue     { background: #FEE2E2; color: #991B1B; }
 .badge-pending     { background: #FEF3C7; color: #92400E; }

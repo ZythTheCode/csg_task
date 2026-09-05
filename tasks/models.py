@@ -13,6 +13,8 @@ class Task(models.Model):
         ('osas', 'OSAS'),
         ('ppss', 'PPSS'),
         ('supply', 'Supply'),
+        ('odi', 'ODI'),
+        ('afms', 'AFMS'),
         ('completed', 'Completed'),
     ]
     PRIORITY_CHOICES = [
@@ -30,6 +32,8 @@ class Task(models.Model):
         'osas': 'indigo',
         'ppss': 'teal',
         'supply': 'orange',
+        'odi': 'pink',
+        'afms': 'cyan',
         'completed': 'success',
     }
     PRIORITY_COLORS = {

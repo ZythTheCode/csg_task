@@ -99,7 +99,7 @@ def get_dashboard_stats(base_qs, today):
     """
     active_statuses = [
         'not_started', 'processing', 'to_advisers',
-        'accounting', 'oca', 'osas', 'ppss', 'supply',
+        'accounting', 'oca', 'osas', 'ppss', 'supply', 'odi', 'afms',
     ]
     return base_qs.aggregate(
         active=Count('id', filter=Q(status__in=active_statuses)),

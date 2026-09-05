@@ -20,7 +20,7 @@ class DashboardStatsAPIView(APIView):
 
     ACTIVE_STATUSES = [
         'not_started', 'processing', 'to_advisers', 'accounting',
-        'oca', 'osas', 'ppss', 'supply',
+        'oca', 'osas', 'ppss', 'supply', 'odi', 'afms',
     ]
 
     def get(self, request):
