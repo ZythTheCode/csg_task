@@ -19,6 +19,7 @@ class User(AbstractUser):
         ('president', 'President'),
         ('executive', 'Elected Officer'),
         ('committee_head', 'Committee Member'),
+        ('adviser', 'Adviser'),
     ]
     role = models.CharField(max_length=20, choices=ROLE_CHOICES, default='committee_head', db_index=True)
     organization = models.ForeignKey(
@@ -99,6 +100,10 @@ class User(AbstractUser):
     @property
     def is_executive(self):
         return self.role == 'executive'
+
+    @property
+    def is_adviser(self):
+        return self.role == 'adviser'
 
     @property
     def has_task_override(self):

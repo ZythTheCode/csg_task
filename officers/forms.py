@@ -216,6 +216,7 @@ class OfficerForm(forms.ModelForm):
 
         role_choices.append(('executive', 'Elected Officer'))
         role_choices.append(('committee_head', 'Committee Member'))
+        role_choices.append(('adviser', 'Adviser'))
 
         initial_role = None
         if self.instance and self.instance.pk and getattr(self.instance, 'user', None):
