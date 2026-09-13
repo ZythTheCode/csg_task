@@ -289,7 +289,7 @@
 
 [data-mode="dark"] .sidebar-link i, [data-mode="dark"] .sidebar-link [data-lucide],
 [data-theme="dark"] .sidebar-link i, [data-theme="dark"] .sidebar-link [data-lucide] {
-  color: #94A3B8 !important;
+  color: #CBD5E1 !important;
 }
 
 [data-mode="dark"] .sidebar-link:hover, [data-theme="dark"] .sidebar-link:hover {
@@ -514,6 +514,55 @@
   color: #CBD5E1 !important;
 }
 
+/* ── Dark Mode: Stat Card Icons (High Contrast) ── */
+[data-mode="dark"] .stat-card .stat-icon,
+[data-theme="dark"] .stat-card .stat-icon {
+  border-width: 1px !important;
+  border-style: solid !important;
+}
+
+[data-mode="dark"] .stat-card.primary .stat-icon,
+[data-theme="dark"] .stat-card.primary .stat-icon {
+  background: rgba(255, 255, 255, 0.08) !important;
+  color: var(--primary-light) !important;
+  border-color: rgba(255, 255, 255, 0.16) !important;
+}
+
+[data-mode="dark"] .stat-card.success .stat-icon,
+[data-theme="dark"] .stat-card.success .stat-icon {
+  background: rgba(16, 185, 129, 0.2) !important;
+  color: #34D399 !important;
+  border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+[data-mode="dark"] .stat-card.danger .stat-icon,
+[data-theme="dark"] .stat-card.danger .stat-icon {
+  background: rgba(239, 68, 68, 0.2) !important;
+  color: #F87171 !important;
+  border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
+[data-mode="dark"] .stat-card.warning .stat-icon,
+[data-theme="dark"] .stat-card.warning .stat-icon {
+  background: rgba(245, 158, 11, 0.2) !important;
+  color: #FBBF24 !important;
+  border-color: rgba(245, 158, 11, 0.35) !important;
+}
+
+[data-mode="dark"] .stat-card.purple .stat-icon,
+[data-theme="dark"] .stat-card.purple .stat-icon {
+  background: rgba(168, 85, 247, 0.2) !important;
+  color: #C084FC !important;
+  border-color: rgba(168, 85, 247, 0.35) !important;
+}
+
+[data-mode="dark"] .stat-card.info .stat-icon,
+[data-theme="dark"] .stat-card.info .stat-icon {
+  background: rgba(59, 130, 246, 0.2) !important;
+  color: #60A5FA !important;
+  border-color: rgba(59, 130, 246, 0.35) !important;
+}
+
 /* ── Dark Mode: Status & Priority Badges ── */
 [data-mode="dark"] .badge-not_started, [data-theme="dark"] .badge-not_started   { background: rgba(71,85,105,0.55)  !important; color: #CBD5E1 !important; }
 [data-mode="dark"] .badge-processing, [data-theme="dark"] .badge-processing    { background: rgba(59,130,246,0.25) !important; color: #93C5FD !important; }
@@ -633,10 +682,236 @@
 }
 
 [data-mode="dark"] .btn-group > a.text-secondary, [data-theme="dark"] .btn-group > a.text-secondary {
-  color: #94A3B8 !important;
+  color: #CBD5E1 !important;
 }
 [data-mode="dark"] .btn-group > a.text-secondary:hover, [data-theme="dark"] .btn-group > a.text-secondary:hover {
   color: #F8FAFC !important;
+}
+
+/* ── Dark Mode: Scope Switcher Tabs (Dashboard & Reports) ── */
+[data-mode="dark"] .scope-switcher,
+[data-mode="dark"] .btn-group[style*="border-radius:30px"],
+[data-theme="dark"] .scope-switcher,
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] {
+  background: rgba(15, 23, 42, 0.85) !important;
+  border-color: rgba(51, 65, 85, 0.6) !important;
+}
+
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom),
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom),
+[data-mode="dark"] .btn-group > button.text-secondary,
+[data-mode="dark"] .scope-btn-inactive,
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom),
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom),
+[data-theme="dark"] .btn-group > button.text-secondary,
+[data-theme="dark"] .scope-btn-inactive {
+  color: #CBD5E1 !important;
+}
+
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom) i,
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom) [data-lucide],
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom) svg,
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom) i,
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom) [data-lucide],
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom) svg,
+[data-mode="dark"] .scope-btn-inactive i,
+[data-mode="dark"] .scope-btn-inactive [data-lucide],
+[data-mode="dark"] .scope-btn-inactive svg,
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom) i,
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom) [data-lucide],
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom) svg,
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom) i,
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom) [data-lucide],
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom) svg,
+[data-theme="dark"] .scope-btn-inactive i,
+[data-theme="dark"] .scope-btn-inactive [data-lucide],
+[data-theme="dark"] .scope-btn-inactive svg {
+  color: #CBD5E1 !important;
+  opacity: 0.9 !important;
+}
+
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom):hover,
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover,
+[data-mode="dark"] .scope-btn-inactive:hover,
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom):hover,
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover,
+[data-theme="dark"] .scope-btn-inactive:hover {
+  color: #FFFFFF !important;
+  background: rgba(51, 65, 85, 0.45) !important;
+}
+
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom):hover i,
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom):hover [data-lucide],
+[data-mode="dark"] .scope-switcher button:not(.btn-primary-custom):hover svg,
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover i,
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover [data-lucide],
+[data-mode="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover svg,
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom):hover i,
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom):hover [data-lucide],
+[data-theme="dark"] .scope-switcher button:not(.btn-primary-custom):hover svg,
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover i,
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover [data-lucide],
+[data-theme="dark"] .btn-group[style*="border-radius:30px"] button:not(.btn-primary-custom):hover svg {
+  color: #FFFFFF !important;
+  opacity: 1 !important;
+}
+
+/* ── Dark Mode: Card Header Icons (Dashboard & Reports) ── */
+[data-mode="dark"] .card-header-custom h6 i,
+[data-mode="dark"] .card-header-custom h6 [data-lucide],
+[data-mode="dark"] .card-header-custom h6 svg,
+[data-theme="dark"] .card-header-custom h6 i,
+[data-theme="dark"] .card-header-custom h6 [data-lucide],
+[data-theme="dark"] .card-header-custom h6 svg {
+  color: var(--primary-light) !important;
+}
+
+[data-mode="dark"] .card-header-custom h6 [data-lucide="bar-chart-2"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="bar-chart-2"],
+[data-mode="dark"] .card-header-custom h6 [data-lucide="check-circle-2"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="check-circle-2"] {
+  color: #34D399 !important;
+}
+
+[data-mode="dark"] .card-header-custom h6 [data-lucide="layers"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="layers"],
+[data-mode="dark"] .card-header-custom h6 [data-lucide="award"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="award"] {
+  color: #FBBF24 !important;
+}
+
+[data-mode="dark"] .card-header-custom h6 [data-lucide="users"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="users"] {
+  color: #60A5FA !important;
+}
+
+[data-mode="dark"] .card-header-custom h6 [data-lucide="pie-chart"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="pie-chart"],
+[data-mode="dark"] .card-header-custom h6 [data-lucide="trending-up"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="trending-up"],
+[data-mode="dark"] .card-header-custom h6 [data-lucide="clock"],
+[data-theme="dark"] .card-header-custom h6 [data-lucide="clock"] {
+  color: var(--primary-light) !important;
+}
+
+/* ── Dark Mode: Completed Tasks Report Card Header & Row ── */
+[data-mode="dark"] .card-header-completed,
+[data-mode="dark"] .card-header-custom[style*="background:#F0FDF4"],
+[data-mode="dark"] .card-header-custom[style*="background: #F0FDF4"],
+[data-theme="dark"] .card-header-completed,
+[data-theme="dark"] .card-header-custom[style*="background:#F0FDF4"],
+[data-theme="dark"] .card-header-custom[style*="background: #F0FDF4"] {
+  background: rgba(6, 78, 59, 0.25) !important;
+  border-bottom-color: rgba(16, 185, 129, 0.25) !important;
+}
+
+[data-mode="dark"] .card-header-completed h6,
+[data-mode="dark"] .card-header-custom[style*="background:#F0FDF4"] h6,
+[data-mode="dark"] .card-header-custom[style*="background: #F0FDF4"] h6,
+[data-theme="dark"] .card-header-completed h6,
+[data-theme="dark"] .card-header-custom[style*="background:#F0FDF4"] h6,
+[data-theme="dark"] .card-header-custom[style*="background: #F0FDF4"] h6 {
+  color: #6EE7B7 !important;
+}
+
+[data-mode="dark"] .card-header-completed .header-icon-completed,
+[data-mode="dark"] .card-header-custom[style*="background:#F0FDF4"] [data-lucide="check-circle-2"],
+[data-mode="dark"] .card-header-custom[style*="background: #F0FDF4"] [data-lucide="check-circle-2"],
+[data-theme="dark"] .card-header-completed .header-icon-completed,
+[data-theme="dark"] .card-header-custom[style*="background:#F0FDF4"] [data-lucide="check-circle-2"],
+[data-theme="dark"] .card-header-custom[style*="background: #F0FDF4"] [data-lucide="check-circle-2"] {
+  color: #34D399 !important;
+}
+
+[data-mode="dark"] td[style*="color:#065F46"],
+[data-theme="dark"] td[style*="color:#065F46"] {
+  color: #6EE7B7 !important;
+}
+
+/* ── Dark Mode: Filter Bar Icons (Reports) ── */
+[data-mode="dark"] .bg-primary-subtle,
+[data-theme="dark"] .bg-primary-subtle {
+  background: rgba(51, 65, 85, 0.6) !important;
+  color: var(--primary-light) !important;
+}
+
+[data-mode="dark"] .bg-primary-subtle i,
+[data-mode="dark"] .bg-primary-subtle [data-lucide],
+[data-mode="dark"] .bg-primary-subtle svg,
+[data-theme="dark"] .bg-primary-subtle i,
+[data-theme="dark"] .bg-primary-subtle [data-lucide],
+[data-theme="dark"] .bg-primary-subtle svg {
+  color: var(--primary-light) !important;
+}
+
+[data-mode="dark"] .filter-collapse-chevron,
+[data-theme="dark"] .filter-collapse-chevron {
+  color: #CBD5E1 !important;
+}
+
+/* ── Dark Mode: Table Sorting Icons ── */
+[data-mode="dark"] .sortable-header .sort-icon-container i,
+[data-mode="dark"] .sortable-header .sort-icon-container svg,
+[data-theme="dark"] .sortable-header .sort-icon-container i,
+[data-theme="dark"] .sortable-header .sort-icon-container svg {
+  color: #94A3B8 !important;
+  opacity: 0.65 !important;
+}
+
+[data-mode="dark"] .sortable-header:hover .sort-icon-container i,
+[data-mode="dark"] .sortable-header:hover .sort-icon-container svg,
+[data-theme="dark"] .sortable-header:hover .sort-icon-container i,
+[data-theme="dark"] .sortable-header:hover .sort-icon-container svg {
+  color: #F8FAFC !important;
+  opacity: 1 !important;
+}
+
+[data-mode="dark"] .sortable-header[aria-sort="ascending"] .sort-icon-container svg,
+[data-mode="dark"] .sortable-header[aria-sort="descending"] .sort-icon-container svg,
+[data-theme="dark"] .sortable-header[aria-sort="ascending"] .sort-icon-container svg,
+[data-theme="dark"] .sortable-header[aria-sort="descending"] .sort-icon-container svg {
+  color: var(--primary-light) !important;
+  opacity: 1 !important;
+}
+
+/* ── Dark Mode: Empty State Icons ── */
+[data-mode="dark"] .empty-state i,
+[data-mode="dark"] .empty-state [data-lucide],
+[data-mode="dark"] .empty-state svg,
+[data-theme="dark"] .empty-state i,
+[data-theme="dark"] .empty-state [data-lucide],
+[data-theme="dark"] .empty-state svg {
+  color: var(--primary-light, #FF6FB5) !important;
+  opacity: 0.85 !important;
+}
+
+[data-mode="dark"] .empty-state h6,
+[data-theme="dark"] .empty-state h6 {
+  color: #E2E8F0 !important;
+}
+
+/* ── Dark Mode: Contextual Text & Icon Utilities ── */
+[data-mode="dark"] .text-primary, [data-theme="dark"] .text-primary { color: var(--primary-light) !important; }
+[data-mode="dark"] .text-success, [data-theme="dark"] .text-success { color: #34D399 !important; }
+[data-mode="dark"] .text-danger,  [data-theme="dark"] .text-danger  { color: #F87171 !important; }
+[data-mode="dark"] .text-warning, [data-theme="dark"] .text-warning { color: #FBBF24 !important; }
+[data-mode="dark"] .text-info,    [data-theme="dark"] .text-info    { color: #60A5FA !important; }
+
+/* ── Dark Mode: Export Viewer Modal Icons & Header ── */
+[data-mode="dark"] #exportViewerModal .modal-title,
+[data-theme="dark"] #exportViewerModal .modal-title {
+  color: #F8FAFC !important;
+}
+[data-mode="dark"] #exportViewerModal .modal-title i,
+[data-mode="dark"] #exportViewerModal .modal-title [data-lucide],
+[data-theme="dark"] #exportViewerModal .modal-title i,
+[data-theme="dark"] #exportViewerModal .modal-title [data-lucide] {
+  color: var(--primary-light) !important;
+}
+[data-mode="dark"] #exportViewerModal .modal-header,
+[data-theme="dark"] #exportViewerModal .modal-header {
+  background: rgba(15, 23, 42, 0.95) !important;
+  border-bottom-color: rgba(51, 65, 85, 0.6) !important;
 }
 
 /* Theme Dark Background Gradients per Theme in Dark Mode */

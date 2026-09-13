@@ -9,14 +9,14 @@
     <p class="text-muted mb-0" style="font-size:13px">Overview of your tasks and productivity</p>
   </div>
   <!-- Scope Switcher -->
-  <div class="btn-group p-1" role="group"
+  <div class="btn-group scope-switcher p-1" role="group"
     style="border-radius:30px;background:rgba(255,255,255,0.8);border:1px solid var(--slate-200)">
     <button type="button" onclick="setScope('my_tasks')"
-      class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+      class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}scope-btn-inactive border-0{% endif %}"
       style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="user" class="me-1"
         style="width:14px;height:14px"></i> My Tasks</button>
     <button type="button" onclick="setScope('all')"
-      class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}text-secondary border-0{% endif %}"
+      class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}scope-btn-inactive border-0{% endif %}"
       style="font-weight:700;font-size:12.5px;border-radius:20px;padding:4px 14px"><i data-lucide="users" class="me-1"
         style="width:14px;height:14px"></i> All Tasks</button>
   </div>

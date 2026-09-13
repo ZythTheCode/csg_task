@@ -10,13 +10,13 @@
   <div class="d-flex flex-wrap gap-2 align-items-center w-100 w-md-auto">
     <div class="scope-switcher me-md-2 me-0"
       style="background:rgba(255,255,255,0.85);border:1px solid var(--slate-200);border-radius:30px;padding:4px;box-shadow:var(--shadow-xs);display:inline-flex">
-      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}border-0{% endif %}"
+      <button class="btn btn-sm {% if scope == 'my_tasks' %}btn-primary-custom{% else %}scope-btn-inactive border-0{% endif %}"
         onclick="setScope('my_tasks')"
-        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;{% if scope != 'my_tasks' %}color:var(--slate-700){% endif %}"><i data-lucide="user"
+        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px"><i data-lucide="user"
           class="me-1" style="width:14px;height:14px"></i>My Tasks</button>
-      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}border-0{% endif %}"
+      <button class="btn btn-sm {% if scope == 'all' %}btn-primary-custom{% else %}scope-btn-inactive border-0{% endif %}"
         onclick="setScope('all')"
-        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px;{% if scope != 'all' %}color:var(--slate-700){% endif %}"><i data-lucide="users"
+        style="border-radius:20px;font-size:12px;font-weight:700;padding:6px 16px"><i data-lucide="users"
           class="me-1" style="width:14px;height:14px"></i>All Tasks</button>
     </div>
     <div class="d-flex gap-2 flex-grow-1 flex-md-grow-0 ms-auto">
@@ -303,9 +303,9 @@
 
 <!-- Completed Tasks Table -->
 <div class="table-custom-container mb-4" style="border-top:3px solid #10B981">
-  <div class="card-header-custom py-3 px-4 d-flex align-items-center justify-content-between"
+  <div class="card-header-custom card-header-completed py-3 px-4 d-flex align-items-center justify-content-between"
     style="background:#F0FDF4">
-    <h6 class="mb-0 fw-bold" style="color:#065F46"><i data-lucide="check-circle-2" class="me-2"
+    <h6 class="mb-0 fw-bold" style="color:#065F46"><i data-lucide="check-circle-2" class="me-2 header-icon-completed"
         style="width:18px;height:18px;color:#10B981"></i>Completed Tasks Report <span class="badge bg-success ms-2"
         style="border-radius:20px;background:#10B981 !important">{{ completed_count }}</span></h6>
   </div>
