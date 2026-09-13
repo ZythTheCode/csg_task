@@ -19,8 +19,21 @@ if [ -n "$DATABASE_URL" ]; then
     python manage.py migrate --no-input
 fi
 
+# Ensure build output directory exists
+mkdir -p staticfiles_build/static
+
 # Collect static files into staticfiles_build/static
 echo "Collecting static files..."
-python manage.py collectstatic --no-input --clear
+python manage.py collectstatic --no-input
+
+# Ensure custom static files are present in the CDN output directory
+if [ -d "static" ]; then
+    echo "Syncing custom static files to staticfiles_build/static..."
+    cp -r static/* staticfiles_build/static/
+fi
+
+echo "Verifying output directory..."
+ls -la staticfiles_build
+ls -la staticfiles_build/static
 
 echo "Vercel build completed successfully."
