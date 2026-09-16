@@ -459,3 +459,58 @@ class ReportsDashboardViewQueryOptimizationTests(TestCase):
 
         # Should return the last page, not error
         self.assertEqual(active_page.number, active_page.paginator.num_pages)
+
+
+class LandingPageViewTests(TestCase):
+    """Tests for LandingPageView and unauthenticated access."""
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.org = Organization.objects.create(
+            name='Test Org Landing',
+            abbreviation='TOL',
+            status='approved',
+        )
+        cls.user = User.objects.create_user(
+            username='landing_user',
+            password='testpass123',
+            role='org_admin',
+            organization=cls.org,
+        )
+
+    def test_landing_page_unauthenticated_renders_successfully(self):
+        """Unauthenticated user visiting / receives 200 and landing template."""
+        response = self.client.get(reverse('core:landing'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/landing.html')
+        self.assertIn('organizations', response.context)
+        self.assertIn('org_count', response.context)
+        self.assertIn('task_count', response.context)
+        self.assertIn('officer_count', response.context)
+
+    def test_landing_page_authenticated_redirects_to_dashboard(self):
+        """Authenticated user visiting / is automatically redirected to dashboard."""
+        self.client.login(username='landing_user', password='testpass123')
+        response = self.client.get(reverse('core:landing'))
+        self.assertRedirects(response, reverse('core:dashboard'))
+
+    def test_landing_page_authenticated_preview_renders_landing(self):
+        """Authenticated user with preview=true can view landing page."""
+        self.client.login(username='landing_user', password='testpass123')
+        response = self.client.get(reverse('core:landing'), {'preview': 'true'})
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'core/landing.html')
+
+    def test_login_page_renders_revamped_template(self):
+        """Login page at /accounts/login/ renders successfully."""
+        response = self.client.get(reverse('accounts:login'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'accounts/login.html')
+
+    def test_register_organization_page_renders_successfully(self):
+        """Register organization page at /organizations/register/ renders successfully."""
+        response = self.client.get(reverse('register_organization'))
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'organizations/register.html')
+
+

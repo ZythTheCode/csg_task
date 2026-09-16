@@ -1,195 +1,417 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-mode="light" data-theme="pink">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Register Organization | CSG Task Management System</title>
-<link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
-<script src="{% static 'js/lucide.min.js' %}"></script>
-<link rel="stylesheet" href="{% static 'css/style.css' %}">
-<style>
-.register-container {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 40px 15px;
-  position: relative;
-  z-index: 2;
-}
-.register-card {
-  background: var(--glass-bg);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-xl);
-  box-shadow: var(--shadow-xl);
-  width: 100%;
-  max-width: 680px;
-  padding: 40px;
-}
-.register-header {
-  text-align: center;
-  margin-bottom: 28px;
-}
-.register-logo {
-  width: 52px;
-  height: 52px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #fff;
-  font-weight: 900;
-  font-size: 20px;
-  margin: 0 auto 14px;
-  box-shadow: var(--shadow-glow);
-}
-.section-title {
-  font-size: 13px;
-  font-weight: 800;
-  color: var(--primary);
-  text-transform: uppercase;
-  letter-spacing: 0.8px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.submit-btn {
-  background: linear-gradient(135deg, var(--primary), var(--primary-light));
-  color: #fff;
-  border: none;
-  padding: 12px 24px;
-  border-radius: 30px;
-  font-size: 15px;
-  font-weight: 700;
-  width: 100%;
-  transition: all var(--transition);
-  box-shadow: var(--shadow-glow);
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.submit-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 10px 28px rgba(255, 79, 163, 0.45);
-  background: linear-gradient(135deg, #FF6FB5, #FF4FA3);
-  color: #fff;
-}
-.form-control, .form-select {
-  border-radius: var(--radius-md);
-  border: 1.5px solid var(--slate-200);
-  padding: 10px 14px;
-  font-size: 13.5px;
-}
-.form-control:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px var(--focus-ring);
-}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Register Organization | CSG Task Management System</title>
+  <meta name="description" content="Register your university student council or campus organization on the CSG Task Management System.">
+  <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Styles -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/register.css' %}?v=1.3">
+
+  <!-- Lucide Icons -->
+  <script src="{% static 'js/lucide.min.js' %}"></script>
+
+  <script>
+    (function () {
+      const localPref = localStorage.getItem('csg_dark_mode');
+      const activeMode = localPref || 'light';
+      document.documentElement.setAttribute('data-mode', activeMode);
+    })();
+  </script>
 </head>
-<body class="login-page" style="overflow-y: auto !important; height: auto; min-height: 100vh; padding: 40px 0;">
+<body>
 
-<!-- Ambient Animated Background Blobs -->
-<div class="bg-ambient-blob bg-blob-1"></div>
-<div class="bg-ambient-blob bg-blob-2"></div>
-<div class="bg-ambient-blob bg-blob-3"></div>
+<div class="register-viewport">
+  <!-- ══════════════════════════════════════
+       LEFT INFORMATIONAL SIDEBAR
+  ══════════════════════════════════════ -->
+  <div class="register-sidebar-panel">
+    <!-- Ambient Glowing Orbs -->
+    <div class="register-orb register-orb-1"></div>
+    <div class="register-orb register-orb-2"></div>
+    <div class="register-grid-pattern"></div>
 
-<div class="register-container">
-  <div class="register-card">
-    <div class="register-header">
-      <div class="register-logo">CSG</div>
-      <h4 class="fw-bold text-dark mb-1">Register Your Organization</h4>
-      <p class="text-muted mb-0" style="font-size:13.5px">Create your organization workspace. Pending approval by the CSG Super Admin.</p>
+    <div class="sidebar-content-wrap">
+      <!-- Brand Header -->
+      <a href="{% url 'core:landing' %}" class="sidebar-brand-header">
+        <div class="sidebar-logo-box">
+          <i data-lucide="shield-check" style="width:26px;height:26px"></i>
+        </div>
+        <div>
+          <div class="sidebar-brand-title">CSG Task System</div>
+          <div class="sidebar-brand-sub">Central Student Government System</div>
+        </div>
+      </a>
+
+      <!-- Headline -->
+      <h1 class="sidebar-hero-headline">
+        Register Your <span>Student Council</span> or Organization.
+      </h1>
+      <p class="sidebar-hero-desc">
+        Set up a dedicated workspace for your council, committee, or recognized student body with full Kanban pipelines, SLA tracking, and audit reporting.
+      </p>
+
+      <!-- Step Checklist -->
+      <div class="onboarding-steps-list">
+        <div class="onboarding-step-item">
+          <div class="onboarding-step-number">1</div>
+          <div>
+            <div class="onboarding-step-text-title">Submit Organization Details</div>
+            <p class="onboarding-step-text-sub">Provide your council name, acronym, and designated administrator account.</p>
+          </div>
+        </div>
+        <div class="onboarding-step-item">
+          <div class="onboarding-step-number">2</div>
+          <div>
+            <div class="onboarding-step-text-title">Super Admin Verification</div>
+            <p class="onboarding-step-text-sub">The CSG Super Admin verifies your student council credentials and approves the workspace.</p>
+          </div>
+        </div>
+        <div class="onboarding-step-item">
+          <div class="onboarding-step-number">3</div>
+          <div>
+            <div class="onboarding-step-text-title">Invite Officers & Start Managing</div>
+            <p class="onboarding-step-text-sub">Log in as Org Admin to configure position titles, onboard officers, and assign tasks.</p>
+          </div>
+        </div>
+      </div>
     </div>
 
-    {% if form.non_field_errors %}
-    <div class="alert alert-danger mb-4" style="border-radius:14px;font-size:13px">
-      {% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}
+    <!-- Sidebar Benefits Pill Box -->
+    <div class="sidebar-benefits-box">
+      <div class="benefits-box-title">
+        <i data-lucide="sparkles" style="width:14px;height:14px"></i>
+        <span>Workspace Features Included</span>
+      </div>
+      <p class="benefits-box-desc">
+        Multi-stage Kanban boards, officer progress telemetry, presidential overrides, adviser sign-off stages, and downloadable PDF/Excel task reports.
+      </p>
     </div>
-    {% endif %}
+  </div>
 
-    <form method="post" autocomplete="off">
-      {% csrf_token %}
-      
-      <!-- Section 1: Organization Information -->
-      <div class="mb-4">
-        <div class="section-title"><i data-lucide="building" style="width:16px;height:16px"></i> Organization Information</div>
+  <!-- ══════════════════════════════════════
+       RIGHT MAIN REGISTRATION FORM PANEL
+  ══════════════════════════════════════ -->
+  <div class="register-form-panel">
+    <!-- Top Bar: Back to Home + Sign In + Dark Mode Toggle -->
+    <div class="register-top-nav">
+      <div class="nav-actions-left">
+        <a href="{% url 'core:landing' %}" class="btn-nav-link">
+          <i data-lucide="arrow-left" style="width:16px;height:16px"></i>
+          <span>Back to Home</span>
+        </a>
+        <a href="{% url 'accounts:login' %}" class="btn-nav-link">
+          <i data-lucide="log-in" style="width:16px;height:16px"></i>
+          <span>Sign In to Existing Account</span>
+        </a>
+      </div>
+
+      <!-- Theme Toggle Button -->
+      <button type="button" class="btn-theme-toggle" id="themeToggleBtn" title="Switch Theme" aria-label="Toggle dark mode">
+        <i data-lucide="moon" style="width:18px;height:18px"></i>
+      </button>
+    </div>
+
+    <!-- Registration Form Card -->
+    <div class="register-form-card">
+      <div class="register-card-header">
+        <h2>Organization Registration</h2>
+        <p>Complete the form below to create your organization's centralized workspace. Subject to Super Admin approval.</p>
+      </div>
+
+      {% if form.non_field_errors %}
+        <div class="alert alert-danger d-flex align-items-center gap-2 mb-4" style="border-radius:14px;font-size:13px;padding:12px 16px">
+          <i data-lucide="alert-circle" style="width:18px;height:18px;flex-shrink:0"></i>
+          <div>
+            {% for err in form.non_field_errors %}{{ err }}<br>{% endfor %}
+          </div>
+        </div>
+      {% endif %}
+
+      <form method="post" autocomplete="off" id="orgRegForm">
+        {% csrf_token %}
+
+        <!-- ══ SECTION 1: ORGANIZATION DETAILS ══ -->
+        <div class="form-section-banner">
+          <i data-lucide="building" style="width:16px;height:16px"></i>
+          <span>1. Organization Profile</span>
+        </div>
+
         <div class="row g-3">
           <div class="col-md-8">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Full Organization Name <span class="text-danger">*</span></label>
-            <input type="text" name="name" class="form-control {% if form.name.errors %}is-invalid{% endif %}" placeholder="e.g. Computer Science Guild" value="{{ form.name.value|default:'' }}" required>
-            {% if form.name.errors %}<div class="invalid-feedback">{% for e in form.name.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_name">
+              Organization Name <span class="text-danger">*</span>
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="text"
+                     name="name"
+                     id="id_name"
+                     class="reg-input-field {% if form.name.errors %}is-invalid{% endif %}"
+                     placeholder="e.g., College of Engineering Student Council"
+                     value="{{ form.name.value|default:'' }}"
+                     required>
+              <i data-lucide="award" class="reg-input-icon"></i>
+            </div>
+            {% if form.name.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.name.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
+
           <div class="col-md-4">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Abbreviation / Short Name</label>
-            <input type="text" name="abbreviation" class="form-control {% if form.abbreviation.errors %}is-invalid{% endif %}" placeholder="e.g. CSG" value="{{ form.abbreviation.value|default:'' }}">
-            {% if form.abbreviation.errors %}<div class="invalid-feedback">{% for e in form.abbreviation.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_abbreviation">
+              Acronym / Abbreviation
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="text"
+                     name="abbreviation"
+                     id="id_abbreviation"
+                     class="reg-input-field {% if form.abbreviation.errors %}is-invalid{% endif %}"
+                     placeholder="e.g., CESC"
+                     value="{{ form.abbreviation.value|default:'' }}"
+                     maxlength="20">
+              <i data-lucide="hash" class="reg-input-icon"></i>
+            </div>
+            {% if form.abbreviation.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.abbreviation.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
+
           <div class="col-12">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Description</label>
-            <textarea name="description" class="form-control {% if form.description.errors %}is-invalid{% endif %}" rows="3" placeholder="Brief overview of your student organization...">{{ form.description.value|default:'' }}</textarea>
-            {% if form.description.errors %}<div class="invalid-feedback">{% for e in form.description.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_description">
+              Organization Mission & Description
+            </label>
+            <textarea name="description"
+                      id="id_description"
+                      rows="3"
+                      class="reg-textarea {% if form.description.errors %}is-invalid{% endif %}"
+                      placeholder="Briefly describe the purpose, department, or student community served by your organization...">{{ form.description.value|default:'' }}</textarea>
+            {% if form.description.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.description.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
         </div>
-      </div>
 
-      <!-- Section 2: Organization Admin User Account -->
-      <div class="mb-4">
-        <div class="section-title"><i data-lucide="user-check" style="width:16px;height:16px"></i> Organization Admin Account</div>
+        <!-- ══ SECTION 2: ADMINISTRATOR ACCOUNT ══ -->
+        <div class="form-section-banner mt-4">
+          <i data-lucide="user-check" style="width:16px;height:16px"></i>
+          <span>2. Designated Org Administrator Account</span>
+        </div>
+
         <div class="row g-3">
           <div class="col-md-6">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">First Name <span class="text-danger">*</span></label>
-            <input type="text" name="admin_first_name" class="form-control {% if form.admin_first_name.errors %}is-invalid{% endif %}" placeholder="Admin first name" value="{{ form.admin_first_name.value|default:'' }}" required>
-            {% if form.admin_first_name.errors %}<div class="invalid-feedback">{% for e in form.admin_first_name.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_admin_first_name">
+              Admin First Name <span class="text-danger">*</span>
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="text"
+                     name="admin_first_name"
+                     id="id_admin_first_name"
+                     class="reg-input-field {% if form.admin_first_name.errors %}is-invalid{% endif %}"
+                     placeholder="First Name"
+                     value="{{ form.admin_first_name.value|default:'' }}"
+                     required>
+              <i data-lucide="user" class="reg-input-icon"></i>
+            </div>
+            {% if form.admin_first_name.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.admin_first_name.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
+
           <div class="col-md-6">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Last Name <span class="text-danger">*</span></label>
-            <input type="text" name="admin_last_name" class="form-control {% if form.admin_last_name.errors %}is-invalid{% endif %}" placeholder="Admin last name" value="{{ form.admin_last_name.value|default:'' }}" required>
-            {% if form.admin_last_name.errors %}<div class="invalid-feedback">{% for e in form.admin_last_name.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_admin_last_name">
+              Admin Last Name <span class="text-danger">*</span>
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="text"
+                     name="admin_last_name"
+                     id="id_admin_last_name"
+                     class="reg-input-field {% if form.admin_last_name.errors %}is-invalid{% endif %}"
+                     placeholder="Last Name"
+                     value="{{ form.admin_last_name.value|default:'' }}"
+                     required>
+              <i data-lucide="user" class="reg-input-icon"></i>
+            </div>
+            {% if form.admin_last_name.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.admin_last_name.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
+
           <div class="col-md-6">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Student ID <span class="text-danger">*</span></label>
-            <input type="text" name="admin_student_id" class="form-control {% if form.admin_student_id.errors %}is-invalid{% endif %}" placeholder="e.g. 202612345" value="{{ form.admin_student_id.value|default:'' }}" required>
-            {% if form.admin_student_id.errors %}<div class="invalid-feedback">{% for e in form.admin_student_id.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_admin_student_id">
+              Student ID Number <span class="text-danger">*</span>
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="text"
+                     name="admin_student_id"
+                     id="id_admin_student_id"
+                     class="reg-input-field {% if form.admin_student_id.errors %}is-invalid{% endif %}"
+                     placeholder="e.g., 2024-10294"
+                     value="{{ form.admin_student_id.value|default:'' }}"
+                     required>
+              <i data-lucide="id-card" class="reg-input-icon"></i>
+            </div>
+            {% if form.admin_student_id.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.admin_student_id.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
+
           <div class="col-md-6">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Email Address <span class="text-danger">*</span></label>
-            <input type="email" name="admin_email" class="form-control {% if form.admin_email.errors %}is-invalid{% endif %}" placeholder="admin@university.edu" value="{{ form.admin_email.value|default:'' }}" required>
-            {% if form.admin_email.errors %}<div class="invalid-feedback">{% for e in form.admin_email.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_admin_email">
+              University Email Address <span class="text-danger">*</span>
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="email"
+                     name="admin_email"
+                     id="id_admin_email"
+                     class="reg-input-field {% if form.admin_email.errors %}is-invalid{% endif %}"
+                     placeholder="admin@university.edu"
+                     value="{{ form.admin_email.value|default:'' }}"
+                     required>
+              <i data-lucide="mail" class="reg-input-icon"></i>
+            </div>
+            {% if form.admin_email.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.admin_email.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
+
           <div class="col-md-6">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Username <span class="text-danger">*</span></label>
-            <input type="text" name="admin_username" class="form-control {% if form.admin_username.errors %}is-invalid{% endif %}" placeholder="Choose a username" value="{{ form.admin_username.value|default:'' }}" required>
-            {% if form.admin_username.errors %}<div class="invalid-feedback">{% for e in form.admin_username.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="id_admin_username">
+              Choose Admin Username <span class="text-danger">*</span>
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="text"
+                     name="admin_username"
+                     id="id_admin_username"
+                     class="reg-input-field {% if form.admin_username.errors %}is-invalid{% endif %}"
+                     placeholder="Choose username"
+                     value="{{ form.admin_username.value|default:'' }}"
+                     required>
+              <i data-lucide="at-sign" class="reg-input-icon"></i>
+            </div>
+            {% if form.admin_username.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.admin_username.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
+
           <div class="col-md-6">
-            <label class="form-label fw-bold text-dark" style="font-size:13px">Password <span class="text-danger">*</span></label>
-            <input type="password" name="admin_password" class="form-control {% if form.admin_password.errors %}is-invalid{% endif %}" placeholder="Create password" required>
-            {% if form.admin_password.errors %}<div class="invalid-feedback">{% for e in form.admin_password.errors %}{{ e }}{% endfor %}</div>{% endif %}
+            <label class="reg-label" for="adminPasswordInput">
+              Create Admin Password <span class="text-danger">*</span>
+            </label>
+            <div class="reg-input-wrapper">
+              <input type="password"
+                     name="admin_password"
+                     id="adminPasswordInput"
+                     class="reg-input-field {% if form.admin_password.errors %}is-invalid{% endif %}"
+                     placeholder="Create secure password"
+                     required>
+              <i data-lucide="lock" class="reg-input-icon"></i>
+              <button type="button" class="btn-pwd-toggle" onclick="toggleRegPwd()" title="Show/Hide Password" aria-label="Toggle password visibility">
+                <i data-lucide="eye" id="regPwdIcon" style="width:18px;height:18px"></i>
+              </button>
+            </div>
+            {% if form.admin_password.errors %}
+              <div class="text-danger mt-1" style="font-size:12px">
+                {% for e in form.admin_password.errors %}{{ e }}{% endfor %}
+              </div>
+            {% endif %}
           </div>
         </div>
-      </div>
 
-      <div class="mt-4 pt-2 border-top">
-        <button type="submit" class="submit-btn"><i data-lucide="check-circle" style="width:18px;height:18px"></i>Submit Registration</button>
-      </div>
-    </form>
+        <!-- Submit Button -->
+        <div class="mt-4 pt-3 border-top" style="border-color:var(--reg-input-border)!important">
+          <button type="submit" class="btn-submit-register">
+            <i data-lucide="check-circle" style="width:18px;height:18px"></i>
+            <span>Submit Registration Application</span>
+          </button>
+        </div>
 
-    <div class="text-center mt-4">
-      <a href="{% url 'accounts:login' %}" class="text-decoration-none fw-semibold" style="color:var(--primary);font-size:13px"><i data-lucide="arrow-left" class="me-1" style="width:14px;height:14px;display:inline-block;vertical-align:-2px"></i>Back to Sign In</a>
+        <p class="text-center mt-3 text-muted" style="font-size:12px;margin-bottom:0">
+          By registering, you confirm you are an authorized representative of this student organization.
+        </p>
+      </form>
+    </div>
+
+    <!-- Footer -->
+    <div class="register-page-footer justify-content-center text-center">
+      <div>&copy; 2026 Central Student Government &bull; Created by <strong style="color:var(--primary)">Jazel C. Moradas</strong></div>
     </div>
   </div>
 </div>
 
 <script>
-if (window.lucide) lucide.createIcons();
+  if (window.lucide) {
+    lucide.createIcons();
+  }
+
+  // Password Visibility Toggle for Registration
+  function toggleRegPwd() {
+    const input = document.getElementById('adminPasswordInput');
+    const iconWrapper = document.querySelector('.btn-pwd-toggle');
+    if (!input || !iconWrapper) return;
+
+    if (input.type === 'password') {
+      input.type = 'text';
+      iconWrapper.innerHTML = '<i data-lucide="eye-off" id="regPwdIcon" style="width:18px;height:18px"></i>';
+    } else {
+      input.type = 'password';
+      iconWrapper.innerHTML = '<i data-lucide="eye" id="regPwdIcon" style="width:18px;height:18px"></i>';
+    }
+    if (window.lucide) {
+      lucide.createIcons({ root: iconWrapper });
+    }
+  }
+
+  // Dark Mode Toggle Logic
+  function updateThemeIcon(mode) {
+    const btn = document.getElementById('themeToggleBtn');
+    if (!btn) return;
+    btn.innerHTML = `<i data-lucide="${mode === 'dark' ? 'sun' : 'moon'}" style="width:18px;height:18px"></i>`;
+    btn.setAttribute('title', mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+    btn.setAttribute('aria-label', mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+    if (window.lucide) {
+      lucide.createIcons({ root: btn });
+    }
+  }
+
+  const themeBtn = document.getElementById('themeToggleBtn');
+  if (themeBtn) {
+    const currentMode = document.documentElement.getAttribute('data-mode') || 'light';
+    updateThemeIcon(currentMode);
+
+    themeBtn.addEventListener('click', function () {
+      const active = document.documentElement.getAttribute('data-mode') || 'light';
+      const newMode = active === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-mode', newMode);
+      localStorage.setItem('csg_dark_mode', newMode);
+      updateThemeIcon(newMode);
+    });
+  }
 </script>
 </body>
 </html>

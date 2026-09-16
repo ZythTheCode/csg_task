@@ -10,6 +10,31 @@ from core.query_utils import get_dashboard_stats
 from core.cache_utils import get_dashboard_cache_key, safe_cache_get
 
 
+class LandingPageView(TemplateView):
+    template_name = 'core/landing.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        if request.user.is_authenticated and request.GET.get('preview') != 'true':
+            return redirect('core:dashboard')
+        return super().dispatch(request, *args, **kwargs)
+
+    def get_context_data(self, **kwargs):
+        ctx = super().get_context_data(**kwargs)
+        ctx['page_title'] = 'Home'
+        try:
+            from organizations.models import Organization
+            ctx['organizations'] = Organization.objects.filter(status='approved').order_by('name')[:8]
+            ctx['org_count'] = Organization.objects.filter(status='approved').count()
+            ctx['task_count'] = Task.objects.filter(is_archived=False).count()
+            ctx['officer_count'] = Officer.objects.exclude(user__role='super_super_admin').count()
+        except Exception:
+            ctx['organizations'] = []
+            ctx['org_count'] = 0
+            ctx['task_count'] = 0
+            ctx['officer_count'] = 0
+        return ctx
+
+
 class DashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
     template_name = 'core/dashboard.html'
 

@@ -1,0 +1,744 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en" data-mode="light" data-theme="pink">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSG Task Management System | University Student Government Platform</title>
+  <meta name="description" content="The centralized task management, workflow, and monitoring platform for university student government, college councils, and recognized student organizations.">
+  <link id="dynamicFavicon" rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 & Styles -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  <link rel="stylesheet" href="{% static 'css/landing.css' %}?v=1.3">
+
+  <!-- Lucide Icons -->
+  <script src="{% static 'js/lucide.min.js' %}"></script>
+
+  <script>
+    (function () {
+      const localPref = localStorage.getItem('csg_dark_mode');
+      const activeMode = localPref || 'light';
+      document.documentElement.setAttribute('data-mode', activeMode);
+    })();
+  </script>
+</head>
+<body class="landing-body">
+
+  <!-- Ambient Glowing Blobs -->
+  <div class="landing-blob landing-blob-1"></div>
+  <div class="landing-blob landing-blob-2"></div>
+  <div class="landing-blob landing-blob-3"></div>
+
+  <!-- ══════════════════════════════════════
+       STICKY NAVBAR
+  ══════════════════════════════════════ -->
+  <nav class="landing-nav">
+    <div class="container d-flex align-items-center justify-content-between">
+      <!-- Brand Logo -->
+      <a href="{% url 'core:landing' %}" class="landing-brand">
+        <div class="brand-icon-box">
+          <i data-lucide="shield-check" style="width:22px;height:22px"></i>
+        </div>
+        <div>
+          <div class="brand-title">CSG Task System</div>
+          <div class="brand-sub">Central Student Government System</div>
+        </div>
+      </a>
+
+      <!-- Desktop Navigation Links -->
+      <ul class="nav-links-list">
+        <li><a href="#features" class="nav-link-item">Capabilities</a></li>
+        <li><a href="#workflow" class="nav-link-item">Workflow</a></li>
+        <li><a href="#organizations" class="nav-link-item">Councils & Orgs</a></li>
+        <li><a href="#faq" class="nav-link-item">FAQ</a></li>
+      </ul>
+
+      <!-- Navbar Actions -->
+      <div class="nav-cta-group">
+        <!-- Theme Toggle -->
+        <button type="button" class="btn-theme-toggle" id="themeToggleBtn" title="Switch Theme" aria-label="Toggle dark mode">
+          <i data-lucide="moon" style="width:18px;height:18px"></i>
+        </button>
+
+        {% if user.is_authenticated %}
+          <a href="{% url 'core:dashboard' %}" class="btn-landing-primary" style="white-space:nowrap;">
+            <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i>
+            <span style="white-space:nowrap;">Dashboard</span>
+          </a>
+        {% else %}
+          <a href="{% url 'register_organization' %}" class="btn-landing-secondary d-none d-sm-inline-flex" style="white-space:nowrap;">
+            <i data-lucide="building" style="width:15px;height:15px"></i>
+            <span style="white-space:nowrap;">Register Org</span>
+          </a>
+          <a href="{% url 'accounts:login' %}" class="btn-landing-primary" style="white-space:nowrap;">
+            <i data-lucide="log-in" style="width:15px;height:15px"></i>
+            <span style="white-space:nowrap;">Sign In</span>
+          </a>
+        {% endif %}
+
+        <!-- Mobile Hamburger Menu Button -->
+        <button type="button" class="btn-mobile-menu" id="mobileMenuBtn" aria-label="Open mobile menu">
+          <i data-lucide="menu" id="mobileMenuIcon" style="width:20px;height:20px"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile Dropdown Nav Menu -->
+    <div class="mobile-nav-dropdown" id="mobileNavDropdown">
+      <ul class="mobile-nav-links">
+        <li><a href="#features" class="mobile-nav-link" onclick="closeMobileMenu()">Capabilities</a></li>
+        <li><a href="#workflow" class="mobile-nav-link" onclick="closeMobileMenu()">Workflow Stages</a></li>
+        <li><a href="#organizations" class="mobile-nav-link" onclick="closeMobileMenu()">Campus Councils</a></li>
+        <li><a href="#faq" class="mobile-nav-link" onclick="closeMobileMenu()">FAQ</a></li>
+      </ul>
+      <div class="mobile-nav-actions">
+        {% if user.is_authenticated %}
+          <a href="{% url 'core:dashboard' %}" class="btn-landing-primary w-100 justify-content-center">
+            <i data-lucide="layout-dashboard" style="width:16px;height:16px"></i>
+            <span>Go to Dashboard</span>
+          </a>
+        {% else %}
+          <a href="{% url 'accounts:login' %}" class="btn-landing-primary w-100 justify-content-center">
+            <i data-lucide="log-in" style="width:16px;height:16px"></i>
+            <span>Sign In to Portal</span>
+          </a>
+          <a href="{% url 'register_organization' %}" class="btn-landing-secondary w-100 justify-content-center">
+            <i data-lucide="building" style="width:16px;height:16px"></i>
+            <span>Register an Organization</span>
+          </a>
+        {% endif %}
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════════════════════════════════════
+       HERO SECTION
+  ══════════════════════════════════════ -->
+  <section class="hero-section">
+    <div class="container">
+      <div class="row align-items-center">
+        <!-- Hero Copy -->
+        <div class="col-lg-6 mb-5 mb-lg-0">
+          <div class="hero-pill-badge">
+            <i data-lucide="sparkles" style="width:15px;height:15px"></i>
+            <span>Central Student Government • Task & Workflow Ecosystem</span>
+          </div>
+
+          <h1 class="hero-headline">
+            Empowering Student Leaders, <span class="text-gradient">Streamlining</span> Campus Governance.
+          </h1>
+
+          <p class="hero-subtext">
+            The multi-tenant management system for university student councils, committees, and student organizations to track initiatives, coordinate deliverables across Kanban, List, and Calendar views, and maintain transparent accountability.
+          </p>
+
+          <div class="hero-cta-wrap">
+            {% if user.is_authenticated %}
+              <a href="{% url 'core:dashboard' %}" class="btn-hero-main">
+                <span>Enter Workspace</span>
+                <i data-lucide="arrow-right" style="width:18px;height:18px"></i>
+              </a>
+            {% else %}
+              <a href="{% url 'accounts:login' %}" class="btn-hero-main">
+                <span>Access Portal (Sign In)</span>
+                <i data-lucide="arrow-right" style="width:18px;height:18px"></i>
+              </a>
+              <a href="{% url 'register_organization' %}" class="btn-hero-secondary">
+                <i data-lucide="building-2" style="width:18px;height:18px"></i>
+                <span>Register Organization</span>
+              </a>
+            {% endif %}
+          </div>
+
+          <!-- Trust Proof -->
+          <div class="hero-trust-proof">
+            <div class="trust-avatar-stack">
+              <div class="trust-avatar-item">CSG</div>
+              <div class="trust-avatar-item" style="background:linear-gradient(135deg, #2563EB, #60A5FA)">CD</div>
+              <div class="trust-avatar-item" style="background:linear-gradient(135deg, #10B981, #34D399)">AC</div>
+              <div class="trust-avatar-item" style="background:linear-gradient(135deg, #8B5CF6, #A78BFA)">+</div>
+            </div>
+            <div>
+              <div class="fw-bold" style="color:var(--text-main)">Multi-Tenant Council Ecosystem</div>
+              <div style="font-size:0.75rem">Role-Based Access for Super Admins, Org Admins, Presidents, Officers & Advisers</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Hero Dynamic Live Mockup (Real System Stages) -->
+        <div class="col-lg-6">
+          <div class="hero-mockup-wrapper">
+            <!-- Floating Badge 1 -->
+            <div class="floating-mockup-badge float-badge-1">
+              <div class="float-icon icon-pink">
+                <i data-lucide="check-circle" style="width:20px;height:20px"></i>
+              </div>
+              <div>
+                <div class="float-text-title">Org Admin Verified</div>
+                <div class="float-text-sub">Password-Protected Sign-off</div>
+              </div>
+            </div>
+
+            <!-- Floating Badge 2 -->
+            <div class="floating-mockup-badge float-badge-2">
+              <div class="float-icon icon-teal">
+                <i data-lucide="activity" style="width:20px;height:20px"></i>
+              </div>
+              <div>
+                <div class="float-text-title">Live Audit Trace</div>
+                <div class="float-text-sub">Real-Time Officer Telemetry</div>
+              </div>
+            </div>
+
+            <!-- Mockup Card with True System Entities -->
+            <div class="hero-mockup-card">
+              <div class="mockup-header-bar">
+                <div class="mockup-dots">
+                  <div class="mockup-dot dot-red"></div>
+                  <div class="mockup-dot dot-yellow"></div>
+                  <div class="mockup-dot dot-green"></div>
+                </div>
+                <div class="mockup-org-pill">
+                  <i data-lucide="award" class="me-1" style="width:13px;height:13px;display:inline-block;vertical-align:-1px"></i>Central Student Government (CSG)
+                </div>
+                <div class="text-muted" style="font-size:0.75rem;font-weight:600">Kanban Board</div>
+              </div>
+
+              <div class="mockup-board-preview">
+                <!-- Column 1: Processing (In Progress) -->
+                <div class="mockup-col">
+                  <div class="mockup-col-title">
+                    <span>Processing</span>
+                    <span class="mockup-col-badge">2</span>
+                  </div>
+
+                  <div class="mockup-task-item">
+                    <span class="mockup-task-tag tag-high">High Priority</span>
+                    <span class="mockup-task-tag tag-med" style="background:rgba(59,130,246,0.12);color:#2563EB">Event</span>
+                    <div class="mockup-task-title">University General Assembly 2026 Preparation</div>
+                    <div class="progress mb-2" style="height:5px;border-radius:4px">
+                      <div class="progress-bar" style="width:75%;background:var(--primary)"></div>
+                    </div>
+                    <div class="mockup-task-meta">
+                      <span><i data-lucide="calendar" class="me-1" style="width:12px;height:12px;display:inline-block;vertical-align:-1px"></i>Tomorrow</span>
+                      <span class="fw-bold" style="color:var(--primary)">75%</span>
+                    </div>
+                  </div>
+
+                  <div class="mockup-task-item">
+                    <span class="mockup-task-tag tag-urgent">Urgent</span>
+                    <span class="mockup-task-tag" style="background:rgba(168,85,247,0.12);color:#9333EA">Multimedia</span>
+                    <div class="mockup-task-title">Campus Transparency Infographics Publication</div>
+                    <div class="progress mb-2" style="height:5px;border-radius:4px">
+                      <div class="progress-bar" style="width:50%;background:#F59E0B"></div>
+                    </div>
+                    <div class="mockup-task-meta">
+                      <span><i data-lucide="clock" class="me-1" style="width:12px;height:12px;display:inline-block;vertical-align:-1px"></i>2 Days</span>
+                      <span class="fw-bold text-warning">50%</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Column 2: To Advisers & Completed -->
+                <div class="mockup-col">
+                  <div class="mockup-col-title">
+                    <span>To Advisers</span>
+                    <span class="mockup-col-badge" style="background:rgba(99,102,241,0.15);color:#6366F1">1</span>
+                  </div>
+
+                  <div class="mockup-task-item">
+                    <span class="mockup-task-tag" style="background:rgba(99,102,241,0.12);color:#6366F1">Adviser Review</span>
+                    <span class="mockup-task-tag tag-done">Finance</span>
+                    <div class="mockup-task-title">Midterm Student Council Financial Liquidation</div>
+                    <div class="progress mb-2" style="height:5px;border-radius:4px">
+                      <div class="progress-bar" style="width:90%;background:#6366F1"></div>
+                    </div>
+                    <div class="mockup-task-meta">
+                      <span><i data-lucide="file-check" class="me-1" style="width:12px;height:12px;display:inline-block;vertical-align:-1px"></i>Routing</span>
+                      <span class="fw-bold" style="color:#6366F1">90%</span>
+                    </div>
+                  </div>
+
+                  <div class="mockup-task-item" style="opacity:0.9">
+                    <span class="mockup-task-tag tag-done">Completed</span>
+                    <div class="mockup-task-title text-decoration-line-through text-muted">Leadership Summit Venue & Equipment Request</div>
+                    <div class="mockup-task-meta mt-2">
+                      <span class="text-success"><i data-lucide="shield-check" class="me-1" style="width:12px;height:12px;display:inline-block;vertical-align:-1px"></i>Org Admin Verified</span>
+                      <span class="badge bg-success" style="font-size:10px">100%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       STATS METRICS BANNER
+  ══════════════════════════════════════ -->
+  <section class="stats-banner-wrap">
+    <div class="container">
+      <div class="stats-glass-container">
+        <div class="stat-metric-item">
+          <div class="stat-metric-val">{{ org_count|default:"14" }}+</div>
+          <div class="stat-metric-lbl">Recognized Campus Councils</div>
+        </div>
+        <div class="stat-metric-item">
+          <div class="stat-metric-val">{{ task_count|default:"380" }}+</div>
+          <div class="stat-metric-lbl">Deliverables Tracked & Executed</div>
+        </div>
+        <div class="stat-metric-item">
+          <div class="stat-metric-val">{{ officer_count|default:"90" }}+</div>
+          <div class="stat-metric-lbl">Elected Officers & Leaders</div>
+        </div>
+        <div class="stat-metric-item">
+          <div class="stat-metric-val">100%</div>
+          <div class="stat-metric-lbl">Logged Governance Audit Trail</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FEATURES BENTO GRID
+  ══════════════════════════════════════ -->
+  <section id="features" class="section-wrapper">
+    <div class="container">
+      <div class="section-header-center">
+        <div class="section-pill-tag">
+          <i data-lucide="layers" style="width:14px;height:14px"></i>
+          <span>Engineered For Student Governance</span>
+        </div>
+        <h2 class="section-title-lg">Everything Your Council Needs to Govern</h2>
+        <p class="section-desc-sub">
+          Tailored to the unique processes of university councils—eliminating untracked paperwork, lost deliverables, and unclear accountability.
+        </p>
+      </div>
+
+      <div class="bento-features-grid">
+        <!-- Card 1 -->
+        <div class="bento-card">
+          <div class="bento-icon-box">
+            <i data-lucide="trello" style="width:24px;height:24px"></i>
+          </div>
+          <h3 class="bento-card-title">Kanban, List & Calendar Views</h3>
+          <p class="bento-card-text">
+            Track tasks across real institutional stages: Not Started, Processing, To Advisers, Campus Office routing (OCA, OSAS, Accounting, PPSS), and Completed.
+          </p>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bento-card">
+          <div class="bento-icon-box" style="background:rgba(37,99,235,0.15);color:#2563EB">
+            <i data-lucide="building-2" style="width:24px;height:24px"></i>
+          </div>
+          <h3 class="bento-card-title">Multi-Tenant Workspaces</h3>
+          <p class="bento-card-text">
+            Independent, secure workspaces for CSG, CO:DE, ACES, and college councils with customizable theme color palettes, official logos, and position titles.
+          </p>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bento-card">
+          <div class="bento-icon-box" style="background:rgba(16,185,129,0.15);color:#10B981">
+            <i data-lucide="shield-check" style="width:24px;height:24px"></i>
+          </div>
+          <h3 class="bento-card-title">Org Admin Password Security</h3>
+          <p class="bento-card-text">
+            Sensitive actions—marking a task completed or deleting tasks—strictly require Org Admin password authorization to guarantee verified accountability.
+          </p>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bento-card">
+          <div class="bento-icon-box" style="background:rgba(139,92,246,0.15);color:#8B5CF6">
+            <i data-lucide="user-check" style="width:24px;height:24px"></i>
+          </div>
+          <h3 class="bento-card-title">Adviser Review & Executive Control</h3>
+          <p class="bento-card-text">
+            Faculty advisers review proof of work documents, while Student Council Presidents possess executive task reassignments and stage override privileges.
+          </p>
+        </div>
+
+        <!-- Card 5 -->
+        <div class="bento-card">
+          <div class="bento-icon-box" style="background:rgba(245,158,11,0.15);color:#F59E0B">
+            <i data-lucide="file-spreadsheet" style="width:24px;height:24px"></i>
+          </div>
+          <h3 class="bento-card-title">Instant PDF & Excel Reporting</h3>
+          <p class="bento-card-text">
+            Generate printable, auditable PDF summaries and spreadsheet data exports of council performance, overdue metrics, and committee task completion rates.
+          </p>
+        </div>
+
+        <!-- Card 6 -->
+        <div class="bento-card">
+          <div class="bento-icon-box" style="background:rgba(239,68,68,0.15);color:#EF4444">
+            <i data-lucide="bell-ring" style="width:24px;height:24px"></i>
+          </div>
+          <h3 class="bento-card-title">In-App Alerts & Deadline Nudges</h3>
+          <p class="bento-card-text">
+            Automated alerts, overdue flags, and priority-tier badges (Low, Medium, High, Urgent) ensure deliverables are never neglected before deadlines.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       GOVERNANCE WORKFLOW SECTION
+  ══════════════════════════════════════ -->
+  <section id="workflow" class="section-wrapper alt-bg">
+    <div class="container">
+      <div class="section-header-center">
+        <div class="section-pill-tag">
+          <i data-lucide="git-merge" style="width:14px;height:14px"></i>
+          <span>Institutional Process</span>
+        </div>
+        <h2 class="section-title-lg">How Council Workflows Move</h2>
+        <p class="section-desc-sub">
+          A four-step lifecycle ensuring full transparency, accountability, and institutional continuity.
+        </p>
+      </div>
+
+      <div class="workflow-steps-wrap">
+        <!-- Step 1 -->
+        <div class="workflow-step-card">
+          <div class="step-num-pill">01</div>
+          <h4 class="step-title">Register & Onboard</h4>
+          <p class="step-desc">
+            Submit your student organization registration. Once verified and approved by the Super Admin, the Org Admin configures positions, titles, and officers.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="workflow-step-card">
+          <div class="step-num-pill">02</div>
+          <h4 class="step-title">Delegate & Prioritize</h4>
+          <p class="step-desc">
+            Presidents and Admins create tasks with specific categories (Document, Event, Finance, Multimedia), set priority tiers (Low to Urgent), and assign officers.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="workflow-step-card">
+          <div class="step-num-pill">03</div>
+          <h4 class="step-title">Execute & Track</h4>
+          <p class="step-desc">
+            Officers update progress sliders, log remarks, attach proof-of-work documentation, and advance tasks across the interactive Kanban board.
+          </p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="workflow-step-card">
+          <div class="step-num-pill">04</div>
+          <h4 class="step-title">Authorize & Archive</h4>
+          <p class="step-desc">
+            Tasks routed to Advisers receive faculty review. Final completion requires Org Admin password verification, permanently logging into the activity audit trail.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       RECOGNIZED ORGANIZATIONS SHOWCASE
+  ══════════════════════════════════════ -->
+  <section id="organizations" class="section-wrapper">
+    <div class="container">
+      <div class="section-header-center">
+        <div class="section-pill-tag">
+          <i data-lucide="users" style="width:14px;height:14px"></i>
+          <span>Ecosystem Directory</span>
+        </div>
+        <h2 class="section-title-lg">Recognized Student Councils & Orgs</h2>
+        <p class="section-desc-sub">
+          Serving governance bodies across university colleges, academic departments, and special interest groups.
+        </p>
+      </div>
+
+      <div class="org-showcase-grid">
+        {% if organizations %}
+          {% for org in organizations %}
+            <div class="org-showcase-card">
+              <div class="org-card-logo">
+                {% if org.logo %}
+                  <img src="{{ org.logo.url }}" alt="{{ org.name }}">
+                {% else %}
+                  {{ org.short_name|default:"CSG" }}
+                {% endif %}
+              </div>
+              <div>
+                <div class="org-card-name">{{ org.name }}</div>
+                <span class="org-card-badge"><i data-lucide="check" class="me-1" style="width:11px;height:11px;display:inline-block;vertical-align:-1px"></i>Approved Workspace</span>
+              </div>
+            </div>
+          {% endfor %}
+        {% else %}
+          <div class="org-showcase-card">
+            <div class="org-card-logo">CSG</div>
+            <div>
+              <div class="org-card-name">Central Student Government</div>
+              <span class="org-card-badge">Apex Governing Body</span>
+            </div>
+          </div>
+          <div class="org-showcase-card">
+            <div class="org-card-logo" style="background:linear-gradient(135deg,#2563EB,#60A5FA)">CD</div>
+            <div>
+              <div class="org-card-name">CO:DE Computing Council</div>
+              <span class="org-card-badge">College Council</span>
+            </div>
+          </div>
+          <div class="org-showcase-card">
+            <div class="org-card-logo" style="background:linear-gradient(135deg,#10B981,#34D399)">AC</div>
+            <div>
+              <div class="org-card-name">ACES Engineering Society</div>
+              <span class="org-card-badge">Academic Organization</span>
+            </div>
+          </div>
+          <div class="org-showcase-card">
+            <div class="org-card-logo" style="background:linear-gradient(135deg,#8B5CF6,#A78BFA)">+</div>
+            <div>
+              <div class="org-card-name">Join the Network</div>
+              <a href="{% url 'register_organization' %}" style="font-size:0.75rem;font-weight:700;color:var(--primary);text-decoration:none">Register Your Org &rarr;</a>
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FAQ ACCORDION
+  ══════════════════════════════════════ -->
+  <section id="faq" class="section-wrapper alt-bg">
+    <div class="container">
+      <div class="section-header-center">
+        <div class="section-pill-tag">
+          <i data-lucide="help-circle" style="width:14px;height:14px"></i>
+          <span>Got Questions?</span>
+        </div>
+        <h2 class="section-title-lg">Frequently Asked Questions</h2>
+        <p class="section-desc-sub">
+          Clear answers regarding access, council registration, permissions, and security.
+        </p>
+      </div>
+
+      <div class="faq-container">
+        <!-- FAQ 1 -->
+        <div class="faq-item-card active">
+          <button type="button" class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>How does a student organization join the CSG Task System?</span>
+            <i data-lucide="chevron-down" class="faq-chevron" style="width:20px;height:20px"></i>
+          </button>
+          <div class="faq-answer-pane" style="display:block">
+            Any recognized campus council or organization can register via the <strong>Register Organization</strong> portal. Once submitted, the CSG Super Admin reviews and verifies the application. Upon approval, the designated Org Admin receives access to configure positions, invite officers, and start delegating initiatives.
+          </div>
+        </div>
+
+        <!-- FAQ 2 -->
+        <div class="faq-item-card">
+          <button type="button" class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>What user roles exist and what permissions do they carry?</span>
+            <i data-lucide="chevron-down" class="faq-chevron" style="width:20px;height:20px"></i>
+          </button>
+          <div class="faq-answer-pane">
+            The platform enforces strict Role-Based Access Control (RBAC):
+            <ul class="mt-2 mb-0 ps-3">
+              <li><strong>Super Admin:</strong> Global oversight, multi-tenant workspace switching, organization approvals, and activity logs.</li>
+              <li><strong>Org Admin:</strong> Organization manager. Only the Org Admin's password can authorize task completion and deletion.</li>
+              <li><strong>President:</strong> Executive organizational leader. Can manage officers, create tasks, and reassign/override any initiative.</li>
+              <li><strong>Elected Officer & Committee Member:</strong> Execute assigned tasks, update progress sliders, and attach proof-of-work.</li>
+              <li><strong>Adviser:</strong> Faculty review and verification of completed milestones.</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- FAQ 3 -->
+        <div class="faq-item-card">
+          <button type="button" class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>Why is an Org Admin password required to complete or delete tasks?</span>
+            <i data-lucide="chevron-down" class="faq-chevron" style="width:20px;height:20px"></i>
+          </button>
+          <div class="faq-answer-pane">
+            To prevent accidental loss of records and ensure verified accountability across student government, sensitive actions (marking complete or deleting) require the Org Admin's password authorization. This guarantees that all finished initiatives are genuinely audited.
+          </div>
+        </div>
+
+        <!-- FAQ 4 -->
+        <div class="faq-item-card">
+          <button type="button" class="faq-question-btn" onclick="toggleFaq(this)">
+            <span>Is organization data segregated and private?</span>
+            <i data-lucide="chevron-down" class="faq-chevron" style="width:20px;height:20px"></i>
+          </button>
+          <div class="faq-answer-pane">
+            Yes. The platform uses a multi-tenant database design. Tasks, officer rosters, reports, remarks, and documents are strictly scoped to your specific organization workspace.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       BOTTOM CONVERSION CTA BANNER
+  ══════════════════════════════════════ -->
+  <section class="section-wrapper" style="padding-top:20px">
+    <div class="container">
+      <div class="bottom-cta-banner">
+        <h2 class="cta-banner-title">Ready to Transform Your Council Governance?</h2>
+        <p class="cta-banner-sub">
+          Join recognized student leaders running transparent, efficient, and collaborative initiatives with the CSG Task Management System.
+        </p>
+        <div class="cta-banner-buttons">
+          {% if user.is_authenticated %}
+            <a href="{% url 'core:dashboard' %}" class="btn-banner-white">
+              <i data-lucide="layout-dashboard" style="width:18px;height:18px"></i>
+              <span>Enter Workspace Dashboard</span>
+            </a>
+          {% else %}
+            <a href="{% url 'accounts:login' %}" class="btn-banner-white">
+              <i data-lucide="log-in" style="width:18px;height:18px"></i>
+              <span>Sign In to Portal</span>
+            </a>
+            <a href="{% url 'register_organization' %}" class="btn-banner-outline">
+              <i data-lucide="building" style="width:18px;height:18px"></i>
+              <span>Register New Organization</span>
+            </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════
+       FOOTER
+  ══════════════════════════════════════ -->
+  <footer class="landing-footer">
+    <div class="container">
+      <div class="row">
+        <div class="col-lg-5 footer-brand-col">
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <div class="brand-icon-box" style="width:36px;height:36px">
+              <i data-lucide="shield-check" style="width:20px;height:20px"></i>
+            </div>
+            <span class="fw-bold" style="font-family:var(--landing-font-heading);font-size:1.1rem;color:var(--text-main)">CSG Task Management System</span>
+          </div>
+          <p class="footer-tagline">
+            Official task execution, monitoring, and accountability platform for Central Student Government and recognized university campus organizations.
+          </p>
+        </div>
+
+        <div class="col-6 col-lg-3 offset-lg-1">
+          <div class="footer-col-title">Navigation</div>
+          <ul class="footer-links-list">
+            <li><a href="#features">Capabilities</a></li>
+            <li><a href="#workflow">Workflow Stages</a></li>
+            <li><a href="#organizations">Campus Organizations</a></li>
+            <li><a href="#faq">FAQ</a></li>
+          </ul>
+        </div>
+
+        <div class="col-6 col-lg-3">
+          <div class="footer-col-title">Portal Access</div>
+          <ul class="footer-links-list">
+            <li><a href="{% url 'accounts:login' %}">Sign In / Login</a></li>
+            <li><a href="{% url 'register_organization' %}">Register Organization</a></li>
+            <li><a href="{% url 'accounts:password_reset' %}">Forgot Password</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom-bar justify-content-center text-center">
+        <div>&copy; 2026 Central Student Government (CSG) &bull; Created by <strong style="color:var(--primary)">Jazel C. Moradas</strong></div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script>
+    if (window.lucide) {
+      lucide.createIcons();
+    }
+
+    // Mobile Hamburger Menu Toggle
+    const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+    const mobileNavDropdown = document.getElementById('mobileNavDropdown');
+    const mobileMenuIcon = document.getElementById('mobileMenuIcon');
+
+    function closeMobileMenu() {
+      if (mobileNavDropdown) {
+        mobileNavDropdown.classList.remove('active');
+        if (mobileMenuBtn) {
+          mobileMenuBtn.innerHTML = '<i data-lucide="menu" style="width:20px;height:20px"></i>';
+          if (window.lucide) lucide.createIcons({ root: mobileMenuBtn });
+        }
+      }
+    }
+
+    if (mobileMenuBtn && mobileNavDropdown) {
+      mobileMenuBtn.addEventListener('click', function () {
+        const isOpen = mobileNavDropdown.classList.toggle('active');
+        mobileMenuBtn.innerHTML = `<i data-lucide="${isOpen ? 'x' : 'menu'}" style="width:20px;height:20px"></i>`;
+        if (window.lucide) {
+          lucide.createIcons({ root: mobileMenuBtn });
+        }
+      });
+    }
+
+    // FAQ Accordion Toggle
+    function toggleFaq(btn) {
+      const card = btn.closest('.faq-item-card');
+      const pane = card.querySelector('.faq-answer-pane');
+      const isActive = card.classList.contains('active');
+
+      document.querySelectorAll('.faq-item-card').forEach(c => {
+        c.classList.remove('active');
+        const p = c.querySelector('.faq-answer-pane');
+        if (p) p.style.display = 'none';
+      });
+
+      if (!isActive) {
+        card.classList.add('active');
+        pane.style.display = 'block';
+      }
+      if (window.lucide) lucide.createIcons();
+    }
+
+    // Dark Mode Toggle Logic
+    function updateThemeIcon(mode) {
+      const btn = document.getElementById('themeToggleBtn');
+      if (!btn) return;
+      btn.innerHTML = `<i data-lucide="${mode === 'dark' ? 'sun' : 'moon'}" style="width:18px;height:18px"></i>`;
+      btn.setAttribute('title', mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+      btn.setAttribute('aria-label', mode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode');
+      if (window.lucide) {
+        lucide.createIcons({ root: btn });
+      }
+    }
+
+    const themeBtn = document.getElementById('themeToggleBtn');
+    if (themeBtn) {
+      const currentMode = document.documentElement.getAttribute('data-mode') || 'light';
+      updateThemeIcon(currentMode);
+
+      themeBtn.addEventListener('click', function () {
+        const active = document.documentElement.getAttribute('data-mode') || 'light';
+        const newMode = active === 'dark' ? 'light' : 'dark';
+        document.documentElement.setAttribute('data-mode', newMode);
+        localStorage.setItem('csg_dark_mode', newMode);
+        updateThemeIcon(newMode);
+      });
+    }
+  </script>
+</body>
+</html>
