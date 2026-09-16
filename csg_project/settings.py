@@ -18,6 +18,22 @@ RENDER_EXTERNAL_HOSTNAME = os.environ.get('RENDER_EXTERNAL_HOSTNAME')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
 
+VERCEL_URL = os.environ.get('VERCEL_URL')
+if VERCEL_URL:
+    ALLOWED_HOSTS.append(VERCEL_URL)
+if '.vercel.app' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('.vercel.app')
+
+# CSRF Trusted Origins for Render and Vercel deployments
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip() for origin in config(
+        'CSRF_TRUSTED_ORIGINS',
+        default='https://*.onrender.com,https://*.vercel.app,http://127.0.0.1:8000,http://localhost:8000'
+    ).split(',') if origin.strip()
+]
+if VERCEL_URL:
+    CSRF_TRUSTED_ORIGINS.append(f'https://{VERCEL_URL}')
+
 INSTALLED_APPS = [
     'cloudinary_storage',
     'django.contrib.admin',
@@ -85,12 +101,14 @@ NEON_DB_URL = config('DATABASE_URL', default='')
 #   on a reused connection (Django 4.1+). Stale connections are transparently replaced.
 # - Connection limit: 1 persistent connection per gunicorn worker. Render free tier
 #   runs 1-2 workers, so total connections = 1-2, well within Neon free-tier limit of 5.
+IS_VERCEL = os.environ.get('VERCEL') == '1' or bool(os.environ.get('VERCEL_URL'))
+
 if NEON_DB_URL:
     DATABASES = {
         'default': dj_database_url.parse(
             NEON_DB_URL,
             ssl_require=not ('localhost' in NEON_DB_URL or '127.0.0.1' in NEON_DB_URL),
-            conn_max_age=600,
+            conn_max_age=0 if IS_VERCEL else 600,
             conn_health_checks=True,
         )
     }
@@ -190,14 +208,22 @@ if CLOUDINARY_URL_ENV or CLOUDINARY_CLOUD_NAME_ENV:
 # WhiteNoise: 1-year immutable caching headers for hashed static filenames
 WHITENOISE_MAX_AGE = 31536000
 
-# Cache configuration for performance (file-based survives process restarts)
-CACHES = {
-    'default': {
-        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': BASE_DIR / 'django_cache',
-        'TIMEOUT': 300,
+# Cache configuration for performance (file-based survives process restarts on persistent servers, in-memory on serverless)
+if IS_VERCEL:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'TIMEOUT': 300,
+        }
     }
-}
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+            'LOCATION': BASE_DIR / 'django_cache',
+            'TIMEOUT': 300,
+        }
+    }
 
 # Use cached sessions to reduce DB hits per request
 SESSION_ENGINE = 'django.contrib.sessions.backends.cached_db'
