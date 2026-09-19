@@ -148,7 +148,6 @@
   </div>
 </div>
 
-{% include 'tasks/_modal_detail.html' %}
 {% endblock %}
 
 {% block extra_js %}
@@ -193,121 +192,218 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   });
 
-  // Modal logic & initialization
-  const detailModalEl = document.getElementById('taskDetailModal');
+  // Modal logic & scroll position retention
+  const modalEl = document.getElementById('taskDetailModal');
   let detailModal = null;
-  if (detailModalEl) {
-    detailModal = bootstrap.Modal.getOrCreateInstance(detailModalEl);
+  if (modalEl) {
+    detailModal = bootstrap.Modal.getOrCreateInstance(modalEl);
   }
+  let savedScrollY = 0;
 
   function openTaskModal(taskId) {
-    if (!detailModal) {
+    if (!modalEl || !detailModal) {
       window.location.href = '/tasks/' + taskId + '/';
       return;
     }
-    document.getElementById('modalLoadingSpinner').classList.remove('d-none');
-    document.getElementById('modalTaskContent').classList.add('d-none');
+    savedScrollY = window.scrollY || window.pageYOffset;
+
+    const spinner = modalEl.querySelector('#modalLoadingSpinner');
+    const content = modalEl.querySelector('#modalTaskContent');
+    if (spinner) spinner.classList.remove('d-none');
+    if (content) content.classList.add('d-none');
     detailModal.show();
 
     fetch('/tasks/' + taskId + '/json/')
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error('Task detail response not OK: ' + res.status);
+        return res.json();
+      })
       .then(data => {
-        document.getElementById('modalTaskNumber').textContent = data.task_number;
-        document.getElementById('modalTaskTitle').textContent = data.title;
-        document.getElementById('modalTaskDescription').textContent = data.description || 'No description provided.';
+        window.currentModalTaskData = data;
 
-        const statusEl = document.getElementById('modalTaskStatus');
-        statusEl.textContent = data.status_display;
-        statusEl.className = 'badge-status badge-' + data.status;
+        const setElemText = (id, val) => {
+          const el = modalEl.querySelector('#' + id);
+          if (el) el.textContent = val !== null && val !== undefined ? val : '';
+        };
 
-        const priorityEl = document.getElementById('modalTaskPriority');
-        priorityEl.textContent = data.priority_display;
-        priorityEl.className = 'badge-status badge-priority-' + data.priority;
+        setElemText('modalTaskNumber', data.task_number);
+        setElemText('modalTaskTitle', data.title);
+        setElemText('modalTaskDescription', data.description || 'No description provided.');
+
+        const statusEl = modalEl.querySelector('#modalTaskStatus');
+        if (statusEl) {
+          statusEl.textContent = data.status_display || data.status;
+          statusEl.className = 'badge-status badge-' + data.status;
+        }
+
+        const priorityEl = modalEl.querySelector('#modalTaskPriority');
+        if (priorityEl) {
+          priorityEl.textContent = data.priority_display || data.priority;
+          priorityEl.className = 'badge-status badge-priority-' + data.priority;
+        }
 
         const pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
-        const progText = document.getElementById('modalTaskProgressText');
-        progText.textContent = data.progress + '%';
-        progText.className = 'fw-bold text-' + pColor;
-
-        const progBar = document.getElementById('modalTaskProgressBar');
-        progBar.style.width = data.progress + '%';
-        progBar.className = 'progress-bar bg-' + pColor;
-
-        document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
-        if (data.is_overdue) {
-          document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
-        } else {
-          document.getElementById('modalTaskDueDate').className = 'modal-card-value';
-        }
-        document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
-        document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
-
-        const assignedList = document.getElementById('modalTaskAssignedList');
-        if (data.assigned_officers && data.assigned_officers.length > 0) {
-          assignedList.innerHTML = data.assigned_officers.map(off => {
-            const posStr = (off.position_title || off.position) ? ' (' + (off.position_title || off.position) + ')' : '';
-            return '<div class="d-flex align-items-center modal-item-box"><span class="modal-card-value" style="font-size:12.5px;font-weight:700">' + off.name + posStr + '</span></div>';
-          }).join('');
-        } else {
-          assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
+        const progText = modalEl.querySelector('#modalTaskProgressText');
+        if (progText) {
+          progText.textContent = (data.progress || 0) + '%';
+          progText.className = 'fw-bold text-' + pColor;
         }
 
-        const attList = document.getElementById('modalTaskAttachmentsList');
-        if (data.attachments && data.attachments.length > 0) {
-          attList.innerHTML = data.attachments.map(att => 
-            '<div class="d-flex align-items-center justify-content-between modal-item-box mb-2">' +
-              '<div class="pe-2 overflow-hidden">' +
-                '<span class="text-truncate d-block fw-bold modal-card-value" style="font-size:12px" title="' + att.filename + '">' + att.filename + '</span>' +
-                '<small class="text-muted" style="font-size:10.5px">Uploaded by <strong class="modal-card-value">' + (att.uploaded_by || 'Officer') + '</strong> &middot; ' + att.created_at + '</small>' +
-              '</div>' +
-              '<div class="d-flex gap-1 flex-shrink-0">' +
-                '<a href="' + (att.view_url || att.url) + '" target="_blank" class="btn btn-sm btn-primary-custom p-1 px-2" style="font-size:11px"><i data-lucide="eye" style="width:12px;height:12px"></i> View</a>' +
-                '<a href="' + (att.download_url || att.url) + '" download="' + att.filename + '" class="btn btn-sm btn-secondary-custom p-1 px-2" style="font-size:11px"><i data-lucide="download" style="width:12px;height:12px"></i></a>' +
-              '</div>' +
-            '</div>'
-          ).join('');
-        } else {
-          attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
+        const progBar = modalEl.querySelector('#modalTaskProgressBar');
+        if (progBar) {
+          progBar.style.width = (data.progress || 0) + '%';
+          progBar.className = 'progress-bar bg-' + pColor;
         }
 
-        const commentsList = document.getElementById('modalTaskCommentsList');
-        if (data.comments && data.comments.length > 0) {
-          commentsList.innerHTML = data.comments.map(c => 
-            '<div class="modal-item-box mb-2">' +
-              '<div class="d-flex justify-content-between align-items-center mb-1">' +
-                '<div>' +
-                  '<strong class="modal-card-value" style="font-size:11.5px">' + c.author + '</strong>' +
-                  '<span class="badge bg-secondary-subtle text-muted border ms-1" style="font-size:9.5px">' + (c.author_role || 'Officer') + '</span>' +
+        const dueEl = modalEl.querySelector('#modalTaskDueDate');
+        if (dueEl) {
+          dueEl.textContent = data.due_date || '—';
+          dueEl.className = data.is_overdue ? 'text-danger fw-bold' : 'modal-card-value';
+        }
+
+        setElemText('modalTaskCreatedBy', data.created_by || '—');
+        setElemText('modalTaskCreatedAt', data.created_at || '—');
+
+        const assignedList = modalEl.querySelector('#modalTaskAssignedList');
+        if (assignedList) {
+          if (data.assigned_officers && data.assigned_officers.length > 0) {
+            assignedList.innerHTML = data.assigned_officers.map(off => {
+              const posStr = (off.position_title || off.position || off.role) ? ' (' + (off.position_title || off.position || off.role) + ')' : '';
+              return '<div class="d-flex align-items-center modal-item-box"><span class="modal-card-value" style="font-size:12.5px;font-weight:700">' + off.name + posStr + '</span></div>';
+            }).join('');
+          } else {
+            assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
+          }
+        }
+
+        const attList = modalEl.querySelector('#modalTaskAttachmentsList');
+        if (attList) {
+          if (data.attachments && data.attachments.length > 0) {
+            attList.innerHTML = data.attachments.map(att => 
+              '<div class="d-flex align-items-center justify-content-between modal-item-box mb-2">' +
+                '<div class="pe-2 overflow-hidden">' +
+                  '<span class="text-truncate d-block fw-bold modal-card-value" style="font-size:12px" title="' + att.filename + '">' + att.filename + '</span>' +
+                  '<small class="text-muted" style="font-size:10.5px">Uploaded by <strong class="modal-card-value">' + (att.uploaded_by || 'Officer') + '</strong> &middot; ' + att.created_at + '</small>' +
                 '</div>' +
-                '<small class="text-muted" style="font-size:10px">' + c.created_at + '</small>' +
-              '</div>' +
-              '<p class="mb-0 modal-card-value" style="font-size:12px;font-weight:normal">' + c.content + '</p>' +
-            '</div>'
-          ).join('');
-        } else {
-          commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
+                '<div class="d-flex gap-1 flex-shrink-0">' +
+                  '<a href="' + (att.view_url || att.url) + '" target="_blank" class="btn btn-sm btn-primary-custom p-1 px-2" style="font-size:11px" title="View Document"><i data-lucide="eye" style="width:12px;height:12px"></i> View</a>' +
+                  '<a href="' + (att.download_url || att.url) + '" onclick="return downloadAttachmentToDevice(event, \'' + (att.download_url || att.url) + '\', \'' + (att.filename || 'download').replace(/'/g, "\\'") + '\')" download="' + att.filename + '" class="btn btn-sm btn-secondary-custom p-1 px-2" style="font-size:11px" title="Download File"><i data-lucide="download" style="width:12px;height:12px"></i></a>' +
+                '</div>' +
+              '</div>'
+            ).join('');
+          } else {
+            attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
+          }
         }
 
-        document.getElementById('modalFullPageBtn').href = data.detail_url + '?next=' + encodeURIComponent(window.location.pathname + window.location.search);
-        const editBtn = document.getElementById('modalEditBtn');
-        if (data.edit_url) {
-          editBtn.href = data.edit_url;
-          editBtn.classList.remove('d-none');
-        } else {
-          editBtn.classList.add('d-none');
+        const commentsList = modalEl.querySelector('#modalTaskCommentsList');
+        if (commentsList) {
+          if (data.comments && data.comments.length > 0) {
+            commentsList.innerHTML = data.comments.map(c => 
+              '<div class="modal-item-box mb-2">' +
+                '<div class="d-flex justify-content-between align-items-center mb-1">' +
+                  '<div>' +
+                    '<strong class="modal-card-value" style="font-size:11.5px">' + c.author + '</strong>' +
+                    '<span class="badge bg-secondary-subtle text-muted border ms-1" style="font-size:9.5px">' + (c.author_role || 'Officer') + '</span>' +
+                  '</div>' +
+                  '<small class="text-muted" style="font-size:10px">' + c.created_at + '</small>' +
+                '</div>' +
+                '<p class="mb-0 modal-card-value" style="font-size:12px;font-weight:normal">' + c.content + '</p>' +
+              '</div>'
+            ).join('');
+          } else {
+            commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
+          }
         }
 
-        document.getElementById('modalLoadingSpinner').classList.add('d-none');
-        document.getElementById('modalTaskContent').classList.remove('d-none');
+        const fullPageBtn = modalEl.querySelector('#modalFullPageBtn');
+        if (fullPageBtn) {
+          fullPageBtn.href = data.detail_url + '?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        }
+
+        const editBtn = modalEl.querySelector('#modalEditBtn');
+        if (editBtn) {
+          if (data.edit_url) {
+            editBtn.href = data.edit_url;
+            editBtn.classList.remove('d-none');
+          } else {
+            editBtn.classList.add('d-none');
+          }
+        }
+
+        const nudgeBtn = modalEl.querySelector('#modalNudgeBtn');
+        if (nudgeBtn) {
+          if (data.can_nudge) {
+            nudgeBtn.classList.remove('d-none');
+          } else {
+            nudgeBtn.classList.add('d-none');
+          }
+        }
+
+        const completeBtn = modalEl.querySelector('#modalMarkCompleteBtn');
+        if (completeBtn) {
+          if (data.status !== 'completed' && data.can_update_progress) {
+            completeBtn.classList.remove('d-none');
+            completeBtn.onclick = function () {
+              if (typeof showConfirmModal === 'function') {
+                showConfirmModal({
+                  title: 'Mark Task Complete',
+                  subtitle: 'Confirm Status Change',
+                  message: `Are you sure you want to mark task <strong>${data.task_number}</strong> as completed?`,
+                  btnText: 'Mark Complete',
+                  btnClass: 'btn-success',
+                  icon: 'bi-check-circle-fill',
+                  iconBg: '#dcfce7',
+                  iconColor: '#16a34a',
+                  requirePassword: true,
+                  onConfirm: function (pwd) {
+                    const formData = new FormData();
+                    formData.append('password', pwd);
+                    fetch(`/tasks/${data.id}/complete/`, {
+                      method: 'POST',
+                      headers: {
+                        'X-CSRFToken': (document.querySelector('[name=csrfmiddlewaretoken]') || {}).value || '',
+                        'X-Requested-With': 'XMLHttpRequest'
+                      },
+                      body: formData
+                    })
+                      .then(res => res.json())
+                      .then(resp => {
+                        if (resp.status === 'ok') {
+                          detailModal.hide();
+                          window.location.reload();
+                        } else {
+                          showToastNotification(resp.error || 'Failed to mark task complete.', 'error');
+                        }
+                      });
+                  }
+                });
+              }
+            };
+          } else {
+            completeBtn.classList.add('d-none');
+          }
+        }
+
+        if (spinner) spinner.classList.add('d-none');
+        if (content) content.classList.remove('d-none');
         if (window.lucide) lucide.createIcons();
       })
       .catch(err => {
-        console.error(err);
+        console.error('Error loading task details:', err);
+        if (spinner) spinner.classList.add('d-none');
         detailModal.hide();
         if (typeof showToastNotification === 'function') {
           showToastNotification('Error loading task details.', 'error');
         }
       });
+  }
+
+  // Prevent scroll jump on closing modal
+  if (modalEl) {
+    modalEl.addEventListener('hidden.bs.modal', function () {
+      window.scrollTo({ top: savedScrollY, behavior: 'instant' });
+    });
   }
 
   // Delegated click listener on task title links
@@ -316,6 +412,8 @@ document.addEventListener('DOMContentLoaded', function () {
     if (titleLink) {
       e.preventDefault();
       e.stopPropagation();
+      var existingPop = bootstrap.Popover.getInstance(titleLink);
+      if (existingPop) existingPop.hide();
       openTaskModal(titleLink.getAttribute('data-task-id'));
     }
   });
