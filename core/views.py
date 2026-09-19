@@ -53,7 +53,7 @@ class DashboardView(FragmentResponseMixin, LoginRequiredMixin, TemplateView):
         scope = self.request.GET.get('scope', 'all' if user.has_task_override else 'my_tasks')
         if scope == 'my_tasks':
             from django.db.models import Q
-            base_qs = base_qs.filter(Q(assigned_officers=user) | Q(created_by=user)).distinct()
+            base_qs = base_qs.filter(Q(assigned_officers=user) | Q(assignments__officer=user)).distinct()
         
         ctx['scope'] = scope
 

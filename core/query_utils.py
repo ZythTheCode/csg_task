@@ -157,7 +157,7 @@ def get_export_queryset(request):
 
     scope = request.GET.get('scope', 'all' if request.user.has_task_override else 'my_tasks')
     if scope == 'my_tasks':
-        qs = qs.filter(Q(assigned_officers=request.user) | Q(created_by=request.user)).distinct()
+        qs = qs.filter(Q(assigned_officers=request.user) | Q(assignments__officer=request.user)).distinct()
 
     q = request.GET.get('q', '')
     if q:

@@ -80,28 +80,19 @@ class TaskListView(FragmentResponseMixin, LoginRequiredMixin, ListView):
         status = self.request.GET.get('status', '')
         scope = self.request.GET.get('scope', 'my_tasks')
 
+        if scope == 'my_tasks':
+            qs = qs.filter(Q(assigned_officers=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
+
         if status == 'completed':
             qs = qs.filter(status='completed')
-        elif scope == 'my_tasks':
-            qs = qs.filter(Q(assigned_officers=self.request.user) | Q(assignments__officer=self.request.user)).distinct()
-            if status == 'active' or not status:
-                qs = qs.exclude(status='completed')
-            elif status == 'overdue':
-                qs = qs.filter(due_date__lt=today).exclude(status='completed')
-            elif status == 'in_progress':
-                qs = qs.exclude(status__in=['not_started', 'completed'])
-            elif status and status not in ['all_status', 'all']:
-                qs = qs.filter(status=status)
-        else:
-            # scope == 'all': All Tasks under Active Tasks shows all active tasks of the organization
-            if status == 'active' or not status:
-                qs = qs.exclude(status='completed')
-            elif status == 'overdue':
-                qs = qs.filter(due_date__lt=today).exclude(status='completed')
-            elif status == 'in_progress':
-                qs = qs.exclude(status__in=['not_started', 'completed'])
-            elif status and status not in ['all_status', 'all']:
-                qs = qs.filter(status=status)
+        elif status == 'active' or not status:
+            qs = qs.exclude(status='completed')
+        elif status == 'overdue':
+            qs = qs.filter(due_date__lt=today).exclude(status='completed')
+        elif status == 'in_progress':
+            qs = qs.exclude(status__in=['not_started', 'completed'])
+        elif status and status not in ['all_status', 'all']:
+            qs = qs.filter(status=status)
 
         due_this_week = self.request.GET.get('due_this_week', '')
         if due_this_week == 'true':

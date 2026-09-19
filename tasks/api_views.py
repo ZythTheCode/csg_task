@@ -70,7 +70,7 @@ class DashboardChartsAPIView(APIView):
             base_qs = Task.objects.filter(is_archived=False)
 
         if scope == 'my_tasks':
-            base_qs = base_qs.filter(Q(assigned_officers=user) | Q(created_by=user)).distinct()
+            base_qs = base_qs.filter(Q(assigned_officers=user) | Q(assignments__officer=user)).distinct()
 
         today = timezone.now().date()
 
