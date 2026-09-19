@@ -479,7 +479,7 @@
     </div>
   </div>
 
-  {% if request.resolver_match.app_name == 'tasks' or request.resolver_match.url_name == 'dashboard' %}
+  {% if request.resolver_match.app_name == 'tasks' or request.resolver_match.url_name == 'dashboard' or request.resolver_match.app_name == 'officers' %}
   {% include 'tasks/_modal_detail.html' %}
   {% endif %}
 

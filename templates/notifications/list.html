@@ -125,6 +125,95 @@
     0% { background-color: rgba(59, 130, 246, 0.15); box-shadow: inset 0 0 0 2px var(--primary); }
     100% { background-color: transparent; box-shadow: inset 0 0 0 2px transparent; }
   }
+
+  @media (max-width: 575.98px) {
+    .notif-header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      width: 100%;
+    }
+    .notif-header-actions .notif-action-form,
+    .notif-header-actions .btn {
+      flex: 1 1 calc(50% - 4px);
+    }
+    .notif-header-actions .btn {
+      width: 100%;
+      justify-content: center;
+      font-size: 12px;
+      padding: 7px 10px;
+      white-space: nowrap;
+    }
+    .notif-header-actions .notif-action-form:last-child:nth-child(odd) {
+      flex: 1 1 100%;
+    }
+
+    .notif-item-container {
+      display: flex !important;
+      flex-direction: row !important;
+      flex-wrap: wrap !important;
+      align-items: flex-start !important;
+      gap: 8px 10px !important;
+      padding: 12px 10px !important;
+      margin-bottom: 8px !important;
+      border-radius: 12px !important;
+    }
+
+    .notif-checkbox-box {
+      flex-shrink: 0;
+      margin-top: 2px;
+    }
+
+    .notif-checkbox-box input[type="checkbox"] {
+      width: 17px;
+      height: 17px;
+    }
+
+    .notif-icon-box {
+      width: 36px;
+      height: 36px;
+      font-size: 16px;
+      border-radius: 10px;
+      flex-shrink: 0;
+    }
+
+    .notif-main-content {
+      flex: 1 1 calc(100% - 74px);
+      min-width: 0;
+    }
+
+    .notif-title-row {
+      font-size: 13.5px;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+
+    .notif-body-text {
+      font-size: 12px;
+      margin-bottom: 5px;
+      line-height: 1.35;
+    }
+
+    .notif-side-meta {
+      width: 100%;
+      margin-left: 0 !important;
+      margin-top: 4px !important;
+      padding-top: 8px !important;
+      border-top: 1px solid var(--glass-border, rgba(255, 255, 255, 0.08));
+      flex-direction: row !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      flex-shrink: 0;
+    }
+
+    .notif-time-stamp {
+      font-size: 11px;
+    }
+
+    .notif-action-links {
+      gap: 8px;
+    }
+  }
 </style>
 {% endblock %}
 
@@ -138,28 +227,28 @@
     </p>
   </div>
 
-  <div class="d-flex align-items-center gap-2 flex-wrap">
+  <div class="d-flex align-items-center gap-2 flex-wrap notif-header-actions">
     {% if unread_count > 0 %}
-    <form method="post" action="{% url 'notifications:mark_all_read' %}" class="d-inline">
+    <form method="post" action="{% url 'notifications:mark_all_read' %}" class="d-inline notif-action-form">
       {% csrf_token %}
-      <button type="submit" class="btn btn-outline-primary btn-sm" style="border-radius:8px">
+      <button type="submit" class="btn btn-outline-primary btn-sm notif-btn" style="border-radius:8px">
         <i class="bi bi-check-all me-1"></i>Mark All Read
       </button>
     </form>
     {% endif %}
 
     {% if notifications %}
-    <button type="button" class="btn btn-danger btn-sm" id="deleteSelectedBtn" disabled style="border-radius:8px">
+    <button type="button" class="btn btn-danger btn-sm notif-btn" id="deleteSelectedBtn" disabled style="border-radius:8px">
       <i class="bi bi-trash me-1"></i>Delete Selected (<span id="selectedCount">0</span>)
     </button>
 
-    <form method="post" action="{% url 'notifications:bulk_delete' %}" class="d-inline"
+    <form method="post" action="{% url 'notifications:bulk_delete' %}" class="d-inline notif-action-form"
       data-confirm="Are you sure you want to permanently delete ALL your notifications from the database?"
       data-confirm-title="Clear All Notifications" data-confirm-btn="Delete All" data-confirm-class="btn-danger"
       data-confirm-icon="bi-trash-fill">
       {% csrf_token %}
       <input type="hidden" name="action_type" value="all">
-      <button type="submit" class="btn btn-outline-danger btn-sm" style="border-radius:8px">
+      <button type="submit" class="btn btn-outline-danger btn-sm notif-btn" style="border-radius:8px">
         <i class="bi bi-trash-fill me-1"></i>Clear All
       </button>
     </form>

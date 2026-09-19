@@ -74,7 +74,11 @@ class OfficerDetailView(LoginRequiredMixin, DetailView):
         from django.db.models import Count, Q
         officer_user = self.object.user
         ctx['page_title'] = f'Officer: {officer_user.get_full_name()}'
-        ctx['assigned_tasks'] = Task.objects.filter(assigned_officers=officer_user, is_archived=False).select_related('created_by', 'organization').prefetch_related('assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position')[:10]
+        ctx['assigned_tasks'] = Task.objects.filter(
+            assigned_officers=officer_user, is_archived=False
+        ).select_related('created_by', 'organization').prefetch_related(
+            'assigned_officers', 'assigned_officers__officer_profile', 'assigned_officers__officer_profile__position'
+        ).order_by('-created_at')
         # Use a single aggregated query for task counts
         from tasks.models import TaskAssignment
         counts = TaskAssignment.objects.filter(officer=officer_user).aggregate(

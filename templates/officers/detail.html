@@ -1,9 +1,13 @@
 {% extends 'base.html' %}
+{% load static %}
+{% load task_filters %}
+
 {% block title %}{{ page_title }}{% endblock %}
+
 {% block content %}
 <a href="{% url 'officers:list' %}" class="text-muted" style="font-size:12px;text-decoration:none"><i class="bi bi-arrow-left me-1"></i>Back to Officers</a>
 <div class="row g-3 mt-1">
-  <div class="col-md-4">
+  <div class="col-xl-3 col-lg-4 col-md-4">
     <div class="card text-center p-4">
       {% if officer.user.profile_picture %}
       <div class="mx-auto mb-3 shadow-sm border border-2 border-white position-relative" style="width:80px;height:80px;border-radius:24px;overflow:hidden">
@@ -29,35 +33,292 @@
       </div>
     </div>
   </div>
-  <div class="col-md-8">
+  <div class="col-xl-9 col-lg-8 col-md-8">
     <div class="card">
-      <div class="card-header-custom"><h6><i class="bi bi-list-task me-2"></i>Assigned Tasks</h6></div>
-      <div class="table-responsive">
-        <table class="table-custom w-100">
-          <thead><tr><th>Task No.</th><th>Title</th><th>Status</th><th>Priority</th><th>Due Date</th></tr></thead>
-          <tbody>
-            {% for task in assigned_tasks %}
-            <tr>
-              <td><span class="task-number">{{ task.task_number }}</span></td>
-              <td style="font-size:13px;font-weight:600" title="{{ task.title }}"><span style="display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ task.title }}</span></td>
-              <td><span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span></td>
-              <td><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
-              <td style="font-size:12px">
-                {% if task.due_date %}
-                <div class="d-flex flex-column align-items-start" style="gap:2px">
-                  <span {% if task.is_overdue %}style="color:var(--danger);font-weight:700"{% endif %}>{{ task.due_date|date:"M d, Y" }}</span>
-                  {% if task.is_overdue %}<span class="badge bg-danger text-white" style="font-size:9px;padding:2px 5px">Overdue</span>{% endif %}
-                </div>
-                {% else %}—{% endif %}
-              </td>
-            </tr>
-            {% empty %}
-            <tr><td colspan="5" class="text-center text-muted p-4" style="font-size:13px">No tasks assigned</td></tr>
-            {% endfor %}
-          </tbody>
-        </table>
+      <div class="card-header-custom d-flex justify-content-between align-items-center">
+        <h6><i class="bi bi-list-task me-2"></i>Assigned Tasks</h6>
+        <span class="badge bg-light text-muted border rounded-pill" style="font-size:11px;font-weight:600">
+          {{ assigned_tasks|length }} task{{ assigned_tasks|length|pluralize }}
+        </span>
+      </div>
+      <div class="table-custom-container">
+        <div class="table-responsive">
+          <table class="table-custom w-100" id="officerTaskTable">
+            <thead>
+              <tr>
+                <th style="width:12%">Task No.</th>
+                <th style="width:25%">Title</th>
+                <th style="width:12%">Category</th>
+                <th style="width:14%">Assigned To</th>
+                <th style="width:10%">Priority</th>
+                <th style="width:10%">Status</th>
+                <th style="width:10%">Due Date</th>
+                <th style="width:10%">Progress</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in assigned_tasks %}
+              <tr data-task-id="{{ task.pk }}" data-task-number="{{ task.task_number }}">
+                <td style="white-space:nowrap">
+                  <span class="fw-bold" style="color:var(--primary);font-family:monospace;font-size:12px">{{ task.task_number }}</span>
+                </td>
+                <td>
+                  <a href="javascript:void(0)" class="task-title-link" data-task-id="{{ task.pk }}"
+                    style="font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;white-space:normal;color:var(--primary-light);text-decoration:none;line-height:1.3;"
+                    data-bs-toggle="popover" data-bs-trigger="hover" data-bs-placement="top" data-bs-html="true"
+                    data-bs-delay='{"show":400,"hide":100}' data-bs-title="{{ task.title|escape }}"
+                    data-bs-content="<div style='font-size:12px;font-family:inherit'>{{ task.description|default:'No description provided.'|escape|linebreaksbr }}</div>">{{ task.title }}</a>
+                  <div class="mt-0.5" style="font-size:11px;color:var(--slate-400)">by {{ task.created_by.get_full_name|default:task.created_by.username }}</div>
+                </td>
+                <td style="white-space:nowrap">
+                  <span class="badge-status badge-category-{{ task.category }}"
+                    style="font-size:10.5px;padding:3px 9px;display:inline-flex;align-items:center">
+                    <i data-lucide="{{ task.category_icon }}" style="width:11px;height:11px" class="me-1.5"></i>{{ task.get_category_display }}
+                  </span>
+                </td>
+                <td>
+                  {% if task.has_assigned_officers %}
+                  <div class="dropdown d-inline-block">
+                    <div class="d-flex align-items-center gap-1 flex-nowrap" data-bs-toggle="dropdown" aria-expanded="false"
+                      data-bs-boundary="window" style="cursor:pointer" title="Click to view officer names">
+                      {% for officer_item in task.sorted_assigned_officers|slice:":2" %}
+                      <span class="badge bg-light text-primary border"
+                        style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px"
+                        title="{{ officer_item.position_title }}">
+                        {{ officer_item.position_title|initials }}
+                      </span>
+                      {% endfor %}
+                      {% if task.assigned_officers_count > 2 %}
+                      <span class="badge bg-secondary text-white"
+                        style="font-size:10.5px;font-weight:600;padding:4px 8px;border-radius:12px">
+                        +{{ task.assigned_officers_count|add:"-2" }}
+                      </span>
+                      {% endif %}
+                    </div>
+                    <ul class="dropdown-menu dropdown-menu-end shadow border-0 p-2"
+                      style="font-size:12px;min-width:230px;border-radius:12px">
+                      <li class="dropdown-header text-uppercase text-muted px-2 py-1" style="font-size:10px;font-weight:700">
+                        Assigned Officers</li>
+                      {% for officer_item in task.sorted_assigned_officers %}
+                      <li class="d-flex align-items-center justify-content-between py-1 px-2 mb-1"
+                        style="background:var(--pink-50);border-radius:6px">
+                        <span class="fw-semibold text-primary" style="font-size:11px">{{ officer_item.position_title }}</span>
+                        <span class="fw-bold text-dark ms-2" style="font-size:11px">{{ officer_item.get_full_name|default:officer_item.username }}</span>
+                      </li>
+                      {% endfor %}
+                    </ul>
+                  </div>
+                  {% else %}
+                  <span class="text-muted" style="font-size:11px;font-style:italic">Unassigned</span>
+                  {% endif %}
+                </td>
+                <td style="white-space:nowrap"><span class="badge-status badge-priority-{{ task.priority }}">{{ task.get_priority_display }}</span></td>
+                <td style="white-space:nowrap">
+                  <span class="badge-status badge-{{ task.status }}">{{ task.get_status_display }}</span>
+                </td>
+                <td style="font-size:12.5px;white-space:nowrap">
+                  {% if task.due_date %}
+                  <div class="d-flex flex-column align-items-start" style="gap:2px">
+                    <span {% if task.is_overdue %}style="color:var(--danger);font-weight:700" {% endif %}>
+                      {{ task.due_date|date:"M d, Y" }}
+                    </span>
+                    {% if task.is_overdue %}
+                    <span class="badge bg-danger text-white" style="font-size:9px;padding:3px 6px">Overdue</span>
+                    {% endif %}
+                  </div>
+                  {% else %}—{% endif %}
+                </td>
+                <td style="min-width:100px;white-space:nowrap">
+                  <div class="d-flex align-items-center gap-2">
+                    <div class="progress-custom flex-grow-1" style="min-width:50px">
+                      <div class="progress-bar bg-{{ task.progress_color }}" style="width:{{ task.progress }}%"></div>
+                    </div>
+                    <small style="font-size:11px;font-weight:800" class="text-{{ task.progress_color }}">{{ task.progress }}%</small>
+                  </div>
+                </td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="8" class="text-center text-muted p-4" style="font-size:13px">No tasks assigned</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   </div>
 </div>
+
+{% include 'tasks/_modal_detail.html' %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  if (window.lucide) lucide.createIcons();
+
+  // Initialize popovers for hoverable task description (with 400ms delay & touch handling)
+  var popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+  popoverTriggerList.forEach(function (el) {
+    var pop = new bootstrap.Popover(el);
+    var touchTimer;
+    var isLongPress = false;
+
+    el.addEventListener('touchstart', function () {
+      isLongPress = false;
+      pop.disable();
+      touchTimer = setTimeout(function () {
+        isLongPress = true;
+        pop.enable();
+        pop.show();
+      }, 400);
+    }, { passive: true });
+
+    el.addEventListener('touchend', function () {
+      clearTimeout(touchTimer);
+      if (isLongPress) {
+        setTimeout(function () { pop.hide(); }, 2500);
+      }
+      setTimeout(function () { pop.enable(); }, 600);
+    }, { passive: true });
+
+    el.addEventListener('touchmove', function () {
+      clearTimeout(touchTimer);
+    }, { passive: true });
+
+    el.addEventListener('click', function (e) {
+      if (isLongPress) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+    });
+  });
+
+  // Modal logic & initialization
+  const detailModalEl = document.getElementById('taskDetailModal');
+  let detailModal = null;
+  if (detailModalEl) {
+    detailModal = bootstrap.Modal.getOrCreateInstance(detailModalEl);
+  }
+
+  function openTaskModal(taskId) {
+    if (!detailModal) {
+      window.location.href = '/tasks/' + taskId + '/';
+      return;
+    }
+    document.getElementById('modalLoadingSpinner').classList.remove('d-none');
+    document.getElementById('modalTaskContent').classList.add('d-none');
+    detailModal.show();
+
+    fetch('/tasks/' + taskId + '/json/')
+      .then(res => res.json())
+      .then(data => {
+        document.getElementById('modalTaskNumber').textContent = data.task_number;
+        document.getElementById('modalTaskTitle').textContent = data.title;
+        document.getElementById('modalTaskDescription').textContent = data.description || 'No description provided.';
+
+        const statusEl = document.getElementById('modalTaskStatus');
+        statusEl.textContent = data.status_display;
+        statusEl.className = 'badge-status badge-' + data.status;
+
+        const priorityEl = document.getElementById('modalTaskPriority');
+        priorityEl.textContent = data.priority_display;
+        priorityEl.className = 'badge-status badge-priority-' + data.priority;
+
+        const pColor = data.progress >= 100 ? 'success' : (data.progress >= 75 ? 'primary' : (data.progress >= 50 ? 'info' : (data.progress >= 25 ? 'warning' : 'danger')));
+        const progText = document.getElementById('modalTaskProgressText');
+        progText.textContent = data.progress + '%';
+        progText.className = 'fw-bold text-' + pColor;
+
+        const progBar = document.getElementById('modalTaskProgressBar');
+        progBar.style.width = data.progress + '%';
+        progBar.className = 'progress-bar bg-' + pColor;
+
+        document.getElementById('modalTaskDueDate').textContent = data.due_date || '—';
+        if (data.is_overdue) {
+          document.getElementById('modalTaskDueDate').className = 'text-danger fw-bold';
+        } else {
+          document.getElementById('modalTaskDueDate').className = 'modal-card-value';
+        }
+        document.getElementById('modalTaskCreatedBy').textContent = data.created_by;
+        document.getElementById('modalTaskCreatedAt').textContent = data.created_at;
+
+        const assignedList = document.getElementById('modalTaskAssignedList');
+        if (data.assigned_officers && data.assigned_officers.length > 0) {
+          assignedList.innerHTML = data.assigned_officers.map(off => {
+            const posStr = (off.position_title || off.position) ? ' (' + (off.position_title || off.position) + ')' : '';
+            return '<div class="d-flex align-items-center modal-item-box"><span class="modal-card-value" style="font-size:12.5px;font-weight:700">' + off.name + posStr + '</span></div>';
+          }).join('');
+        } else {
+          assignedList.innerHTML = '<span class="text-muted" style="font-size:12px">No officers assigned.</span>';
+        }
+
+        const attList = document.getElementById('modalTaskAttachmentsList');
+        if (data.attachments && data.attachments.length > 0) {
+          attList.innerHTML = data.attachments.map(att => 
+            '<div class="d-flex align-items-center justify-content-between modal-item-box mb-2">' +
+              '<div class="pe-2 overflow-hidden">' +
+                '<span class="text-truncate d-block fw-bold modal-card-value" style="font-size:12px" title="' + att.filename + '">' + att.filename + '</span>' +
+                '<small class="text-muted" style="font-size:10.5px">Uploaded by <strong class="modal-card-value">' + (att.uploaded_by || 'Officer') + '</strong> &middot; ' + att.created_at + '</small>' +
+              '</div>' +
+              '<div class="d-flex gap-1 flex-shrink-0">' +
+                '<a href="' + (att.view_url || att.url) + '" target="_blank" class="btn btn-sm btn-primary-custom p-1 px-2" style="font-size:11px"><i data-lucide="eye" style="width:12px;height:12px"></i> View</a>' +
+                '<a href="' + (att.download_url || att.url) + '" download="' + att.filename + '" class="btn btn-sm btn-secondary-custom p-1 px-2" style="font-size:11px"><i data-lucide="download" style="width:12px;height:12px"></i></a>' +
+              '</div>' +
+            '</div>'
+          ).join('');
+        } else {
+          attList.innerHTML = '<span class="text-muted" style="font-size:12px">No attachments.</span>';
+        }
+
+        const commentsList = document.getElementById('modalTaskCommentsList');
+        if (data.comments && data.comments.length > 0) {
+          commentsList.innerHTML = data.comments.map(c => 
+            '<div class="modal-item-box mb-2">' +
+              '<div class="d-flex justify-content-between align-items-center mb-1">' +
+                '<div>' +
+                  '<strong class="modal-card-value" style="font-size:11.5px">' + c.author + '</strong>' +
+                  '<span class="badge bg-secondary-subtle text-muted border ms-1" style="font-size:9.5px">' + (c.author_role || 'Officer') + '</span>' +
+                '</div>' +
+                '<small class="text-muted" style="font-size:10px">' + c.created_at + '</small>' +
+              '</div>' +
+              '<p class="mb-0 modal-card-value" style="font-size:12px;font-weight:normal">' + c.content + '</p>' +
+            '</div>'
+          ).join('');
+        } else {
+          commentsList.innerHTML = '<span class="text-muted" style="font-size:12px">No comments yet.</span>';
+        }
+
+        document.getElementById('modalFullPageBtn').href = data.detail_url + '?next=' + encodeURIComponent(window.location.pathname + window.location.search);
+        const editBtn = document.getElementById('modalEditBtn');
+        if (data.edit_url) {
+          editBtn.href = data.edit_url;
+          editBtn.classList.remove('d-none');
+        } else {
+          editBtn.classList.add('d-none');
+        }
+
+        document.getElementById('modalLoadingSpinner').classList.add('d-none');
+        document.getElementById('modalTaskContent').classList.remove('d-none');
+        if (window.lucide) lucide.createIcons();
+      })
+      .catch(err => {
+        console.error(err);
+        detailModal.hide();
+        if (typeof showToastNotification === 'function') {
+          showToastNotification('Error loading task details.', 'error');
+        }
+      });
+  }
+
+  // Delegated click listener on task title links
+  document.addEventListener('click', function (e) {
+    const titleLink = e.target.closest('.task-title-link');
+    if (titleLink) {
+      e.preventDefault();
+      e.stopPropagation();
+      openTaskModal(titleLink.getAttribute('data-task-id'));
+    }
+  });
+});
+</script>
 {% endblock %}
